@@ -838,7 +838,7 @@ def analisisAlcistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in range (LTi, -1, -1):
+                    for j in xrange (LTi, -1, -1):
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         #if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Añadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
@@ -881,7 +881,7 @@ def analisisAlcistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in range (LTf, i + 1):
+                    for j in xrange (LTf, i + 1):
 
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
@@ -1181,7 +1181,7 @@ def analisisBajistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in range (LTi, -1, -1):
+                    for j in xrange (LTi, -1, -1):
                         fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         if (maximoLTi < maximoLTf or maximoLTi == 0.0) and LTi > 0:# como estoy en bajista, si el maximoLTi es menor que el maximoLTf es porque esta por debajo, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por encima del LTf
@@ -1236,7 +1236,7 @@ def analisisBajistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in range (LTf, i + 1):
+                    for j in xrange (LTf, i + 1):
 
                         _fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
@@ -1384,7 +1384,7 @@ def indicadorMME(datos, **config):
         fin = indice + 1
 
     k = (2.0 / (1.0 + MME))
-    for iMME in range (0, fin):
+    for iMME in xrange (0, fin):
         if iMME == 0:
             puntoMME = datos[iMME][4]# Este es el pirmer cierre de los datos historicos
             fechaMME = datos[iMME][0]
@@ -1401,7 +1401,7 @@ def indicadorMME(datos, **config):
 
 def indicadorTAR(datos, **config):
     '''
-    Indicador True Averange Range
+    Indicador True Averange xrange
     TAR = False/Entero
     Si TAR es false devuelve una lista de los rangos, si es un entero devuelve la media de los rangos de los periodos especificados
     
@@ -1412,7 +1412,7 @@ def indicadorTAR(datos, **config):
     listaTAR = []
     TAR = config.get('TAR', 10)
 
-    for i in range (0, len(datos)):
+    for i in xrange (0, len(datos)):
         inicio = (i + 1) - TAR
         if inicio < 0:
             inicio = 0
@@ -3129,7 +3129,7 @@ if __name__ == '__main__':
                     inversionTotal = inversionTotal + inversion
                     inversionrecuperadaTotal = inversionrecuperadaTotal + inversionrecuperada
 
-                for n in range(0, 4):
+                for n in xrange(0, 4):
                     j.write('\n')
 
                 j.write('Parametros : \n')
@@ -3149,7 +3149,7 @@ if __name__ == '__main__':
                 j.write('Moneda del Backtest : %s\n' % moneda)
 
 
-                for n in range(0, 4):
+                for n in xrange(0, 4):
                     j.write('\n')
 
                 j.write('Resultado: \n')
