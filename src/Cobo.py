@@ -2142,6 +2142,7 @@ if __name__ == '__main__':
         '------------------------------',
         'Acciones Masivas',
         '------------------------------',
+        'V) Exportar datos a arhivos csv',
         'W) Dar de alta acciones desde archivo',
         '------------------------------',
         '',
@@ -3176,6 +3177,70 @@ if __name__ == '__main__':
 
             #import bigben
             #bigben
+
+#        'V) Exportar datos a arhivos csv',
+        if opcion == 'v':
+            print (seleccion)
+            sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            cursor.execute(sql)
+            listatickets = cursor.fetchall()
+            listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
+            listatickets = deque(list(listatickets))
+            #for ticket in listatickets:
+            while len(listatickets) > 0:
+                ticket, codigo, naccion = listatickets.popleft()
+
+                print('')
+                print('Tickets pendientes de exportar %d' % len(listatickets))
+                print('Exportando ticket %s' % ticket)
+
+                if ExistenDatos(ticket):
+                    #funcion maximo minimo historico
+                    datos = LeeDatos(ticket)
+
+                    for timming in 'MWD':
+                        if timming == 'M':
+                            datosaccion = datos[0]
+                        elif timming == 'W':
+                            datosaccion = datos[1]
+                        elif timming == 'D':
+                            datosaccion = datos[2]
+
+                        if len(datosaccion) > 0:
+
+                            nombre = (str(ticket) + str(codigo)).replace('.', '_')
+                            archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
+                            j = open(archivo, 'w')
+                            j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
+                            writercsv = csv.writer(j, delimiter = ',', lineterminator = '\n', doublequote = True)
+                            for n in datosaccion:
+
+                                fecha, apertura, maximo, minimo, cierre, volumen = n
+                                fecha = fecha.replace('-', '')
+
+                                n = (ticket, naccion, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0')
+
+                                writercsv.writerow(n)
+                                #j.write(str(n)+'\n')
+                            j.close()
+
+
+                        else:# No existe suficiente historico
+                            errorenTicket(ticket)
+                            ticketsnodescargados.append(ticket)
+                else: #no existe el archivo
+                    #cotizacionesTicket(naccion)
+                    errorenTicket(ticket)
+                    ticketsnodescargados.append(ticket)
+
+                print('')
+
+            print('Tickets para los que no hay cotizaciones historicas')
+            for ticket in ticketsnodescargados:
+                print(ticket)
+            print('Un total de : ', len (ticketsnodescargados))
+
+
 #        'W) Dar de alta acciones desde archivo',
         if opcion == 'w':
             print(seleccion)
