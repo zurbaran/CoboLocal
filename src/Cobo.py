@@ -3186,6 +3186,7 @@ if __name__ == '__main__':
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
+            ticketsnodescargados = []
             #for ticket in listatickets:
             while len(listatickets) > 0:
                 ticket, codigo, naccion = listatickets.popleft()
