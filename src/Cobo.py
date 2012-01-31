@@ -685,6 +685,7 @@ def analisisAlcistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
     desdefecha = config.get('desdefecha', False)
@@ -696,17 +697,27 @@ def analisisAlcistaAccion(naccion, **config):
     if timming == 'd':
         datoshistoricos = historicoDiario
         if filtro == 0.0:
-            filtro = 0.01
+            if TAR == False:
+                filtro = 0.01
+            else:
+                filtro = 3.5
     elif timming == 'w':
         datoshistoricos = historicoSemanal
         if filtro == 0.0:
-            filtro = 0.02
+            if TAR == False:
+                filtro = 0.02
+            else:
+                filtro = 2.5
     elif timming == 'm':
         datoshistoricos = historicoMensual
         if filtro == 0.0:
-            filtro = 0.03
+            if TAR == False:
+                filtro = 0.03
+            else:
+                filtro = 1.5
 
     analisisalcista = []
+    listastoploss = []
 
     i = 0
     r = 0
@@ -720,6 +731,8 @@ def analisisAlcistaAccion(naccion, **config):
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
 
+    if not (TAR == False):
+        puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -728,10 +741,18 @@ def analisisAlcistaAccion(naccion, **config):
             ant = 0
         else:
             ant = i - 1
-        _fechaanterior, _aperturaanterior, _maximoanterior, minimoanterior, _cierreanterior, _volumenanterior = datoshistoricos[ant]
+        fechaanterior, _aperturaanterior, _maximoanterior, minimoanterior, cierreanterior, _volumenanterior = datoshistoricos[ant]
         _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
         _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
 
+        if not (TAR == False):
+            fechaTAR, puntoTAR = puntosTAR[ant]
+
+            assert (fechaTAR == fechaanterior)
+
+            if len(analisisalcista) > 0 and stoploss < (round((cierreanterior - (puntoTAR * filtro)), 3)):
+                stoploss = round((cierreanterior - (puntoTAR * filtro)), 3)
+                listastoploss.append((fecha, stoploss))
 
         if not (MME == False):# and len( datoshistoricos ) >= MME:
 
@@ -813,14 +834,14 @@ def analisisAlcistaAccion(naccion, **config):
             else:
                 i = r + 1
             s = i
-            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
+            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, volumensoporte = datoshistoricos[s]
             _fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
 
     # Soporte alcista
         if soporte and minimo < minimosoporte and not ((maximo > maximoresisten) and (apertura > cierre)):#No actualizamos el soporte, si es la misma barra que rompe la resistencia y ademas la apertura es mayor que el cierre
 
             s = i
-            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
+            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, volumensoporte = datoshistoricos[s]
 
         if soporte and ((maximo > maximoresisten)or i == ((len(datoshistoricos)) - 1)) and not((datoshistoricos[r] or datoshistoricos[s])  in analisisalcista):
 
@@ -924,10 +945,18 @@ def analisisAlcistaAccion(naccion, **config):
                 LineaTendenciaInicio = ('0-0-0', 0)
                 LineaTendenciaFin = ('0-0-0', 0)
 
-            analisisalcista. append((datoshistoricos[r], datoshistoricos[s], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            if TAR == False:
+                stoploss = round((datoshistoricos[s][3] * (1 - filtro)), 3)
+                analisisalcista. append((datoshistoricos[r], datoshistoricos[s], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            else:
+                stoploss = round((cierreanterior - (puntoTAR * filtro)), 3)
+                listastoploss.append((fecha, stoploss))
+                datoshistoricosTAR = fecha, stoploss, stoploss, stoploss, stoploss, volumensoporte
+                analisisalcista. append((datoshistoricos[r], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
             if conEntradaLT:
                 entradapuntoLT = True
-            stoploss = round((datoshistoricos[s][3] * (1 - filtro)), 3)
+
             #LT=True # esto es porque hasta que no se produce un segundo soporte, no podemos calcular la linea de tendencia
 
             #Si la misma barra que rompe la resistencia abre arriba para cerrar por abajo del stoploss, esa barra nos saca del mercado
@@ -990,6 +1019,12 @@ def analisisAlcistaAccion(naccion, **config):
             j.write("Timming     " + str(timming) + '\n')
             j.write('\n')
 
+        for n in xrange (5):
+            j.write('\n')
+
+        for n in listastoploss:
+            j.write(str(n) + '\n')
+
         j.close()
 
     # formato de salida, ultimo analisis alcista, soporte anterior, todo el analisis alcista
@@ -1024,6 +1059,7 @@ def analisisBajistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
     desdefecha = config.get('desdefecha', False)
@@ -1035,18 +1071,27 @@ def analisisBajistaAccion(naccion, **config):
     if timming == 'd':
         datoshistoricos = historicoDiario
         if filtro == 0.0:
-            filtro = 0.01
+            if TAR == False:
+                filtro = 0.01
+            else:
+                filtro = 3.5
     elif timming == 'w':
         datoshistoricos = historicoSemanal
         if filtro == 0.0:
-            filtro = 0.02
+            if TAR == False:
+                filtro = 0.02
+            else:
+                filtro = 2.5
     elif timming == 'm':
         datoshistoricos = historicoMensual
         if filtro == 0.0:
-            filtro = 0.03
-
+            if TAR == False:
+                filtro = 0.03
+            else:
+                filtro = 1.5
 
     analisisbajista = []
+    listastoploss = []
 
     i = 0
     r = 0 # indice de la tabla de datoshistoricos que nos indica la posicion dentro de la tupla donde se encuentra la resistencia
@@ -1060,6 +1105,8 @@ def analisisBajistaAccion(naccion, **config):
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
 
+    if not (TAR == False):
+        puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -1068,9 +1115,18 @@ def analisisBajistaAccion(naccion, **config):
             ant = 0
         else:
             ant = i - 1
-        _fechaanterior, _aperturaanterior, maximoanterior, _minimoanterior, _cierreanterior, _volumenanterior = datoshistoricos[ant]
-        _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, _volumenresisten = datoshistoricos[r]
+        fechaanterior, _aperturaanterior, maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datoshistoricos[ant]
+        _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, volumenresisten = datoshistoricos[r]
         _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
+
+        if not (TAR == False):
+            fechaTAR, puntoTAR = puntosTAR[ant]
+
+            assert (fechaTAR == fechaanterior)
+
+            if len(analisisalcista) > 0 and stoploss > (round((cierreanterior + (puntoTAR * filtro)), 3)):
+                stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
+                listastoploss.append((fecha, stoploss))
 
         if not (MME == False):# and len( datoshistoricos ) >= MME:
 
@@ -1285,11 +1341,17 @@ def analisisBajistaAccion(naccion, **config):
                 LineaTendenciaFin = ('0-0-0', 0)
 
 
-            analisisbajista. append((datoshistoricos[s], datoshistoricos[r], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            if TAR == False:
+                stoploss = round((datoshistoricos[r][2] * (1 + filtro)), 3)
+                analisisbajista. append((datoshistoricos[s], datoshistoricos[r], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            else:
+                stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
+                listastoploss.append((fecha, stoploss))
+                datoshistoricosTAR = fecha, stoploss, stoploss, stoploss, stoploss, volumenresisten
+                analisisalcista. append((datoshistoricos[s], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
             if conEntradaLT:
                 entradapuntoLT = True
-            stoploss = round((datoshistoricos[r][2] * (1 + filtro)), 3)
-
 
             #Si la misma barra que rompe el soporte abre abajo para cerrar por arriba del stoploss, esa barra nos saca del mercado
             if maximo >= stoploss and cierre > apertura and len(analisisbajista) > 0:
@@ -2330,6 +2392,22 @@ if __name__ == '__main__':
                 writercsv.writerow(n)
             j.close()
 
+            TARdatos = raw_input('Introduce Catidad de periodos para el indicadorTAR (10):')
+
+            if TARdatos == '10' or TARdatos == '' or TARdatos == ' ':
+                TARdatos = 10
+            else:
+                TARdatos = int(TARdatos)
+
+            datosTAR = indicadorTAR(datos, TAR = TARdatos)
+
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "TAR.csv")
+            j = open(archivo, 'w')
+            writercsv = csv.writer(j, delimiter = ';', lineterminator = '\n', doublequote = True)
+            for n in datosTAR:
+                writercsv.writerow(n)
+            j.close()
+
 
 #        'F) Listar Tickets Mercados',
         if opcion == 'f':
@@ -2771,6 +2849,12 @@ if __name__ == '__main__':
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
 
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.02): ')
+            if filtrosalidadiario == '':
+                filtrosalidadiario = 0.01
+            else:
+                filtrosalidadiario = float(filtrosalidadiario)
+
             rentabilidadminima = raw_input('Rentabilidad minima por operacion, % (0.35): ')
             if rentabilidadminima == '':
                 rentabilidadminima = 0.35
@@ -2800,6 +2884,12 @@ if __name__ == '__main__':
                 MMe = False
             else:
                 MMe = int(MMe)
+
+            TAR = raw_input('True Avenrange xrange (Sin TAR): ')
+            if TAR == '':
+                TAR = False
+            else:
+                TAR = int(TAR)
 
             EntradaLT = raw_input('Entradas en Linea de Tendencia (Sin Entradas): ')
             if EntradaLT == '':
@@ -2856,13 +2946,13 @@ if __name__ == '__main__':
                 if ExistenDatos(ticket):
                     backtestaccion = []
                     if estrategia == 'Alcista':
-                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, txt = False)
-                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, txt = False)
-                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, txt = False)
+                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TAR, txt = True)
+                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TAR, txt = True)
+                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TAR, txt = True)
                     elif estrategia == 'Bajista':
-                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, txt = True)
-                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, txt = True)
-                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, txt = True)
+                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TAR, txt = True)
+                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TAR, txt = True)
+                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TAR, txt = True)
 
                     fecharesistenciadiario = 0
                     fecharesistenciasemanal = 0
@@ -2972,16 +3062,26 @@ if __name__ == '__main__':
                                 filtro = filtrosalidasemanal
                             elif timming == 'm':
                                 filtro = filtrosalidamensual
+                            elif timming == 'd':
+                                filtro = filtrosalidadiario
 
                             if estrategia == 'Alcista':
-                                stoploss = round((soporte[3] * (1 - filtro)), 3)
+                                if TAR == False:
+                                    stoploss = round((soporte[3] * (1 - filtro)), 3)
+                                else:
+                                    stoploss = soporte[3]
+
                                 if resistencia[2] != stoploss:
                                     numeroacciones = int(riesgo / (resistencia[2] - stoploss))
                                 else:
                                     numeroacciones = 0
 
                             elif estrategia == 'Bajista':
-                                stoploss = round((resistencia[2] * (1 + filtro)), 3)
+                                if TAR == False:
+                                    stoploss = round((resistencia[2] * (1 + filtro)), 3)
+                                else:
+                                    stoploss = resistencia[2]
+
                                 if soporte[3] != stoploss:
                                     numeroacciones = int(riesgo / (stoploss - soporte[3]))
                                 else:
@@ -3145,11 +3245,13 @@ if __name__ == '__main__':
                 j.write('Volumen Minimo : %d\n' % volumenminimo)
                 j.write(('Filtro Mensual : %.2f\n' % (filtrosalidamensual)).replace('.', ','))
                 j.write(('Filtro Semanal : %.2f\n' % (filtrosalidasemanal)).replace('.', ','))
+                j.write(('Filtro Diario : %.2f\n' % (filtrosalidadiario)).replace('.', ','))
                 j.write(('Rentabilidad Minima : %.2f\n' % (rentabilidadminima)).replace('.', ','))
                 j.write('Rentabilidad 0 igual a rentabilidad minima : %s\n' % rentabilidad0)
                 j.write(('Inversion Minima : %.2f\n' % inversionminima).replace('.', ','))
                 j.write('Inversion Maxima : %s\n' % inversionmaxima)
                 j.write(('Media Movil Exponencial : %s\n' % MMe))
+                j.write(('True Averange xrange : %s\n' % TAR))
                 j.write(('Con entradas en Linea de tendencia : %s\n' % EntradaLT))
                 j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
                 j.write('Moneda del Backtest : %s\n' % moneda)
