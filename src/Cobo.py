@@ -25,6 +25,7 @@ try:
 except ImportError:
     print ('Modulo MySQLdb deshabilitado')
 
+import sqlite3
 from datetime import date, datetime, timedelta
 from time import sleep
 try:
@@ -1991,8 +1992,8 @@ def conexionBBDD():
         db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
         #db=MySQLdb.connect(host='www.midinerotrabajapormi.com', port=3306 ,user='lomio_sergmell',passwd='s2rg34',db='lomiologes_cobodb') # puede que en el host sobre el /lomiologes_cobodb o que sobre el parametro db 
     except:
-        raw_input ('Base de datos funcionando en Local')
-        import sqlite3
+        print ('Base de datos funcionando en Local')
+
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
     cursor = db.cursor()
 
