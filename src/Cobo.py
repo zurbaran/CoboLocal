@@ -20,7 +20,11 @@ añadido:
 
 #import urllib
 import urllib2
-import MySQLdb
+try:
+    import MySQLdb
+except ImportError:
+    print ('Modulo MySQLdb deshabilitado')
+
 from datetime import date, datetime, timedelta
 from time import sleep
 try:
@@ -1924,12 +1928,13 @@ def conexionBBDD():
     try:
         db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
         #db=MySQLdb.connect(host='www.midinerotrabajapormi.com', port=3306 ,user='lomio_sergmell',passwd='s2rg34',db='lomiologes_cobodb') # puede que en el host sobre el /lomiologes_cobodb o que sobre el parametro db 
-        cursor = db.cursor()
     except:
-        raw_input ('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
-        quit()
-    else:
-        return cursor, db
+        raw_input ('Base de datos funcionando en Local')
+        import sqlite3
+        db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
+    cursor = db.cursor()
+
+    return cursor, db
 
 
 def log(**config):
@@ -2836,7 +2841,7 @@ if __name__ == '__main__':
 
 
             #consulta en la tabla componentes que pertenecen a los mercados de una moneda
-            sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC"
+            #sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC"
 
             cursor.execute(sql)
             resultado = cursor.fetchall()
@@ -3181,7 +3186,18 @@ if __name__ == '__main__':
 #        'V) Exportar datos a arhivos csv',
         if opcion == 'v':
             print (seleccion)
-            sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            print ('Limpiando Directorio')
+            os.remove(glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*")))
+            #archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*"))
+            #for archivo in archivosticket:
+            #    os.remove(archivo)
+
+            moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
+            if moneda == '' or moneda == None:
+                sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            else:
+                sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' `componentes`.`tiket` LIKE '%." + moneda + "' ORDER BY `componentes`.`tiket` ASC"
+
             cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
@@ -3190,6 +3206,7 @@ if __name__ == '__main__':
             #for ticket in listatickets:
             while len(listatickets) > 0:
                 ticket, codigo, naccion = listatickets.popleft()
+                naccion = (naccion.strip('"')).replace(',', '')
 
                 print('')
                 print('Tickets pendientes de exportar %d' % len(listatickets))
