@@ -1,6 +1,6 @@
 # -*- coding: cp1252 -*-
 
-version = "2011-12-19" # Versión de este módulo
+version = "2012-02-01" # Versión de este módulo
 
 ############################################################
 # historial de modificaciones
