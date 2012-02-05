@@ -2353,7 +2353,7 @@ if __name__ == '__main__':
             sql = "SELECT `nombre` FROM `componentes` WHERE `componentes`.`tiket` LIKE '" + ticket + "'"
             cursor.execute(sql)
             nombre = cursor.fetchall()
-            nombre = (nombre.strip('"')).replace(',', '')
+            nombre = (nombre[0][0].strip('"')).replace(',', '')
 
             print(' 1 - Diario')
             print(' 2 - Semanal')
