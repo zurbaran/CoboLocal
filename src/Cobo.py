@@ -1,30 +1,12 @@
 # -*- coding: cp1252 -*-
 # TODO: Borrar acciones que pertenezcan al mercado PCX y borrar indice que los contega para evitar que se vuelvan a añadir automaticamente
-version = "2012-02-01" # Versión de este módulo
 
-############################################################
-# historial de modificaciones
-'''
-he hecho que se calculen las LT desde el principio del analisis, haciendo que den cero cuando va a la inversa del propio analisis, es decir, si en el analisis alcista da rentabilidad negativa se sustituye por una rentabilidad 0
-añadido:
-    en analisisalcista:
-        entradas en PLT Alcista dentro de los analisis
-        la informacion de la rotura del stoploss
-        la Media Movil Exponencial
-        Backtest bajista
-        En los calculos del backtest, ahora tiene toma el stoploss en el calculo del numero de acciones, lo que significa que si calculas que vas ha perder 200 en cada operacion, si que los pierdes, independientemente del montante a invertir y lo que pueda suponer porcentualmente la diferencia entre el punto de salida y su stoploss, limitado realmente las perdidas a una catidad fija
-        En las descargas masivas de historicos de acciones, comprueba la actualizacion y si lo necesita la actualiza para volver a comprobarlo y si le da el mismo resultado despues de supuestamente haber actualizado, es porque la accion dejo de cotizar
-'''
+
 ############################################################
 # módulos estándar importados
 
 #import urllib
 import urllib2
-#try:
-#    import MySQLdb
-#except ImportError:
-#    print ('Modulo MySQLdb deshabilitado')
-
 import sqlite3
 from datetime import date, datetime, timedelta
 from time import sleep
@@ -1997,14 +1979,13 @@ def conexionBBDD():
     try:
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
         #db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
-        #db=MySQLdb.connect(host='www.midinerotrabajapormi.com', port=3306 ,user='lomio_sergmell',passwd='s2rg34',db='lomiologes_cobodb') # puede que en el host sobre el /lomiologes_cobodb o que sobre el parametro db 
+        cursor = db.cursor()
     except:
-        print ('Base de datos funcionando en Local')
+        raw_input ('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
+        quit()
+    else:
+        return cursor, db
 
-
-    cursor = db.cursor()
-
-    return cursor, db
 
 
 def log(**config):
