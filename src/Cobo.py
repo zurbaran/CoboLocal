@@ -20,10 +20,10 @@ añadido:
 
 #import urllib
 import urllib2
-try:
-    import MySQLdb
-except ImportError:
-    print ('Modulo MySQLdb deshabilitado')
+#try:
+#    import MySQLdb
+#except ImportError:
+#    print ('Modulo MySQLdb deshabilitado')
 
 import sqlite3
 from datetime import date, datetime, timedelta
@@ -1889,7 +1889,8 @@ def cotizacionesMoneda(nombreticket):
         cursor.execute(sql)
         datosBBDDcomponentes = cursor.fetchall()
         codigo = datosBBDDcomponentes[0][0]
-        sql = "UPDATE `lomiologes_cobodb`.`monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
+        #sql = "UPDATE `lomiologes_cobodb`.`monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
+        sql = "UPDATE `monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
         cursor.execute(sql)
         db.commit()
 
@@ -1994,12 +1995,13 @@ def obtenMercadosBBDD():
 
 def conexionBBDD():
     try:
-        db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
+        db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
+        #db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
         #db=MySQLdb.connect(host='www.midinerotrabajapormi.com', port=3306 ,user='lomio_sergmell',passwd='s2rg34',db='lomiologes_cobodb') # puede que en el host sobre el /lomiologes_cobodb o que sobre el parametro db 
     except:
         print ('Base de datos funcionando en Local')
 
-        db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
+
     cursor = db.cursor()
 
     return cursor, db
@@ -3473,3 +3475,5 @@ if __name__ == '__main__':
 #    f.write(datos)
 #    f.close()
     #os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
+    cursor.close()
+    db.close()
