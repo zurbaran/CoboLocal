@@ -1810,6 +1810,7 @@ def cotizacionesTicket(nombreticket):
             sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
             cursor.execute(sql)
             datosBBDDoperaciones = cursor.fetchall()
+            numeroResultado = len(datosBBDDoperaciones)
             if numeroResultado == 1:
                 ident, precio_ini, precio_fin, _fecha_ini, _fecha_fin, _timing, _precio_salida, soporte, resistencia, _capital, _codigoBBDD, _user = datosBBDDoperaciones[0]
 
@@ -2398,7 +2399,7 @@ if __name__ == '__main__':
                 fecha, apertura, maximo, minimo, cierre, volumen = n
                 fecha = fecha.replace('-', '')
 
-                writercsv.writerow (ticket, nombre, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0')
+                writercsv.writerow ((ticket, nombre, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0'))
             j.close()
 
             MMEdatos = raw_input('Introduce Catidad de periodos para el indicadorMME (30):')
