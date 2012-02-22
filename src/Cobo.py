@@ -716,7 +716,7 @@ def analisisAlcistaAccion(naccion, **config):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
-        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
+        fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
 
         if i == 0:
             ant = 0
@@ -773,13 +773,13 @@ def analisisAlcistaAccion(naccion, **config):
 
                 if precioentradapuntoLT >= minimo:
                     if precioentradapuntoLT >= apertura or precioentradapuntoLT > maximo:# El precioentradapuntoLT esta por encima del maximo o abrio directamente por debajo, lo que significa que puede haber un split y utilizamos la apertura  
-                        barraentradapuntoLT = (fecha, apertura, apertura, apertura, apertura, volumen)
+                        precionentrada = apertura
                     else:#elif maximo>=precioentradapuntoLT:# El precioentradapuntoLT esta entre el maximo y el minimo y la paertura no la hizo por debajo
-                        barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
+                        precionentrada = precioentradapuntoLT
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1]
-                    #barraentradapuntoLT = ( fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen )
-                    analisisalcista. append((barraentradapuntoLT, soporteanterior, barraentradapuntoLT, LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
+                    analisisalcista.append((datoshistoricos[r], (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
         #cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
@@ -815,14 +815,14 @@ def analisisAlcistaAccion(naccion, **config):
             else:
                 i = r + 1
             s = i
-            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, volumensoporte = datoshistoricos[s]
+            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
             _fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
 
     # Soporte alcista
         if soporte and minimo < minimosoporte and not ((maximo > maximoresisten) and (apertura > cierre)):#No actualizamos el soporte, si es la misma barra que rompe la resistencia y ademas la apertura es mayor que el cierre
 
             s = i
-            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, volumensoporte = datoshistoricos[s]
+            _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
 
         if soporte and ((maximo > maximoresisten)or i == ((len(datoshistoricos)) - 1)) and not((datoshistoricos[r] or datoshistoricos[s])  in analisisalcista):
 
@@ -928,13 +928,21 @@ def analisisAlcistaAccion(naccion, **config):
 
             if TAR == False:
                 stoploss = round((datoshistoricos[s][3] * (1 - filtro)), 3)
-                analisisalcista. append((datoshistoricos[r], datoshistoricos[s], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
             else:
                 stoploss = round((cierreanterior - (puntoTAR * filtro)), 3)
                 listastoploss.append((fecha, stoploss))
-                datoshistoricosTAR = fecha, stoploss, stoploss, stoploss, stoploss, volumensoporte
-                analisisalcista. append((datoshistoricos[r], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
+            maximoresistencia = datoshistoricos[r][2]
+            aperturaruptura = datoshistoricos[i][1]
+            minimoruptura = datoshistoricos[i][3]
+
+            if maximoresistencia <= minimoruptura or maximoresistencia <= aperturaruptura:# Si el Maximo de la resistecia esta por debajo o igual del minimo de la ruptura o apertura de la ruptura, significa que puede haber un split o abrio por encima de la resistenca
+                precionentrada = aperturaruptura
+            else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
+                precionentrada = maximoresistencia
+
+            analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
             if conEntradaLT:
                 entradapuntoLT = True
 
@@ -1013,7 +1021,7 @@ def analisisAlcistaAccion(naccion, **config):
     if len(analisisalcista) == 1: #esto esta porque puede que en el analisisalcista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return (analisisalcista[-1] , 0, analisisalcista)
     elif len (analisisalcista) > 1:
-        return (analisisalcista[-1] , (analisisalcista[-2][1][3]), analisisalcista) #[-2][1][3]=penultimo analisis, Soporte, minimo
+        return (analisisalcista[-1] , (analisisalcista[-2][1][1]), analisisalcista) #[-2][1][1]=penultimo analisis, Soporte, stoploss
     else:
         #habria que comprobar un timming inferirior al obtener como resultado 0
         return None
@@ -1090,14 +1098,14 @@ def analisisBajistaAccion(naccion, **config):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
-        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
+        fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
 
         if i == 0:
             ant = 0
         else:
             ant = i - 1
         fechaanterior, _aperturaanterior, maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datoshistoricos[ant]
-        _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, volumenresisten = datoshistoricos[r]
+        _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, _volumenresisten = datoshistoricos[r]
         _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
 
         if not (TAR == False):
@@ -1146,13 +1154,13 @@ def analisisBajistaAccion(naccion, **config):
                 #else:
                 if maximo >= precioentradapuntoLT:
                     if minimo > precioentradapuntoLT or apertura >= precioentradapuntoLT:## El precioentradapuntoLT esta por debajo del minimo, lo que significa que puede haber un split y utilizamos la apertura  
-                        barraentradapuntoLT = (fecha, apertura, apertura, apertura, apertura, volumen)
-
+                        precionentrada = apertura
                     else: #elif precioentradapuntoLT >= minimo:# El precioentradapuntoLT esta entre el maximo y el minimo
-                        barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
+                        precionentrada = precioentradapuntoLT
                     #ultima resistencia consolidado
                     resistenciaanterior = analisisbajista[-1][1]
-                    analisisbajista. append((barraentradapuntoLT, resistenciaanterior, barraentradapuntoLT, LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
+                    analisisbajista.append((datoshistoricos[s], (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
 
@@ -1324,12 +1332,20 @@ def analisisBajistaAccion(naccion, **config):
 
             if TAR == False:
                 stoploss = round((datoshistoricos[r][2] * (1 + filtro)), 3)
-                analisisbajista. append((datoshistoricos[s], datoshistoricos[r], datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
             else:
                 stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
                 listastoploss.append((fecha, stoploss))
-                datoshistoricosTAR = fecha, stoploss, stoploss, stoploss, stoploss, volumenresisten
-                analisisbajista. append((datoshistoricos[s], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+
+            minimosoporte = datoshistoricos[s][3]
+            aperturaruptura = datoshistoricos[i][1]
+            maximoruptura = datoshistoricos[i][2]
+
+            if minimosoporte >= maximoruptura or minimosoporte >= aperturaruptura:# Si el minimo del soporte esta por encima o igual del maximo de la ruptura o apertura de la ruptura, significa que puede haber un split o abrio por debajo del soporte
+                precionentrada = aperturaruptura
+            else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
+                precionentrada = minimosoporte
+
+            analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
             if conEntradaLT:
                 entradapuntoLT = True
@@ -1402,14 +1418,21 @@ def analisisBajistaAccion(naccion, **config):
             j.write("Timming     " + str(timming) + '\n')
             j.write('\n')
 
+        for n in xrange (5):
+            j.write('\n')
+
+        for n in listastoploss:
+            j.write(str(n) + '\n')
+
+
         j.close()
 
     # formato de salida, ultimo analisis alcista, soporte anterior, todo el analisis alcista
     # hay que añadir cuando el len de analisisbajista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
     if len(analisisbajista) == 1: #esto esta porque puede que en el analisisbajista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
-        return ((analisisbajista[len(analisisbajista) - 1]), 0, analisisbajista)
+        return ((analisisbajista[-1]), 0, analisisbajista)
     elif len (analisisbajista) > 1:
-        return ((analisisbajista[len(analisisbajista) - 1]), (analisisbajista[len(analisisbajista) - 2][1][3]), analisisbajista)
+        return ((analisisbajista[-1]), (analisisbajista[-2][1][1]), analisisbajista)#[-2][1][1]=penultimo analisis, resistencia, stoploss
     else:
         #habria que comprobar un timming inferirior al obtener como resultado 0
         return None
@@ -2754,13 +2777,21 @@ if __name__ == '__main__':
 
                     if analisisalcista != None and analisisbajista != None and alcista[0][0][0] >= bajista[0][0][0]:# Comparamos la primera fecha de los analisis
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                        soporte, stoploss = soporte
+                        ruptura, entrada = ruptura
                     else:
                         if analisisalcista == None:
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
+                            resistencia, stoploss = resistencia
+                            ruptura, entrada = ruptura
                         elif analisisbajista == None:
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                            soporte, stoploss = soporte
+                            ruptura, entrada = ruptura
                         else:# Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                            soporte, stoploss = soporte
+                            ruptura, entrada = ruptura
 
                     if timming == 'w':# esta condicion es porque cobo esta castellanizado y yahoo no
                         timming = 's'
@@ -2787,10 +2818,10 @@ if __name__ == '__main__':
                         else:#anali
                             #si false, analisis valido, sin cumplir
                             if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], resistencia[2], timming, soporteanterioralcista, codigo)
+                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterioralcista, codigo)
                                 cursor.execute(sql)
                             elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], resistencia[2], codigo, timming, soporteanterioralcista)
+                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterioralcista)
                                 cursor.execute(sql)
 
                     elif LTi[1] > LTf[1]:#analisis bajista
@@ -2806,10 +2837,10 @@ if __name__ == '__main__':
                         else:#anali
                             #si false, analisis valido, sin cumplir
                             if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], resistencia[2], timming, soporteanteriorbajista, codigo)
+                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], entrada, stoploss, timming, soporteanteriorbajista, codigo)
                                 cursor.execute(sql)
                             elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], resistencia[2], codigo, timming, soporteanteriorbajista)
+                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], entrada, stoploss, codigo, timming, soporteanteriorbajista)
                                 cursor.execute(sql)
 
 
@@ -3038,8 +3069,12 @@ if __name__ == '__main__':
 
                         if estrategia == 'Alcista':
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = backtestaccion[p]
+                            soporte, stoploss = soporte
+                            ruptura, precionentrada = ruptura
                         elif estrategia == 'Bajista':
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = backtestaccion[p]
+                            resistencia, stoploss = resistencia
+                            ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
 
                         if LTi == ('0-0-0', 0) and LTf == ('0-0-0', 0):
@@ -3067,60 +3102,26 @@ if __name__ == '__main__':
                         volumenoperacion = int (volumenoperacion / 3)
 
 
-                        if (resistencia[2] - soporte[3]) == 0:# TODO : hacer las comprobaciones del stoploss aqui
+                        if (entrada - stoploss) == 0:# TODO : hacer las comprobaciones del stoploss aqui
                             numeroacciones = 0
                         else:
-                            #numeroacciones = int( riesgo / ( resistencia[2] - soporte[3] ) )
-                            if timming == 'w':
-                                filtro = filtrosalidasemanal
-                            elif timming == 'm':
-                                filtro = filtrosalidamensual
-                            elif timming == 'd':
-                                filtro = filtrosalidadiario
-
-                            if estrategia == 'Alcista':
-                                if TAR == False:
-                                    stoploss = round((soporte[3] * (1 - filtro)), 3)
-                                else:
-                                    stoploss = soporte[3]
-
-                                if resistencia[2] != stoploss:
-                                    numeroacciones = int(riesgo / (resistencia[2] - stoploss))
-                                else:
-                                    numeroacciones = 0
-
-                            elif estrategia == 'Bajista':
-                                if TAR == False:
-                                    stoploss = round((resistencia[2] * (1 + filtro)), 3)
-                                else:
-                                    stoploss = resistencia[2]
-
-                                if soporte[3] != stoploss:
-                                    numeroacciones = int(riesgo / (stoploss - soporte[3]))
-                                else:
-                                    numeroacciones = 0
+                            numeroacciones = int(riesgo / (entrada - stoploss))
 
                         #inversion moneda
-                        if estrategia == 'Alcista':
-                            inversion = numeroacciones * resistencia[2]
-                        elif estrategia == 'Bajista':
-                            inversion = numeroacciones * soporte[3]
+                        inversion = numeroacciones * entrada
 
                         if not(inversionmaxima == False) and inversion > inversionmaxima:
-                            if estrategia == 'Alcista':
-                                numeroacciones = int(inversionmaxima / resistencia[2])
-                                inversion = numeroacciones * resistencia[2]
-                            elif estrategia == 'Bajista':
-                                numeroacciones = int(inversionmaxima / soporte[3])
-                                inversion = numeroacciones * soporte[3]
+                            numeroacciones = int(inversionmaxima / entrada)
+                            inversion = numeroacciones * entrada
 
-                        if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and inversion >= inversionminima:
+
+                        if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
 
                             if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
                                 fechasalida = str(fechaRegistro)
                                 # Se da el caso que el historico o el ajuste del mismo no esta actualizado y la cotizacion si, de manera que si el analisis no nos ha dado salida y al buscar un precio de salida 
                                 # Si somo alcistas o bajista y no nos ha salta el stoploss con el valor actual, al precio de salida le asignamos el valor actual
-                                if (estrategia == 'Alcista' and stoploss < valorActual) or (estrategia == 'Bajista' and stoploss > valorActual):
+                                if (estrategia == 'Alcista' and stoploss <= valorActual) or (estrategia == 'Bajista' and stoploss >= valorActual):
                                     preciosalida = valorActual
                                 else:
                                     preciosalida = stoploss
@@ -3133,43 +3134,22 @@ if __name__ == '__main__':
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
                             soporteentrada = soporte[3]
                             resistenciaentrada = resistencia[2]
+                            fechaentrada = ruptura[0]
 
                             if estrategia == 'Alcista' and resistencia[2] <= ruptura[2]:# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
-                                fechaentrada = ruptura[0]
-
-                                maximoresistencia = resistencia[2]
-                                aperturaruptura = ruptura[1]
-                                minimoruptura = ruptura[3]
-
-                                if maximoresistencia <= minimoruptura or maximoresistencia <= aperturaruptura:# Si el Maximo de la resistecia esta por debajo o igual del minimo de la ruptura o apertura de la ruptura, significa que puede haber un split o abrio por encima de la resistenca
-                                    precionentrada = aperturaruptura
-                                else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
-                                    precionentrada = maximoresistencia
 
                                 balance = inversionrecuperada - inversion
 
                             elif estrategia == 'Bajista' and soporte[3] >= ruptura[3]:
                                 invertido = True
-                                fechaentrada = ruptura[0]
-
-                                minimosoporte = soporte[3]
-                                aperturaruptura = ruptura[1]
-                                maximoruptura = ruptura[2]
-
-                                if minimosoporte >= maximoruptura or minimosoporte >= aperturaruptura:# Si el minimo del soporte esta por encima o igual del maximo de la ruptura o apertura de la ruptura, significa que puede haber un split o abrio por debajo del soporte
-                                    precionentrada = aperturaruptura
-                                else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
-                                    precionentrada = minimosoporte
 
                                 balance = inversion - inversionrecuperada
-
-
 
                         elif invertido == True:
 
                             fecharuptura = ruptura[0]
-                            #fecharesistencia = resistencia[0]
+
                             if fechasalida <= fecharuptura:
 
 #                                if -(riesgo) * backtestoperacionessospechosas > balance:
@@ -3183,7 +3163,6 @@ if __name__ == '__main__':
 #                                        #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                    raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-
 
                                 p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
@@ -3209,9 +3188,6 @@ if __name__ == '__main__':
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-
-
-
                             backtest.append((ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
                             invertido = False
 
