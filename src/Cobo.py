@@ -777,7 +777,7 @@ def analisisAlcistaAccion(naccion, **config):
                     else:#elif maximo>=precioentradapuntoLT:# El precioentradapuntoLT esta entre el maximo y el minimo y la paertura no la hizo por debajo
                         precionentrada = precioentradapuntoLT
                     #ultimo soporte consolidado
-                    soporteanterior = analisisalcista[-1][1]
+                    soporteanterior = analisisalcista[-1][1][0]
 
                     analisisalcista.append((datoshistoricos[r], (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
@@ -793,7 +793,6 @@ def analisisAlcistaAccion(naccion, **config):
             i2 = 0
             while i2 < len(analisisalcista):
                 resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisalcista[i2]
-                #salidaOperacionAnalisis=analisisalcista[i2][5]
                 if salidaOperacionAnalisis == False:
                     analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
@@ -1158,7 +1157,7 @@ def analisisBajistaAccion(naccion, **config):
                     else: #elif precioentradapuntoLT >= minimo:# El precioentradapuntoLT esta entre el maximo y el minimo
                         precionentrada = precioentradapuntoLT
                     #ultima resistencia consolidado
-                    resistenciaanterior = analisisbajista[-1][1]
+                    resistenciaanterior = analisisbajista[-1][1][0]
 
                     analisisbajista.append((datoshistoricos[s], (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
@@ -2893,7 +2892,7 @@ if __name__ == '__main__':
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
 
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.02): ')
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
             if filtrosalidadiario == '':
                 filtrosalidadiario = 0.01
             else:
@@ -3097,22 +3096,24 @@ if __name__ == '__main__':
                         #calculamos el volumen
                         volumenoperacion = 0
                         for barra in resistencia, soporte, ruptura:
+                            if len(barra) == 2:
+                                barra, _barra2 = barra
                             fecha, apertura, maximo, minimo, cierre, volumen = barra
                             volumenoperacion = (cierre * volumen * 22) + volumenoperacion
                         volumenoperacion = int (volumenoperacion / 3)
 
 
-                        if (entrada - stoploss) == 0:# TODO : hacer las comprobaciones del stoploss aqui
+                        if (precionentrada - stoploss) == 0:# TODO : hacer las comprobaciones del stoploss aqui
                             numeroacciones = 0
                         else:
-                            numeroacciones = int(riesgo / (entrada - stoploss))
+                            numeroacciones = int(riesgo / (precionentrada - stoploss))
 
                         #inversion moneda
-                        inversion = numeroacciones * entrada
+                        inversion = numeroacciones * precionentrada
 
                         if not(inversionmaxima == False) and inversion > inversionmaxima:
-                            numeroacciones = int(inversionmaxima / entrada)
-                            inversion = numeroacciones * entrada
+                            numeroacciones = int(inversionmaxima / precionentrada)
+                            inversion = numeroacciones * precionentrada
 
 
                         if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
