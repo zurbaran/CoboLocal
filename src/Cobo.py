@@ -3103,10 +3103,17 @@ if __name__ == '__main__':
                         volumenoperacion = int (volumenoperacion / 3)
 
 
-                        if (precionentrada - stoploss) == 0:# TODO : hacer las comprobaciones del stoploss aqui
+                        if (resistencia[2] == stoploss) or (soporte[3] == stoploss):# comprobamos que no dividomos entre 0
                             numeroacciones = 0
                         else:
-                            numeroacciones = int(riesgo / (precionentrada - stoploss))
+                            # las siguientes comprobaciones son necesarias, porque nosotros ponemos la orden para la ruptura y calculamos el numero de acciones en relacion a ello
+                            # pero eso no quiere decir que se ejecute al precionentrada
+                            if estrategia == 'Alcista':
+                                numeroacciones = int(riesgo / (resistencia[2] - stoploss))
+                            elif estrategia == 'Bajista':
+                                numeroacciones = int(riesgo / (soporte[3] - stoploss))
+
+
 
                         #inversion moneda
                         inversion = numeroacciones * precionentrada
