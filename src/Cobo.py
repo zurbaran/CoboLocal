@@ -2881,7 +2881,7 @@ if __name__ == '__main__':
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
 
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.02): ')
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
             if filtrosalidadiario == '':
                 filtrosalidadiario = 0.01
             else:
