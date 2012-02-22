@@ -3118,10 +3118,13 @@ if __name__ == '__main__':
                         #inversion moneda
                         inversion = numeroacciones * precionentrada
 
-                        if not(inversionmaxima == False) and inversion > inversionmaxima:
-                            numeroacciones = int(inversionmaxima / precionentrada)
-                            inversion = numeroacciones * precionentrada
+                        if not(inversionmaxima == False) and abs(inversion) > inversionmaxima:
+                            if estrategia == 'Alcista':
+                                numeroacciones = int(inversionmaxima / resistencia[2])
 
+                            elif estrategia == 'Bajista':
+                                numeroacciones = int(inversionmaxima / soporte[3])
+                            inversion = numeroacciones * precionentrada
 
                         if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
 
