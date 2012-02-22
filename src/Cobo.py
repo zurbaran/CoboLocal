@@ -3136,7 +3136,7 @@ if __name__ == '__main__':
                             soporteentrada = soporte[3]
                             resistenciaentrada = resistencia[2]
                             fechaentrada = ruptura[0]
-
+                            precionentrada2 = precionentrada
                             if estrategia == 'Alcista' and resistencia[2] <= ruptura[2]:# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
 
@@ -3167,7 +3167,7 @@ if __name__ == '__main__':
 
                                 p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
-                                backtest.append((ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
+                                backtest.append((ticket, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
                                 invertido = False
 
                         p += 1
