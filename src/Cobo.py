@@ -1349,7 +1349,7 @@ def analisisBajistaAccion(naccion, **config):
                 stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
                 listastoploss.append((fecha, stoploss))
                 datoshistoricosTAR = fecha, stoploss, stoploss, stoploss, stoploss, volumenresisten
-                analisisalcista. append((datoshistoricos[s], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                analisisbajista. append((datoshistoricos[s], datoshistoricosTAR, datoshistoricos[i], LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
             if conEntradaLT:
                 entradapuntoLT = True
