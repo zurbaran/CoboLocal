@@ -779,7 +779,7 @@ def analisisAlcistaAccion(naccion, **config):
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1][0]
 
-                    analisisalcista.append((datoshistoricos[r], (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    analisisalcista.append((datoshistoricos[i], (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
         #cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
@@ -1159,7 +1159,7 @@ def analisisBajistaAccion(naccion, **config):
                     #ultima resistencia consolidado
                     resistenciaanterior = analisisbajista[-1][1][0]
 
-                    analisisbajista.append((datoshistoricos[s], (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    analisisbajista.append((datoshistoricos[i], (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
 
