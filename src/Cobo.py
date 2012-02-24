@@ -3154,12 +3154,12 @@ if __name__ == '__main__':
                             if estrategia == 'Alcista' and resistencia[2] <= ruptura[2]:# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
 
-                                balance = inversionrecuperada - inversion
+                                balance = inversionrecuperada - inversionoperacion
 
                             elif estrategia == 'Bajista' and soporte[3] >= ruptura[3]:
                                 invertido = True
 
-                                balance = inversion - inversionrecuperada
+                                balance = inversionoperacion - inversionrecuperada
 
                         elif invertido == True:
 
