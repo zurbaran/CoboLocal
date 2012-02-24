@@ -716,7 +716,7 @@ def analisisAlcistaAccion(naccion, **config):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
-        fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
+        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
 
         if i == 0:
             ant = 0
@@ -778,8 +778,8 @@ def analisisAlcistaAccion(naccion, **config):
                         precionentrada = precioentradapuntoLT
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1][0]
-
-                    analisisalcista.append((datoshistoricos[i], (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
+                    analisisalcista.append((barraentradapuntoLT, (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
         #cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
@@ -1097,7 +1097,7 @@ def analisisBajistaAccion(naccion, **config):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
     while i < len(datoshistoricos):
-        fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
+        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
 
         if i == 0:
             ant = 0
@@ -1158,8 +1158,8 @@ def analisisBajistaAccion(naccion, **config):
                         precionentrada = precioentradapuntoLT
                     #ultima resistencia consolidado
                     resistenciaanterior = analisisbajista[-1][1][0]
-
-                    analisisbajista.append((datoshistoricos[i], (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
+                    analisisbajista.append((barraentradapuntoLT, (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
 
@@ -2817,10 +2817,10 @@ if __name__ == '__main__':
                         else:#anali
                             #si false, analisis valido, sin cumplir
                             if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterioralcista, codigo)
+                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, resistencia[2], timming, soporteanterioralcista, codigo)
                                 cursor.execute(sql)
                             elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterioralcista)
+                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, resistencia[2], codigo, timming, soporteanterioralcista)
                                 cursor.execute(sql)
 
                     elif LTi[1] > LTf[1]:#analisis bajista
@@ -2836,10 +2836,10 @@ if __name__ == '__main__':
                         else:#anali
                             #si false, analisis valido, sin cumplir
                             if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], entrada, stoploss, timming, soporteanteriorbajista, codigo)
+                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `soporte` = %.3f, `resistencia` = %.3f, `user` = 'auto', `timing` = '%s', `precio_salida` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], stoploss, timming, soporteanteriorbajista, codigo)
                                 cursor.execute(sql)
                             elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], entrada, stoploss, codigo, timming, soporteanteriorbajista)
+                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,soporte,resistencia,codigo,user,timing,precio_salida,capital) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'auto','%s', %.3f, 200)" % (LTi[1], LTf[1], LTi[0], LTf[0], soporte[3], stoploss, codigo, timming, soporteanteriorbajista)
                                 cursor.execute(sql)
 
 
@@ -3116,15 +3116,18 @@ if __name__ == '__main__':
 
 
                         #inversion moneda
-                        inversion = numeroacciones * precionentrada
+                        if estrategia == 'Alcista':
+                            inversion = numeroacciones * resistencia[2]
+                        elif estrategia == 'Bajista':
+                            inversion = numeroacciones * soporte[3]
 
                         if not(inversionmaxima == False) and abs(inversion) > inversionmaxima:
                             if estrategia == 'Alcista':
                                 numeroacciones = int(inversionmaxima / resistencia[2])
-
+                                inversion = numeroacciones * resistencia[2]
                             elif estrategia == 'Bajista':
                                 numeroacciones = int(inversionmaxima / soporte[3])
-                            inversion = numeroacciones * precionentrada
+                                inversion = numeroacciones * soporte[3]
 
                         if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
 
@@ -3139,9 +3142,10 @@ if __name__ == '__main__':
                             else:
                                 fechasalida, preciosalida = salida
 
+                            #aqui en algunos casos recalculamos debido a que la orden se da con la informacion del momento, pero se puede ejecutar de manera distinta referente a los precios
                             numeroaccionesoperacion = numeroacciones
                             timmingentrada = timming
-                            inversionoperacion = inversion
+                            inversionoperacion = numeroaccionesoperacion * precionentrada
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
                             soporteentrada = soporte[3]
                             resistenciaentrada = resistencia[2]
