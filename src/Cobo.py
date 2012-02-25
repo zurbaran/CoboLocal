@@ -2536,16 +2536,15 @@ if __name__ == '__main__':
 
                     del ticketscomponentesmercados
 
-                mercadosvalidos = str(mercadosvalidos)
-                mercadosvalidos = mercadosvalidos.strip('[')
-                mercadosvalidos = mercadosvalidos.strip(']')
-                mercadosvalidos = mercadosvalidos.replace("'", "")
-                mercadosvalidos = mercadosvalidos.replace('"', '')
-                mercadosvalidos = mercadosvalidos.replace(' ', '')
+                mercadosvalidos2 = ''
+                for mer in mercadosvalidos:
+                    mercadosvalidos2 = mercadosvalidos2 + ',' + mer
+                mercadosvalidos = mercadosvalidos2.strip(',')
+
                 sql = "UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` ='" + m + "')"
                 cursor.execute(sql)
                 db.commit()
-                print("Total tickets añadidos ", ticketsanadidos)
+                print("Total tickets añadidos %s" % ticketsanadidos)
                 del ticketsanadidos, mercadosvalidos
 
 
