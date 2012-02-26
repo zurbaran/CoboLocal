@@ -1,7 +1,7 @@
 # -*- coding: cp1252 -*-
 
 ############################################################
-# módulos estándar importados
+# modulos estandar importados
 
 #import urllib
 import urllib2
@@ -653,11 +653,11 @@ def analisisAlcistaAccion(naccion, **config):
 
     #TODO: separar la funcion en la lectura, analisis y grabar datos, creando una funcion interna que nos sirva para darle la lista que contiene los datos y devuelva el analisis. De esta manera podre esternalizar la funcion y llamarla desde un programa
 
-    #añadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
-        #Añadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
-        #añadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
+    #anadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
+        #Anadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
+        #anadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
 
-    #añadido las entradas por PLT dentro de los analisis
+    #anadido las entradas por PLT dentro de los analisis
 
 
     naccion = naccion.upper()
@@ -758,7 +758,7 @@ def analisisAlcistaAccion(naccion, **config):
                             resistencia = True
                             soporte = False
 
-        #añade en analisisalcista, los puntos de entrada por Linea de tendencia    
+        #anade en analisisalcista, los puntos de entrada por Linea de tendencia
         if len(analisisalcista) > 0 and entradapuntoLT:
 
             LineaTendenciaInicio = analisisalcista[-1][3]
@@ -846,8 +846,8 @@ def analisisAlcistaAccion(naccion, **config):
                     for j in xrange (LTi, -1, -1):
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
-                        #if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Añadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
-                        if minimoLTi > minimoLTf and LTi > 0:# Añadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
+                        #if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
+                        if minimoLTi > minimoLTf and LTi > 0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                             LTi -= 1
                             break
 
@@ -856,7 +856,7 @@ def analisisAlcistaAccion(naccion, **config):
                         #puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
     #                        elif timming=='semanal':
                         #else:
-                            # he deshabilitado la comprobacion del timming en esta formula porque habria que añadir la de diario, ademos sospecho que limpiando la formula, esta seria la misma independientemente el timming que utilicemos
+                            # he deshabilitado la comprobacion del timming en esta formula porque habria que anadir la de diario, ademos sospecho que limpiando la formula, esta seria la misma independientemente el timming que utilicemos
                             #   puntoLT=round((minimoLTi*((1+(((1.0+(((minimoLTf-minimoLTi)/minimoLTi)))**(52.0/(LTf-LTi)))-1.0))**((j-LTi)/(52.0)))),3)#365/7.0
 
                         if puntoLT > minimoj:
@@ -891,7 +891,7 @@ def analisisAlcistaAccion(naccion, **config):
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
 
-                        #esto lo he añadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
+                        #esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
                             LTf += 1
                             break
@@ -909,7 +909,7 @@ def analisisAlcistaAccion(naccion, **config):
                             localizaLTi = False
                             break
 
-            #quiero añadir aqui una ultima comprobacion de la LT desde 0 hasta i comprobandola entera, en el caso de que el
+            #quiero anadir aqui una ultima comprobacion de la LT desde 0 hasta i comprobandola entera, en el caso de que el
             #puntoLT sea igual al dato del indice de la tupla datoshistoricos no cambia o no lo damos por malo, pero si
             #si el puntoLT sea mayor al punto, y entonces habria que volver a calcular la LT pero esta vez tomando este nuevo punto
             # como LTi o LTf dependiendo de si esta entre '0' y 'r' o 'r' y 'i'.
@@ -1016,7 +1016,7 @@ def analisisAlcistaAccion(naccion, **config):
         j.close()
 
     # formato de salida, ultimo analisis alcista, soporte anterior, todo el analisis alcista
-    # hay que añadir cuando el len de analisisalcista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
+    # hay que anadir cuando el len de analisisalcista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
     if len(analisisalcista) == 1: #esto esta porque puede que en el analisisalcista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return (analisisalcista[-1] , 0, analisisalcista)
     elif len (analisisalcista) > 1:
@@ -1136,7 +1136,7 @@ def analisisBajistaAccion(naccion, **config):
                         soporte = True
                         resistencia = False
 
-        #añade en analisisbajista, los puntos de entrada por Linea de tendencia    
+        #anade en analisisbajista, los puntos de entrada por Linea de tendencia
         if len(analisisbajista) > 0 and entradapuntoLT:
             LineaTendenciaInicio = analisisbajista[-1][3]
             LineaTendenciaFin = analisisbajista[-1][4]
@@ -1271,7 +1271,7 @@ def analisisBajistaAccion(naccion, **config):
                             break
 
                 LTf = s
-                #LTf=r-1# Añadido el 23/01/2011
+                #LTf=r-1# Anadido el 23/01/2011
                 #j=r
                 while localizaLTf:
 
@@ -1289,7 +1289,7 @@ def analisisBajistaAccion(naccion, **config):
                         _fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
 
-                        #esto lo he añadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
+                        #esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
                             LTf += 1
                             break
@@ -1427,7 +1427,7 @@ def analisisBajistaAccion(naccion, **config):
         j.close()
 
     # formato de salida, ultimo analisis alcista, soporte anterior, todo el analisis alcista
-    # hay que añadir cuando el len de analisisbajista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
+    # hay que anadir cuando el len de analisisbajista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
     if len(analisisbajista) == 1: #esto esta porque puede que en el analisisbajista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return ((analisisbajista[-1]), 0, analisisbajista)
     elif len (analisisbajista) > 1:
@@ -1518,7 +1518,7 @@ def cruceconindicador(naccion):
 
 
 def creaMenu(sep, lmenu):
-    """Le damos el separador de la opción y una lista con las opciones del menu,
+    """Le damos el separador de la opcion y una lista con las opciones del menu,
     nos devuelve una tupla con la opcion elegida y la decripción"""
     control = []
 
@@ -2199,7 +2199,7 @@ if __name__ == '__main__':
         'Acciones para los mercados',
         '------------------------------',
         'F) Listar Tickets Mercados',
-        'G) Añadir Ticket Mercado',
+        'G) Anadir Ticket Mercado',
         'H) Eliminar Ticket Mercado',
         '',
         'Acciones para las monedas',
@@ -2243,7 +2243,7 @@ if __name__ == '__main__':
                 sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
                 cursor.execute(sql)
                 db.commit()
-                print(naccion + ' añadido a la base de datos')
+                print(naccion + ' anadido a la base de datos')
 
             if not ExistenDatos(naccion):
                 print('Ticket %s nuevo, descarga completa del historico de la accion' % naccion)
@@ -2445,10 +2445,10 @@ if __name__ == '__main__':
                 print (mercado)
             print('Total de mercados %d' % (len(mercados)))
 
-        #G) Añadir Ticket Mercado',     
+        #G) Anadir Ticket Mercado',
         if opcion == 'g':
             print(seleccion)
-            mercado = raw_input('Introduce ticket del mercado a añadir : ').upper()
+            mercado = raw_input('Introduce ticket del mercado a anadir : ').upper()
             mercado = mercado.replace('@%5E', '^')
             if not (mercado in mercados):
                 sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
@@ -2457,7 +2457,7 @@ if __name__ == '__main__':
                 print(resultadoM)
                 m = None
                 while m in resultadoM:
-                    m = raw_input ('Del los conjuntos anteriores, Introduce donde quieres añadir el mercado :').upper()
+                    m = raw_input ('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
                 sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo`  = '" + m + "')"
                 cursor.execute(sql)
                 mercadosvalidos = cursor.fetchall()
@@ -2548,7 +2548,7 @@ if __name__ == '__main__':
                         if numeroResultado == 0:
                             sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + ticket + "', '" + str(date.today()) + "', NULL, NULL)"
                             cursor.execute(sql)
-                            print(ticket + ' añadido a la base de datos')
+                            print(ticket + ' anadido a la base de datos')
                             ticketsanadidos += 1
 
                     if len(ticketscomponentesmercados) > 0:
@@ -2556,16 +2556,15 @@ if __name__ == '__main__':
 
                     del ticketscomponentesmercados
 
-                mercadosvalidos = str(mercadosvalidos)
-                mercadosvalidos = mercadosvalidos.strip('[')
-                mercadosvalidos = mercadosvalidos.strip(']')
-                mercadosvalidos = mercadosvalidos.replace("'", "")
-                mercadosvalidos = mercadosvalidos.replace('"', '')
-                mercadosvalidos = mercadosvalidos.replace(' ', '')
+                mercadosvalidos2 = ''
+                for mer in mercadosvalidos:
+                    mercadosvalidos2 = mercadosvalidos2 + ',' + mer
+                mercadosvalidos = mercadosvalidos2.strip(',')
+
                 sql = "UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` ='" + m + "')"
                 cursor.execute(sql)
                 db.commit()
-                print("Total tickets añadidos ", ticketsanadidos)
+                print("Total tickets anadidos %s" % ticketsanadidos)
                 del ticketsanadidos, mercadosvalidos
 
 
@@ -3404,10 +3403,10 @@ if __name__ == '__main__':
                     if numeroResultado == 0:
                         sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
                         cursor.execute(sql)
-                        print(naccion + ' añadido a la base de datos')
+                        print(naccion + ' anadido a la base de datos')
                         incluidos += 1
 
-                #for suf in sufijosexcluidos:# Todas las comparaciones con los sufijosexcluidos tienen que ser -1(no existe) para que lo añadamos, si hay uno, no se añade
+                #for suf in sufijosexcluidos:# Todas las comparaciones con los sufijosexcluidos tienen que ser -1(no existe) para que lo anadamos, si hay uno, no se anade
                 #    existe = naccion.find(suf)
                 #    if existe != -1:
                 #        incluir = False
@@ -3419,10 +3418,10 @@ if __name__ == '__main__':
                 #    if len(cursor.execute(sql).fetchall()) == 0:
                 #        sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
                 #        cursor.execute(sql)
-                #        print(naccion + ' añadido a la base de datos')
+                #        print(naccion + ' anadido a la base de datos')
                 #        incluidos += 1
             db.commit()
-            print ('Tickets Añadidos a la BBDD : %d' % incluidos)
+            print ('Tickets Anadidos a la BBDD : %d' % incluidos)
 
 
 
