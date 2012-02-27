@@ -1,9 +1,7 @@
 # -*- coding: cp1252 -*-
-# TODO: Borrar acciones que pertenezcan al mercado PCX y borrar indice que los contega para evitar que se vuelvan a anadir automaticamente
-
 
 ############################################################
-# módulos estándar importados
+# modulos estandar importados
 
 #import urllib
 import urllib2
@@ -33,14 +31,14 @@ locale.setlocale(locale.LC_ALL, '')
 # Constantes locales
 sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME', '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS', '.MA',
                     '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
-webheaders = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0) Gecko/20100101 Firefox/10.0' }
+webheaders = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0.2) Gecko/20100101 Firefox/10.0.2' }
 carpetas = {'Analisis':'Analisis', 'Backtest':'Backtest', 'Datos':'Datos', 'Historicos':'Historicos', 'Log':'Log', 'Graficos': 'amstock'}
 difregactualizar = {'d':10, 'w':15, 'm':33, 'noActualizados':120}# Expresa la diferencia entre los registros para hacer una actualizacion
 pausareconexion = 20
 backtestoperacionessospechosas = 1.50
 
 ############################################################
-# módulos propios importados
+# modulos propios importados
 
 
 ############################################################
@@ -58,7 +56,7 @@ backtestoperacionessospechosas = 1.50
 # SELECT `tiket`,`mercado` FROM `componentes` where `mercado` not in (SELECT `nombreUrl` FROM `mercado_moneda`)
 
 ############################################################
-# definición de funciones
+# definicion de funciones
 
 def ExistenDatos(naccion):
     tickets = obtenTicketsBBDD(naccion)
@@ -1498,8 +1496,8 @@ def cruceconindicador(naccion):
 
 
 def creaMenu(sep, lmenu):
-    """Le damos el separador de la opción y una lista con las opciones del menu,
-    nos devuelve una tupla con la opcion elegida y la decripción"""
+    """Le damos el separador de la opcion y una lista con las opciones del menu,
+    nos devuelve una tupla con la opcion elegida y la decripcion"""
     control = []
 
     for n in lmenu:
@@ -2025,7 +2023,7 @@ def log(**config):
 #def compruebaactualizaticket(naccion):    
 #def actualizartickets():
 
-# verificación de la función para casos tipo
+# verificacion de la funcion para casos tipo
 
 ############################################################
 # programa principal
