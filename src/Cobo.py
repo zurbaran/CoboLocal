@@ -1,5 +1,6 @@
 # -*- coding: cp1252 -*-
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # TODO: Borrar acciones que pertenezcan al mercado PCX y borrar indice que los contega para evitar que se vuelvan a anadir automaticamente
 
@@ -7,6 +8,13 @@
 
 ############################################################
 # modulos estandar importados
+=======
+# TODO: Borrar acciones que pertenezcan al mercado PCX y borrar indice que los contega para evitar que se vuelvan a anadir automaticamente
+
+
+############################################################
+# módulos estándar importados
+>>>>>>> master
 
 #import urllib
 import urllib2
