@@ -1,6 +1,8 @@
 # -*- coding: cp1252 -*-
+
 ############################################################
 # modulos estandar importados
+
 #import urllib
 import urllib2
 import sqlite3
@@ -795,7 +797,7 @@ def analisisAlcistaAccion(naccion, **config):
                     analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
-
+            entradapuntoLT = False
 
         if resistencia and maximo > maximoresisten and not (minimo < minimoanterior and apertura < cierre):# No actualizamos la resistencia, si esta es la misma barra que la crea y ademas la rompe con un movimiento de abajo hacia arriba, considerando como valida la resistencia anterior
 
@@ -1178,7 +1180,7 @@ def analisisBajistaAccion(naccion, **config):
                     analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
-
+            entradapuntoLT = False
 
         if soporte and minimo < minimosoporte and not (maximo > maximoanterior and apertura > cierre):# No actualizamos el soporte, si esta es la misma barra que la crea y ademas la rompe con un movimiento de arriba hacia abajo, considerando como valida la resistencia anterior
 
