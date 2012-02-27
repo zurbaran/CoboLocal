@@ -1,4 +1,9 @@
 # -*- coding: cp1252 -*-
+<<<<<<< HEAD
+=======
+# TODO: Borrar acciones que pertenezcan al mercado PCX y borrar indice que los contega para evitar que se vuelvan a anadir automaticamente
+
+>>>>>>> SQLite
 
 ############################################################
 # modulos estandar importados
