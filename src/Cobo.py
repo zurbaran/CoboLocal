@@ -3171,6 +3171,19 @@ if __name__ == '__main__':
 
                             fecharuptura = ruptura[0]
                             #fecharesistencia = resistencia[0]
+                            if fechasalida > fecharuptura: #Si la fecha de salida es posteior al de ruptura, actualizamos en nuevo precio de salida y la fuche, en los casos de las transiciones esto indipensable para que el precio de salida se adapte a los cambios de timming
+
+                                if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
+                                    fechasalida = str(fechaRegistro)
+                                    # Se da el caso que el historico o el ajuste del mismo no esta actualizado y la cotizacion si, de manera que si el analisis no nos ha dado salida y al buscar un precio de salida 
+                                    # Si somo alcistas o bajista y no nos ha salta el stoploss con el valor actual, al precio de salida le asignamos el valor actual
+                                    if (estrategia == 'Alcista' and stoploss < valorActual) or (estrategia == 'Bajista' and stoploss > valorActual):
+                                        preciosalida = valorActual
+                                    else:
+                                        preciosalida = stoploss
+                                else:
+                                    fechasalida, preciosalida = salida
+
                             if fechasalida <= fecharuptura:
                                 #TODO : hay que adaptar el precio de salida de un timming al timming siguiente, porque con la logica actual hasta que no te saca de un timmin no te deja entrar en el siguiente
 #                                if -(riesgo) * backtestoperacionessospechosas > balance:
@@ -3184,8 +3197,6 @@ if __name__ == '__main__':
 #                                        #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                    raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-
-
                                 p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
                                 backtest.append((ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
