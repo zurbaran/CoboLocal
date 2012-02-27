@@ -652,7 +652,7 @@ def analisisAlcistaAccion(naccion, **config):
     """
 
     #TODO: separar la funcion en la lectura, analisis y grabar datos, creando una funcion interna que nos sirva para darle la lista que contiene los datos y devuelva el analisis. De esta manera podre esternalizar la funcion y llamarla desde un programa
-
+    #TODO: añadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     #anadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
         #Anadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
         #anadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
@@ -1034,6 +1034,8 @@ def analisisBajistaAccion(naccion, **config):
                                 salida Lt = Soporte anterior
 
     """
+
+    #TODO: añadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     naccion = naccion.upper()
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
@@ -3170,7 +3172,7 @@ if __name__ == '__main__':
                             fecharuptura = ruptura[0]
                             #fecharesistencia = resistencia[0]
                             if fechasalida <= fecharuptura:
-
+                                #TODO : hay que adaptar el precio de salida de un timming al timming siguiente, porque con la logica actual hasta que no te saca de un timmin no te deja entrar en el siguiente
 #                                if -(riesgo) * backtestoperacionessospechosas > balance:
 #                                    if estrategia == 'Alcista':
 #                                        print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
