@@ -3137,10 +3137,9 @@ if __name__ == '__main__':
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
                             soporteentrada = soporte[3]
                             resistenciaentrada = resistencia[2]
-
+                            fechaentrada = ruptura[0]
                             if estrategia == 'Alcista' and resistencia[2] <= ruptura[2]:# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
-                                fechaentrada = ruptura[0]
 
                                 maximoresistencia = resistencia[2]
                                 aperturaruptura = ruptura[1]
@@ -3155,7 +3154,6 @@ if __name__ == '__main__':
 
                             elif estrategia == 'Bajista' and soporte[3] >= ruptura[3]:
                                 invertido = True
-                                fechaentrada = ruptura[0]
 
                                 minimosoporte = soporte[3]
                                 aperturaruptura = ruptura[1]
@@ -3166,9 +3164,7 @@ if __name__ == '__main__':
                                 else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                                     precionentrada = minimosoporte
 
-                                balance = inversion - inversionrecuperada
-
-
+                                balance = inversionrecuperada - inversion
 
                         elif invertido == True:
 
@@ -3188,6 +3184,8 @@ if __name__ == '__main__':
                                         preciosalida = stoploss
                                 else:
                                     fechasalida, preciosalida = salida
+                                inversionrecuperada = numeroaccionesoperacion * preciosalida
+                                balance = inversionrecuperada - inversion
 
                             elif fechasalida <= fecharuptura:
                             #elif fechasalida <= fecharuptura:
