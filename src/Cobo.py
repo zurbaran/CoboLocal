@@ -1,4 +1,6 @@
 # -*- coding: cp1252 -*-
+# Correccion en el Error del backtest donde en las transiciones no se actualiza el precio de salida cuando se hace la transicion correctamente y el precio de salida de la transicion1 es posterior a la posibilidad de entrada en la transicion2 
+# Correccion en el Error del backtest donde en la misma barra que nos saca de una operacion, nos vuelve a dejar entrar por LT, se supone que si estamos dentro y nos saca, no volveremos a entrar en LT si no en Ruptura de LT
 
 ############################################################
 # modulos estandar importados
@@ -3130,6 +3132,7 @@ if __name__ == '__main__':
 
                             numeroaccionesoperacion = numeroacciones
                             timmingentrada = timming
+                            timmingtransicion = timming
                             inversionoperacion = inversion
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
                             soporteentrada = soporte[3]
@@ -3171,7 +3174,9 @@ if __name__ == '__main__':
 
                             fecharuptura = ruptura[0]
                             #fecharesistencia = resistencia[0]
-                            if fechasalida > fecharuptura: #Si la fecha de salida es posteior al de ruptura, actualizamos en nuevo precio de salida y la fuche, en los casos de las transiciones esto indipensable para que el precio de salida se adapte a los cambios de timming
+                            if timmingtransicion != timming and fechasalida > fecharuptura:
+                                #Si hay transicion y Si la fecha de salida es posteior al de ruptura, actualizamos en nuevo precio de salida y la fecha, en los casos de las transiciones esto indipensable para que el precio de salida se adapte a los cambios de timming
+                                timmingtransicion = timming # Actualizamos el nuevo timmng de transiciones
 
                                 if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
                                     fechasalida = str(fechaRegistro)
@@ -3184,8 +3189,8 @@ if __name__ == '__main__':
                                 else:
                                     fechasalida, preciosalida = salida
 
-                            if fechasalida <= fecharuptura:
-                                #TODO : hay que adaptar el precio de salida de un timming al timming siguiente, porque con la logica actual hasta que no te saca de un timmin no te deja entrar en el siguiente
+                            elif fechasalida <= fecharuptura:
+                            #elif fechasalida <= fecharuptura:
 #                                if -(riesgo) * backtestoperacionessospechosas > balance:
 #                                    if estrategia == 'Alcista':
 #                                        print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
@@ -3197,7 +3202,8 @@ if __name__ == '__main__':
 #                                        #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                    raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-                                p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
+                                if fechasalida != fecharuptura:#Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
+                                    p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
                                 backtest.append((ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
                                 invertido = False
