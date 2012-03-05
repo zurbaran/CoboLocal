@@ -918,11 +918,11 @@ def analisisAlcistaAccion(naccion, **config):
 
 
                 if not (datoshistoricos[LTi][3] < datoshistoricos[LTf][3]): # comprobamos que no nos de rentabilidad negativa
-                    LineaTendenciaInicio = ('0-0-0', 0)
-                    LineaTendenciaFin = ('0-0-0', 0)
+                    LineaTendenciaInicio = ('0-0-0', 0.0)
+                    LineaTendenciaFin = ('0-0-0', 0.0)
             else:
-                LineaTendenciaInicio = ('0-0-0', 0)
-                LineaTendenciaFin = ('0-0-0', 0)
+                LineaTendenciaInicio = ('0-0-0', 0.0)
+                LineaTendenciaFin = ('0-0-0', 0.0)
 
             if TAR == False:
                 stoploss = round((datoshistoricos[s][3] * (1 - filtro)), 3)
@@ -1305,7 +1305,7 @@ def analisisBajistaAccion(naccion, **config):
                         #    puntoLT=round((minimoLTi*((1+(((1.0+(((minimoLTf-minimoLTi)/minimoLTi)))**(52.0/(LTf-LTi)))-1.0))**((j-LTi)/(52.0)))),3)#365/7.0
                         #                        print j,puntoLT,'localizaLTf',i
                         if puntoLT < maximoj:
-                            if LTf == j or (puntoLT == 0.0 and LTf < i):
+                            if LTf == j or (puntoLT == 0.0 and LTf <= i):
                                 #Si la linea de tendencia llega a 0 y LTf no ha llegado a ser i, deberia comprobar hasta llegar a ser la i
                                 #la primera comprobacion es porque por una falta de precision en el calculo de PuntoLT, aveces da menor que el maximo del que es precisamente el ultimo punto donde toco, es decir, ya tomamos este ultimo punto como LTf pero cuando volvemos a comprobarlo por segunda vez, vuelve a dar que es menor por un fallo de precision
                                 LTf = j + 1
@@ -1323,11 +1323,11 @@ def analisisBajistaAccion(naccion, **config):
 
             #if not LT:
                 if not (datoshistoricos[LTi][2] > datoshistoricos[LTf][2]):
-                    LineaTendenciaInicio = ('0-0-0', 0)
-                    LineaTendenciaFin = ('0-0-0', 0)
+                    LineaTendenciaInicio = ('0-0-0', 0.0)
+                    LineaTendenciaFin = ('0-0-0', 0.0)
             else:
-                LineaTendenciaInicio = ('0-0-0', 0)
-                LineaTendenciaFin = ('0-0-0', 0)
+                LineaTendenciaInicio = ('0-0-0', 0.0)
+                LineaTendenciaFin = ('0-0-0', 0.0)
 
 
             if TAR == False:
@@ -3076,7 +3076,7 @@ if __name__ == '__main__':
                             ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
 
-                        if LTi == ('0-0-0', 0) and LTf == ('0-0-0', 0):
+                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
                             if rentabilidad0:
                                 rentabilidad = rentabilidadminima
                             else:
