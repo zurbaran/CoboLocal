@@ -654,7 +654,7 @@ def analisisAlcistaAccion(naccion, **config):
     """
 
     #TODO: separar la funcion en la lectura, analisis y grabar datos, creando una funcion interna que nos sirva para darle la lista que contiene los datos y devuelva el analisis. De esta manera podre esternalizar la funcion y llamarla desde un programa
-    #TODO: añadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
+    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     #anadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
         #Anadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
         #anadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
@@ -1041,7 +1041,7 @@ def analisisBajistaAccion(naccion, **config):
 
     """
 
-    #TODO: añadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
+    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     naccion = naccion.upper()
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
