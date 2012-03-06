@@ -1,4 +1,6 @@
 # -*- coding: cp1252 -*-
+# Correccion en el Error del backtest donde en las transiciones no se actualiza el precio de salida cuando se hace la transicion correctamente y el precio de salida de la transicion1 es posterior a la posibilidad de entrada en la transicion2 
+# Correccion en el Error del backtest donde en la misma barra que nos saca de una operacion, nos vuelve a dejar entrar por LT, se supone que si estamos dentro y nos saca, no volveremos a entrar en LT si no en Ruptura de LT
 
 ############################################################
 # modulos estandar importados
@@ -652,13 +654,10 @@ def analisisAlcistaAccion(naccion, **config):
     """
 
     #TODO: separar la funcion en la lectura, analisis y grabar datos, creando una funcion interna que nos sirva para darle la lista que contiene los datos y devuelva el analisis. De esta manera podre esternalizar la funcion y llamarla desde un programa
-
+    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     #anadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
         #Anadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
         #anadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
-
-    #anadido las entradas por PLT dentro de los analisis
-
 
     naccion = naccion.upper()
 
@@ -919,11 +918,11 @@ def analisisAlcistaAccion(naccion, **config):
 
 
                 if not (datoshistoricos[LTi][3] < datoshistoricos[LTf][3]): # comprobamos que no nos de rentabilidad negativa
-                    LineaTendenciaInicio = ('0-0-0', 0)
-                    LineaTendenciaFin = ('0-0-0', 0)
+                    LineaTendenciaInicio = ('0-0-0', 0.0)
+                    LineaTendenciaFin = ('0-0-0', 0.0)
             else:
-                LineaTendenciaInicio = ('0-0-0', 0)
-                LineaTendenciaFin = ('0-0-0', 0)
+                LineaTendenciaInicio = ('0-0-0', 0.0)
+                LineaTendenciaFin = ('0-0-0', 0.0)
 
             if TAR == False:
                 stoploss = round((datoshistoricos[s][3] * (1 - filtro)), 3)
@@ -1041,6 +1040,8 @@ def analisisBajistaAccion(naccion, **config):
                                 salida Lt = Soporte anterior
 
     """
+
+    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     naccion = naccion.upper()
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
@@ -1304,12 +1305,15 @@ def analisisBajistaAccion(naccion, **config):
                         #    puntoLT=round((minimoLTi*((1+(((1.0+(((minimoLTf-minimoLTi)/minimoLTi)))**(52.0/(LTf-LTi)))-1.0))**((j-LTi)/(52.0)))),3)#365/7.0
                         #                        print j,puntoLT,'localizaLTf',i
                         if puntoLT < maximoj:
-                            if LTf == j or (puntoLT == 0.0 and LTf < i):
+                            if (LTf == j or (puntoLT == 0.0 and LTf < i)) and not (j + 1 > i):
                                 #Si la linea de tendencia llega a 0 y LTf no ha llegado a ser i, deberia comprobar hasta llegar a ser la i
                                 #la primera comprobacion es porque por una falta de precision en el calculo de PuntoLT, aveces da menor que el maximo del que es precisamente el ultimo punto donde toco, es decir, ya tomamos este ultimo punto como LTf pero cuando volvemos a comprobarlo por segunda vez, vuelve a dar que es menor por un fallo de precision
                                 LTf = j + 1
                             else:
                                 LTf = j
+                            if LTf >= i:
+                                localizaLTf = False
+                                localizaLTi = False
                             break
 
                         if j >= i:
@@ -1322,11 +1326,11 @@ def analisisBajistaAccion(naccion, **config):
 
             #if not LT:
                 if not (datoshistoricos[LTi][2] > datoshistoricos[LTf][2]):
-                    LineaTendenciaInicio = ('0-0-0', 0)
-                    LineaTendenciaFin = ('0-0-0', 0)
+                    LineaTendenciaInicio = ('0-0-0', 0.0)
+                    LineaTendenciaFin = ('0-0-0', 0.0)
             else:
-                LineaTendenciaInicio = ('0-0-0', 0)
-                LineaTendenciaFin = ('0-0-0', 0)
+                LineaTendenciaInicio = ('0-0-0', 0.0)
+                LineaTendenciaFin = ('0-0-0', 0.0)
 
 
             if TAR == False:
@@ -3075,7 +3079,7 @@ if __name__ == '__main__':
                             ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
 
-                        if LTi == ('0-0-0', 0) and LTf == ('0-0-0', 0):
+                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
                             if rentabilidad0:
                                 rentabilidad = rentabilidadminima
                             else:
@@ -3144,6 +3148,7 @@ if __name__ == '__main__':
                             #aqui en algunos casos recalculamos debido a que la orden se da con la informacion del momento, pero se puede ejecutar de manera distinta referente a los precios
                             numeroaccionesoperacion = numeroacciones
                             timmingentrada = timming
+                            timmingtransicion = timming
                             inversionoperacion = numeroaccionesoperacion * precionentrada
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
                             soporteentrada = soporte[3]
@@ -3163,9 +3168,26 @@ if __name__ == '__main__':
                         elif invertido == True:
 
                             fecharuptura = ruptura[0]
+                            #fecharesistencia = resistencia[0]
+                            if timmingtransicion != timming and fechasalida > fecharuptura:
+                                #Si hay transicion y Si la fecha de salida es posteior al de ruptura, actualizamos en nuevo precio de salida y la fecha, en los casos de las transiciones esto indipensable para que el precio de salida se adapte a los cambios de timming
+                                timmingtransicion = timming # Actualizamos el nuevo timmng de transiciones
 
-                            if fechasalida <= fecharuptura:
+                                if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
+                                    fechasalida = str(fechaRegistro)
+                                    # Se da el caso que el historico o el ajuste del mismo no esta actualizado y la cotizacion si, de manera que si el analisis no nos ha dado salida y al buscar un precio de salida 
+                                    # Si somo alcistas o bajista y no nos ha salta el stoploss con el valor actual, al precio de salida le asignamos el valor actual
+                                    if (estrategia == 'Alcista' and stoploss < valorActual) or (estrategia == 'Bajista' and stoploss > valorActual):
+                                        preciosalida = valorActual
+                                    else:
+                                        preciosalida = stoploss
+                                else:
+                                    fechasalida, preciosalida = salida
+                                inversionrecuperada = numeroaccionesoperacion * preciosalida
+                                balance = inversionrecuperada - inversion
 
+                            elif fechasalida <= fecharuptura:
+                            #elif fechasalida <= fecharuptura:
 #                                if -(riesgo) * backtestoperacionessospechosas > balance:
 #                                    if estrategia == 'Alcista':
 #                                        print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
@@ -3177,8 +3199,8 @@ if __name__ == '__main__':
 #                                        #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                    raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-
-                                p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
+                                if fechasalida != fecharuptura:#Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
+                                    p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
                                 backtest.append((ticket, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance))
                                 invertido = False
