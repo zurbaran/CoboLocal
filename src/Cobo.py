@@ -710,6 +710,8 @@ def analisisAlcistaAccion(naccion, **config):
     salidaOperacion = False
     entradapuntoLT = False
 
+    volumenMME = indicadorMME(datoshistoricos, MME = 5, indicedatos = 'volumen')
+
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
         puntosMME2 = indicadorMME(datoshistoricos, MME = MME2)
@@ -781,6 +783,7 @@ def analisisAlcistaAccion(naccion, **config):
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1][0]
                     barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
+
                     analisisalcista.append((barraentradapuntoLT, (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
@@ -942,7 +945,6 @@ def analisisAlcistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = maximoresistencia
-
             analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
             if conEntradaLT:
                 entradapuntoLT = True
@@ -1030,7 +1032,7 @@ def analisisAlcistaAccion(naccion, **config):
 def analisisBajistaAccion(naccion, **config):
     """ Analisis bajista
     
-     timming=d/w/m, timming a analizar    
+    timming = d / w / m, timming a analizar
     desdefecha=False/AAAA-MM-DD, fecha desde la que queremos recuperar analisis, fecha incluida, devuelbe todos los analisis cuya resistencia sea desde esta fecha        
     txt=True/False, configuracion para hacer que genere archivos txt del analisis
     conEntradaLT = True/False, si queremos que nos incluya los analisis de LT, posibles entradas en LT
@@ -1095,6 +1097,8 @@ def analisisBajistaAccion(naccion, **config):
     stoploss = 0.0
     salidaOperacion = False
     entradapuntoLT = False
+
+    volumenMME = indicadorMME(datoshistoricos, MME = 5, indicedatos = 'volumen')
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
@@ -1353,7 +1357,6 @@ def analisisBajistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = minimosoporte
-
             analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
             if conEntradaLT:
@@ -1458,7 +1461,10 @@ def indicadorMME(datos, **config):
     resultado = []
     MME = config.get('MME', 30)
     indice = config.get('indice', True)
-    indicedatos = config.get('indicedatos', 4)
+    indicedatos = config.get('indicedatos', 'cierre')
+
+    indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen').index(indicedatos)
+
 
     if indice == True:
         fin = len(datos)
@@ -2334,6 +2340,17 @@ if __name__ == '__main__':
                 filtrosalidasemanal = 0.02
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
+            if filtrosalidadiario == '':
+                filtrosalidadiario = 0.01
+            else:
+                filtrosalidadiario = float(filtrosalidadiario)
+            volmediominmensual = raw_input('Volumen medio minimo Mensual, No poner puntos (20.000.000): ')
+            if volmediominmensual == '':
+                volmediominmensual = 20000000
+            else:
+                volmediominmensual = int(volmediominmensual)
+
 
             if ExistenDatos(naccion):
                 for timminganalisis in 'dwm':
@@ -2341,6 +2358,8 @@ if __name__ == '__main__':
                     if timminganalisis == 'w':
                         filtrosalida = filtrosalidasemanal
                     elif timminganalisis == 'm':
+                        filtrosalida = filtrosalidamensual
+                    elif timminganalisis == 'd':
                         filtrosalida = filtrosalidamensual
                     else:
                         filtrosalida = 0.0
