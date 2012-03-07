@@ -1445,11 +1445,14 @@ def indicadorMME(datos, **config):
     devuelve de la lista, datos, el indicadorMME calculado
     indice, si es True devueve una tupla completa que corresponde al indicadorMME con el formato (Fecha, indicadorMME) para la lista de datos completa
     indice, si es un valor en concreto, nos devuelve el valor del indicadorMME para ese indice en concreto
+
+    indicedatos, es el valor del indice de las tuplas de datos al que se utiliza para calcular el indicador, por defecto 4 que corresponde al precio de cierre.
     '''
     # para los indicadores como la Media Movil 30 en la que en los primeros 29 periodos no se puede calcular, hay que asignarles valor 0
     resultado = []
     MME = config.get('MME', 30)
     indice = config.get('indice', True)
+    indicedatos = config.get('indicedatos', 4)
 
     if indice == True:
         fin = len(datos)
@@ -1459,11 +1462,11 @@ def indicadorMME(datos, **config):
     k = (2.0 / (1.0 + MME))
     for iMME in xrange (0, fin):
         if iMME == 0:
-            puntoMME = datos[iMME][4]# Este es el pirmer cierre de los datos historicos
+            puntoMME = datos[iMME][indicedatos]# Este es el pirmer cierre de los datos historicos
             fechaMME = datos[iMME][0]
         else:
             cierreMME = datos[iMME][4]
-            fechaMME = datos[iMME][0]
+            fechaMME = datos[iMME][indicedatos]
             puntoMME = (cierreMME * k) + (puntoMME * (1 - k))
 
         resultado.append((fechaMME, puntoMME))
@@ -2416,7 +2419,7 @@ if __name__ == '__main__':
             else:
                 MMEdatos = int(MMEdatos)
 
-            datosMME = indicadorMME(datos, indice = True, MME = MMEdatos)
+            datosMME = indicadorMME(datos, MME = MMEdatos)
 
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "MME.csv")
             j = open(archivo, 'w')
