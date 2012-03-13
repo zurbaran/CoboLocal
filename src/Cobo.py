@@ -791,7 +791,6 @@ def analisisAlcistaAccion(naccion, **config):
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1][0]
                     barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
-
                     analisisalcista.append((barraentradapuntoLT, (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
                     entradapuntoLT = False
 
@@ -953,6 +952,7 @@ def analisisAlcistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = maximoresistencia
+                
             analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
             if conEntradaLT:
                 entradapuntoLT = True
@@ -1373,6 +1373,7 @@ def analisisBajistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = minimosoporte
+                
             analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
             if conEntradaLT:
@@ -1480,7 +1481,6 @@ def indicadorMME(datos, **config):
     indicedatos = config.get('indicedatos', 'cierre')
 
     indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen').index(indicedatos)
-
 
     if indice == True:
         fin = len(datos)
