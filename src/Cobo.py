@@ -677,21 +677,21 @@ def analisisAlcistaAccion(naccion, **config):
         desdefecha = False
 
     if timming == 'd':
-        datoshistoricos = historicoDiario
+        datoshistoricos2 = historicoDiario
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.01
             else:
                 filtro = 3.5
     elif timming == 'w':
-        datoshistoricos = historicoSemanal
+        datoshistoricos2 = historicoSemanal
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
                 filtro = 2.5
     elif timming == 'm':
-        datoshistoricos = historicoMensual
+        datoshistoricos2 = historicoMensual
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
@@ -710,7 +710,15 @@ def analisisAlcistaAccion(naccion, **config):
     salidaOperacion = False
     entradapuntoLT = False
 
-    volumenMME = indicadorMME(datoshistoricos, MME = 5, indicedatos = 'volumen')
+    datoshistoricos = []
+    volumenMME = indicadorMME(datoshistoricos2, MME = 5, indicedatos = 'volumen')
+    while i < len(datoshistoricos2):
+        assert (datoshistoricos2[i][0] == volumenMME[i][0])
+        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos2[i]
+        datoshistoricos.append((fecha, apertura, maximo, minimo, cierre, volumenMME[i][1]))
+        i += 1
+    del datoshistoricos2
+    i = 0
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
@@ -1065,21 +1073,21 @@ def analisisBajistaAccion(naccion, **config):
         desdefecha = False
 
     if timming == 'd':
-        datoshistoricos = historicoDiario
+        datoshistoricos2 = historicoDiario
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.01
             else:
                 filtro = 3.5
     elif timming == 'w':
-        datoshistoricos = historicoSemanal
+        datoshistoricos2 = historicoSemanal
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
                 filtro = 2.5
     elif timming == 'm':
-        datoshistoricos = historicoMensual
+        datoshistoricos2 = historicoMensual
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
@@ -1098,7 +1106,15 @@ def analisisBajistaAccion(naccion, **config):
     salidaOperacion = False
     entradapuntoLT = False
 
-    volumenMME = indicadorMME(datoshistoricos, MME = 5, indicedatos = 'volumen')
+    datoshistoricos = []
+    volumenMME = indicadorMME(datoshistoricos2, MME = 5, indicedatos = 'volumen')
+    while i < len(datoshistoricos2):
+        assert (datoshistoricos2[i][0] == volumenMME[i][0])
+        fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos2[i]
+        datoshistoricos.append((fecha, apertura, maximo, minimo, cierre, volumenMME[i][1]))
+        i += 1
+    del datoshistoricos2
+    i = 0
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
@@ -1481,9 +1497,12 @@ def indicadorMME(datos, **config):
             fechaMME = datos[iMME][0]
             puntoMME = (cierreMME * k) + (puntoMME * (1 - k))
 
-        resultado.append((fechaMME, puntoMME))
+        if indicedatos == 5:
+            resultado.append((fechaMME, int(puntoMME)))
+        else:
+            resultado.append((fechaMME, round(puntoMME, 3)))
     if not indice == True:#devuelve el valor del indicadorMME para ese indice en concreto
-        resultado = puntoMME
+        resultado = round(puntoMME, 3)
 
     return resultado
 
@@ -2345,12 +2364,6 @@ if __name__ == '__main__':
                 filtrosalidadiario = 0.01
             else:
                 filtrosalidadiario = float(filtrosalidadiario)
-            volmediominmensual = raw_input('Volumen medio minimo Mensual, No poner puntos (20.000.000): ')
-            if volmediominmensual == '':
-                volmediominmensual = 20000000
-            else:
-                volmediominmensual = int(volmediominmensual)
-
 
             if ExistenDatos(naccion):
                 for timminganalisis in 'dwm':
@@ -2364,8 +2377,8 @@ if __name__ == '__main__':
                     else:
                         filtrosalida = 0.0
 
-                    analisisAlcistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)#txt=False,
-                    analisisBajistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)#txt=False,
+                    analisisAlcistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)#txt=False)
+                    analisisBajistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)#txt=False
 
 
 #        'D) Eliminar 1 Ticket',
