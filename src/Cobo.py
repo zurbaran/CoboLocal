@@ -665,6 +665,8 @@ def analisisAlcistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    if MME != False:
+        MME2 = config.get('MME2', (MME * 2))
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
@@ -710,7 +712,7 @@ def analisisAlcistaAccion(naccion, **config):
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
-        puntosMME2 = indicadorMME(datoshistoricos, MME = MME * 2)
+        puntosMME2 = indicadorMME(datoshistoricos, MME = MME2)
     if not (TAR == False):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
@@ -742,7 +744,8 @@ def analisisAlcistaAccion(naccion, **config):
 
             #if i >= ( MME - 1 ):# Empieza a utilizar el indicadorMME en una barra en concreto, para la MME30 lo utiliza apartir de la barra 30(cuyo indice es 29)
             if puntoMME > 0:
-                if puntoMME <= puntoMME2:# Grafica completamente bajo Media Movil Exponencial, no buscamos resistencias ni soportes, y consideramos la barra actual como resistencia
+                #if maximo < puntoMME:# Grafica completamente bajo Media Movil Exponencial, no buscamos resistencias ni soportes, y consideramos la barra actual como resistencia
+                if puntoMME <= puntoMME2:
                     # con esta logica, si hemos creado una resistencia y en algun momento bajamos una MME muy cercana a la grafica, habremos "borrado" esa resistencia anterior asignandole la barra actual como resistencia
                     r = i
                     _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
@@ -750,12 +753,12 @@ def analisisAlcistaAccion(naccion, **config):
                     soporte = False
                 else:# grafica sobre o parcialmente sobre Media Movil Exponencial
                         # hay un problema con esta logica, si teniamos una resistencia anterior al periodo MME, aunque puntoMME<minimo y resistencia==False, soporte==True lo que significa que hasta que la resistencia no se rompa... no utilizaremos la MMe 
-                    if resistencia == False and soporte == False:# Si no buscamos ni resistencias ni soportes es porque venimos de debajo de la MME
-                        if puntoMME < minimo:#la grafica esta completamente por encima de la MME,  y empezamos a buscar resistencias sobre la MMe
-                            r = i
-                            _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
-                            resistencia = True
-                            soporte = False
+                    if resistencia == False and soporte == False and puntoMME < minimo:# Si no buscamos ni resistencias ni soportes es porque venimos de debajo de la MME
+                        #la grafica esta completamente por encima de la MME,  y empezamos a buscar resistencias sobre la MMe
+                        r = i
+                        _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
+                        resistencia = True
+                        soporte = False
 
         #anade en analisisalcista, los puntos de entrada por Linea de tendencia
         if len(analisisalcista) > 0 and entradapuntoLT:
@@ -1048,6 +1051,8 @@ def analisisBajistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    if MME != False:
+        MME2 = config.get('MME2', (MME * 2))
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
@@ -1093,7 +1098,7 @@ def analisisBajistaAccion(naccion, **config):
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
-
+        puntosMME2 = indicadorMME(datoshistoricos, MME = MME2)
     if not (TAR == False):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
@@ -1120,12 +1125,13 @@ def analisisBajistaAccion(naccion, **config):
         if not (MME == False):# and len( datoshistoricos ) >= MME:
 
             fechaMME, puntoMME = puntosMME[i]
-
-            assert (fechaMME == fecha)
+            fechaMME2, puntoMME2 = puntosMME2[i]
+            assert (fechaMME == fecha and fechaMME == fechaMME2)
 
             #if i >= ( MME - 1 ):# Empieza a utilizar el indicadorMME en una barra en concreto, para la MME30 lo utiliza apartir de la barra 30(cuyo indice es 29)
             if puntoMME > 0:
-                if puntoMME < minimo:# Media Movil Exponencial bajo grafica, no buscamos soportes ni resistencias, y consideramos la barra actual como soporte
+                #if puntoMME < minimo:# Media Movil Exponencial bajo grafica, no buscamos soportes ni resistencias, y consideramos la barra actual como soporte
+                if puntoMME2 <= puntoMME:
                     s = i
                     _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
                     soporte = False
@@ -1465,8 +1471,8 @@ def indicadorMME(datos, **config):
             puntoMME = datos[iMME][indicedatos]# Este es el pirmer cierre de los datos historicos
             fechaMME = datos[iMME][0]
         else:
-            cierreMME = datos[iMME][4]
-            fechaMME = datos[iMME][indicedatos]
+            cierreMME = datos[iMME][indicedatos]
+            fechaMME = datos[iMME][0]
             puntoMME = (cierreMME * k) + (puntoMME * (1 - k))
 
         resultado.append((fechaMME, puntoMME))
