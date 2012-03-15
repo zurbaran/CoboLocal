@@ -952,7 +952,7 @@ def analisisAlcistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = maximoresistencia
-                
+
             analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
             if conEntradaLT:
                 entradapuntoLT = True
@@ -1040,7 +1040,7 @@ def analisisAlcistaAccion(naccion, **config):
 def analisisBajistaAccion(naccion, **config):
     """ Analisis bajista
     
-    timming = d / w / m, timming a analizar
+     timming=d/w/m, timming a analizar    
     desdefecha=False/AAAA-MM-DD, fecha desde la que queremos recuperar analisis, fecha incluida, devuelbe todos los analisis cuya resistencia sea desde esta fecha        
     txt=True/False, configuracion para hacer que genere archivos txt del analisis
     conEntradaLT = True/False, si queremos que nos incluya los analisis de LT, posibles entradas en LT
@@ -1373,7 +1373,7 @@ def analisisBajistaAccion(naccion, **config):
                 precionentrada = aperturaruptura
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = minimosoporte
-                
+
             analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
 
             if conEntradaLT:
@@ -3139,13 +3139,15 @@ if __name__ == '__main__':
 
                         #calculamos el volumen
                         volumenoperacion = 0
-                        for barra in resistencia, soporte, ruptura:
-                            if len(barra) == 2:
-                                barra, _barra2 = barra
-                            fecha, apertura, maximo, minimo, cierre, volumen = barra
-                            volumenoperacion = (cierre * volumen * 22) + volumenoperacion
-                        volumenoperacion = int (volumenoperacion / 3)
-
+#                        for barra in resistencia, soporte, ruptura:
+#                            if len(barra) == 2:
+#                                barra, _barra2 = barra
+#                            fecha, apertura, maximo, minimo, cierre, volumen = barra
+#                            volumenoperacion = (cierre * volumen * 22) + volumenoperacion
+#                        volumenoperacion = int (volumenoperacion / 3)
+                        # Como utilizamos la MME (5) sobre el volumen, solo comprobamos el volumen de la barra de ruptura
+                        fecha, apertura, maximo, minimo, cierre, volumen = ruptura
+                        volumenoperacion = int((cierre * volumen * 22))
 
                         if (resistencia[2] == stoploss) or (soporte[3] == stoploss):# comprobamos que no dividomos entre 0
                             numeroacciones = 0
