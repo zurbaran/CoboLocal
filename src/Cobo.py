@@ -1782,7 +1782,7 @@ def cotizacionesTicket(nombreticket):
             f = urllib2.urlopen(r)
             #f= urllib.urlopen (urldatos)
             # TODO : mirar que pasa con espacios en blanco y en la 1 posicion
-            datosurl = (f.read().strip()).replace(',N/A', ',NULL')
+            datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')#UTF-16le
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
