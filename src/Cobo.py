@@ -3245,7 +3245,7 @@ if __name__ == '__main__':
                                 if fechasalida != fecharuptura:#Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                                     p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
-                                backtest.append((ticket, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
+                                backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
                                 invertido = False
 
                         p += 1
@@ -3267,7 +3267,7 @@ if __name__ == '__main__':
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-                            backtest.append((ticket, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
+                            backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
                             invertido = False
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta cuentraatras incluido                
@@ -3283,13 +3283,13 @@ if __name__ == '__main__':
 
                 archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'] , ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
-                j.write('ticket;fechaentrada;precionentrada;timmingentrada;numeroaccionesoperacion;fechasalida;preciosalida;timmingsalida;inversion;inversionrecuperada;resultado\n')
+                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado\n')
                 #writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
 
 
                 for n in backtest:
-                    ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance = n
-                    texto = (("%s; %s; %.3f; %s; %d; %s; %.3f; %s; %.3f; %.3f; %.3f\n") % (ticket, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance)).replace('.', ',')
+                    ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance = n
+                    texto = (("%s; %s; %.3f; %s; %d; %s; %.3f; %s; %.3f; %.3f; %.3f\n") % (ticket, mercado, fechaentrada.replace('-', ';'), precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida.replace('-', ';'), preciosalida, timming, inversion, inversionrecuperada, balance)).replace('.', ',')
                     j.write(texto)
 
                     #writercsv.writerow(n)
