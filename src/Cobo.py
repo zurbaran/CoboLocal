@@ -3289,7 +3289,7 @@ if __name__ == '__main__':
 
                 for n in backtest:
                     ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance = n
-                    texto = (("%s; %s; %.3f; %s; %d; %s; %.3f; %s; %.3f; %.3f; %.3f\n") % (ticket, mercado, fechaentrada.replace('-', ';'), precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida.replace('-', ';'), preciosalida, timming, inversion, inversionrecuperada, balance)).replace('.', ',')
+                    texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f\n") % (ticket, mercado, fechaentrada.replace('-', ';'), precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida.replace('-', ';'), preciosalida, timming, inversion, inversionrecuperada, balance)).replace('.', ',')
                     j.write(texto)
 
                     #writercsv.writerow(n)
