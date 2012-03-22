@@ -666,7 +666,7 @@ def analisisAlcistaAccion(naccion, **config):
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
     if MME != False:
-        MME2 = config.get('MME2', (MME * 2))
+        MME2 = config.get('MME2', int(MME * 2.5))
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
@@ -1052,7 +1052,7 @@ def analisisBajistaAccion(naccion, **config):
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
     if MME != False:
-        MME2 = config.get('MME2', (MME * 2))
+        MME2 = config.get('MME2', int(MME * 2.5))
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
