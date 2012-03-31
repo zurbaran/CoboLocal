@@ -183,7 +183,7 @@ def ticketsdeMercado(mercado):
             try:
                 r = urllib2.Request(url, headers = webheaders)
                 f = urllib2.urlopen(r)
-                web = f.read()
+                web = (f.read()).decode('UTF-8')
                 f.close()
             except urllib2.HTTPError as e:
                 print('Conexion Perdida')
