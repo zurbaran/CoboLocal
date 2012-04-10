@@ -654,7 +654,6 @@ def analisisAlcistaAccion(naccion, **config):
     """
 
     #TODO: separar la funcion en la lectura, analisis y grabar datos, creando una funcion interna que nos sirva para darle la lista que contiene los datos y devuelva el analisis. De esta manera podre esternalizar la funcion y llamarla desde un programa
-    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     #anadido un nuevo dato dando como resultado: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin, Punto de salida,timming del analisis
         #Anadiendo el Punto de Salida futuro, dandolo como valor inicial False y si en mitad del analisis el precio esta por debajo del Soporte menos el filtro cambiar todos los falses de la lista analisisalcista donde el valor es false asignandole la barra en la que ha roto el soporte-filtro=stoploss
         #anadido un nuevo parametro para hacer lo anterior, filtro de la resistencia = Stoploss
@@ -1050,8 +1049,6 @@ def analisisBajistaAccion(naccion, **config):
                                 salida Lt = Soporte anterior
 
     """
-
-    #TODO: anadir una media movil exponencial de 5 al volumen para comparalo con el volumen minimo
     naccion = naccion.upper()
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
@@ -1883,8 +1880,7 @@ def cotizacionesMoneda(nombreticket):
             r = urllib2.Request(urldatos, headers = webheaders)
             f = urllib2.urlopen(r)
             #f= urllib.urlopen (urldatos)
-            # TODO : mirar que pasa con espacios en blanco y en la 1 posicion
-            datosurl = (f.read().strip()).replace(',N/A', ',NULL')
+            datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')#UTF-16le
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
@@ -2700,7 +2696,7 @@ if __name__ == '__main__':
                     borraTicket (ticket, BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
 
                     print('Reintento de la descarga, el error puede venir de un pago de Dividendos')
-                    # TODO : errorenTicket(ticket)
+                    # errorenTicket(ticket)
                     for timmingdescargado in 'dwm':
 
                         accioninvalida = descargaHistoricoAccion (ticket, timming = timmingdescargado, txt = False)
@@ -2968,9 +2964,25 @@ if __name__ == '__main__':
 
             TAR = raw_input('True Avenrange xrange (Sin TAR): ')
             if TAR == '':
-                TAR = False
+                TARmensual = False
+                TARsemanal = False
+                TARdiario = False
             else:
-                TAR = int(TAR)
+                TARmensual = raw_input('True Avenrange xrange Mensual (Sin TAR): ')
+                if TARmensual == '':
+                    TARmensual = False
+                else:
+                    TARmensual = int(TARmensual)
+                TARsemanal = raw_input('True Avenrange xrange Semanal (Sin TAR): ')
+                if TARsemanal == '':
+                    TARsemanal = False
+                else:
+                    TARsemanal = int(TARsemanal)
+                TARdiario = raw_input('True Avenrange xrange Diario (Sin TAR): ')
+                if TARdiario == '':
+                    TARdiario = False
+                else:
+                    TARdiario = int(TARdiario)
 
             EntradaLT = raw_input('Entradas en Linea de Tendencia (Sin Entradas): ')
             if EntradaLT == '':
@@ -3027,13 +3039,13 @@ if __name__ == '__main__':
                 if ExistenDatos(ticket):
                     backtestaccion = []
                     if estrategia == 'Alcista':
-                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TAR, txt = True)
-                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TAR, txt = True)
-                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TAR, txt = True)
+                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
                     elif estrategia == 'Bajista':
-                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TAR, txt = True)
-                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TAR, txt = True)
-                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TAR, txt = True)
+                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
 
                     fecharesistenciadiario = 0
                     fecharesistenciasemanal = 0
@@ -3313,7 +3325,9 @@ if __name__ == '__main__':
                 j.write(('Inversion Minima : %.2f\n' % inversionminima).replace('.', ','))
                 j.write('Inversion Maxima : %s\n' % inversionmaxima)
                 j.write(('Media Movil Exponencial : %s\n' % MMe))
-                j.write(('True Averange xrange : %s\n' % TAR))
+                j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
+                j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
+                j.write(('True Averange xrange Diario : %s\n' % TARdiario))
                 j.write(('Con entradas en Linea de tendencia : %s\n' % EntradaLT))
                 j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
                 j.write('Moneda del Backtest : %s\n' % moneda)
