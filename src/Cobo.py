@@ -2851,7 +2851,10 @@ if __name__ == '__main__':
                     #alcista o bajista
                     #ademas comprobamos se es actual o esta obsoleto    
                     if LTi[1] <= LTf[1]: #analisis alcista o LTi y LTf iguales, que puede ser el caso de cuando no se calculan y son 0
-                        rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
+                            rentabilidad = 0.00
+                        else:
+                            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
 
                         if (max52 != 'NULL' and max52 > resistencia[2]) or (maxDia != 'NULL' and maxDia > resistencia[2]) or (valorActual != 'NULL' and valorActual > resistencia[2]):
                             # si true, analisis ya cumplido, obsoleto y lo actualizamos
@@ -2872,7 +2875,10 @@ if __name__ == '__main__':
                                 cursor.execute(sql)
 
                     elif LTi[1] > LTf[1]:#analisis bajista
-                        rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
+                            rentabilidad = 0.00
+                        else:
+                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
 
                         if (min52 != 'NULL' and min52 < soporte[3]) or (minDia != 'NULL' and minDia < soporte[3]) or (valorActual != 'NULL' and valorActual < soporte[3]):
                             # si true, analisis ya cumplido, obsoleto y lo actualizamos
