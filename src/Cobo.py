@@ -1,4 +1,4 @@
-# -*- coding: cp1252 -*-
+
 # Correccion en el Error del backtest donde en las transiciones no se actualiza el precio de salida cuando se hace la transicion correctamente y el precio de salida de la transicion1 es posterior a la posibilidad de entrada en la transicion2 
 # Correccion en el Error del backtest donde en la misma barra que nos saca de una operacion, nos vuelve a dejar entrar por LT, se supone que si estamos dentro y nos saca, no volveremos a entrar en LT si no en Ruptura de LT
 
@@ -14,7 +14,8 @@ try:
     import cPickle as pickle
 except ImportError:
     print ('Modulo cPickle deshabilitado')
-    import pickle   # TODO : buscar la manera de comprimir los datos para que ocupen menos en el HD
+    import pickle   # TODO : buscar la manera de comprimir los datos para que ocupen menos en el HD.
+    # una posiblidad es utilizar el modulo zlib zlib.compress(datos) zlib.descompress(datos)
 import os
 #import wx
 from random import randint
@@ -1795,17 +1796,19 @@ def cotizacionesTicket(nombreticket):
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 
+    datosurl2 = datosurl.rsplit(',', 10)
+    datonombre , datoticket , datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror = datosurl2
+    datoticket = datoticket.strip('"')
 
+    #comillas = datosurl[1:].find('"')#Esto es porque en ocasiones el nombre lleva una coma
+    #datonombre = datosurl[:(comillas + 2)]
+    #datosurl2 = datosurl.split(',')
+    #datomax52, datomaxDia, datomin52, datominDia, datoValorActual = datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4]
+    #datoticket = datosurl2[-10].strip('"')
 
-    comillas = datosurl[1:].find('"')#Esto es porque en ocasiones el nombre lleva una coma
-    datonombre = datosurl[:(comillas + 2)]
-    datosurl2 = datosurl.split(',')
-    # hay que prevenir esto
+        # hay que prevenir esto
     #"Fuel Tech, Inc.","FTEK","NasdaqNM",11.20,NULL,3.77,NULL,5.82,135258,0,"N/A"   coma en el nombre
     #"MI Developments I","MIM","NYSE",33.35,30.75,16.07,30.33,30.45,238848,136519,"N/A"
-
-    datomax52, datomaxDia, datomin52, datominDia, datoValorActual = datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4]
-    datoticket = datosurl2[-10].strip('"')
 
         #el ticket ha cambiado, comprobar que no existe ya y en tal caso sustuirlo
     if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:#".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
@@ -1835,8 +1838,8 @@ def cotizacionesTicket(nombreticket):
 
         elif numeroResultado == 1:
             codigo = datosBBDDcomponentes[0][0]
-            #sql="UPDATE `componentes` SET `nombre`= %s, `tiket` =%s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`codigo` = '%s'"%(datonombre,datosurl[-10],datosurl[-9],datosurl[-8],datosurl[-7],datosurl[-6],datosurl[-5],datosurl[-4],datosurl[-3],datosurl[-2],datosurl[-1],date.today(),codigo)
-            sql = "UPDATE `componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
+            sql = "UPDATE `componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`tiket` = '%s'" % (datonombre, datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror, date.today(), nombreticket)
+            #sql = "UPDATE `componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
             cursor.execute(sql)
             sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
             cursor.execute(sql)
