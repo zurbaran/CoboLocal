@@ -2811,7 +2811,11 @@ if __name__ == '__main__':
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                             soporte, stoploss = soporte
                             ruptura, entrada = ruptura
-                            proximidadalcista = min(abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
+                            if maxDia==None or maxDia==0.0:
+                                maxDia=ruptura[4]
+                            if valorActual==None or valorActual==0.0:
+                                valorActual=ruptura[4]
+                            proximidadalcista = (abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
 #                            for precio in (ruptura[4], maxDia, valorActual):
 #                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
 #                            proximidadalcista = min(proximidadalcista)
@@ -2825,7 +2829,11 @@ if __name__ == '__main__':
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                             resistencia, stoploss = resistencia
                             ruptura, entrada = ruptura
-                            proximidadbajista = min(abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
+                            if minDia==None or minDia==0.0:
+                                minDia=ruptura[4]
+                            if valorActual==None or valorActual==0.0:
+                                valorActual=ruptura[4]
+                            proximidadbajista = (abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
 #                            for precio in (ruptura[4], minDia, valorActual):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
