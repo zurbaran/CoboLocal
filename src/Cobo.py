@@ -40,6 +40,12 @@ difregactualizar = {'d':10, 'w':15, 'm':33, 'noActualizados':120}# Expresa la di
 pausareconexion = 20
 backtestoperacionessospechosas = 1.50
 
+
+import logging
+ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
+logging.basicConfig(filename = ARCHIVO_LOG, level = logging.DEBUG)
+
+
 ############################################################
 # modulos propios importados
 
@@ -2796,25 +2802,49 @@ if __name__ == '__main__':
 
                 if ExistenDatos(ticket):
 
-                    for timminganalisis in 'dwm':
-                        #TODO: al final si utilizamos indicadorMME, el indicadorMME sera la decision de si es alcista o bajista
-                        print('Timming del analisis: %s' % timminganalisis)
+                    #al final si utilizamos indicadorMME, el indicadorMME sera la decision de si es alcista o bajista
+                    for timminganalisis in 'mwd':
+                        print('Timming del analisis alcista: %s' % timminganalisis)
                         analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
-                        analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
-
                         if analisisalcista != None:
                             alcista, soporteanterioralcista, analisisalcistatotal = analisisalcista
+                            resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                            soporte, stoploss = soporte
+                            ruptura, entrada = ruptura
+                            proximidadalcista = min((abs((resistencia[2] / precio) - 1))for precio in (ruptura[4], maxDia, valorActual))
+#                            for precio in (ruptura[4], maxDia, valorActual):
+#                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
+#                            proximidadalcista = min(proximidadalcista)
+                            break
 
+                    for timminganalisis in 'mwd':
+                        print('Timming del analisis bajista: %s' % timminganalisis)
+                        analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
                         if analisisbajista != None:
                             bajista, soporteanteriorbajista, analisisbajistatotal = analisisbajista
+                            soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
+                            resistencia, stoploss = resistencia
+                            ruptura, entrada = ruptura
+                            proximidadbajista = min((abs(1 - (soporte[3] / precio))) for precio in (ruptura[4], minDia, valorActual))
+#                            for precio in (ruptura[4], minDia, valorActual):
+#                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
+#                            proximidadbajista = min(proximidadbajista)
+                            break
 
-#                    alcista,soporteanterioralcista,analisisalcistatotal=analisisalcistaentimmingcorrecto
-#                    bajista,soporteanteriorbajista,analisisbajistatotal=analisisbajistaentimmingcorrecto
+                    # TODO: falla logica, puede ser que en mensual el analisis sea bajista, pero en semanal alcista. Hay que dar preferencia al alcista semanal, la resistencia o fecha de entrada seria posterior al soporte o entrada en bajista mensual
 
-                    if analisisalcista != None and analisisbajista != None and alcista[0][0][0] >= bajista[0][0][0]:# Comparamos la primera fecha de los analisis
+                    #Existen ambos analisis, comparamos proximidada a ruptura
+                    #la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
+                    if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
+                    #la minima proximidadbajista es menor a la proximidadalcista, bajista
+                    elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
+                        soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
+                        resistencia, stoploss = resistencia
+                        ruptura, entrada = ruptura
+                    # Uno de los analisis no existe, asignamos el contrario
                     elif analisisalcista == None and analisisbajista != None:
                         soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                         resistencia, stoploss = resistencia
@@ -2827,10 +2857,6 @@ if __name__ == '__main__':
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
-
-                    if timming == 'w':# esta condicion es porque cobo esta castellanizado y yahoo no
-                        timming = 's'
-                    timming = timming.upper()
 
                     sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
                     cursor.execute(sql)
@@ -2845,58 +2871,53 @@ if __name__ == '__main__':
                         fechafinal = map(int, (fechafinal.split('-')))
                         diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
 
+                        if entrada > stoploss:#Alcista
+                            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                        elif entrada < stoploss:#Bajista
+                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+
                     # no nos interesan los datos almacenados de analisis anteriores
                     #comprobamos que el analisis obtenido y que vamos a almacenar en la BBDD es o
                     #alcista o bajista
-                    #ademas comprobamos se es actual o esta obsoleto    
-                    if LTi[1] <= LTf[1]: #analisis alcista o LTi y LTf iguales, que puede ser el caso de cuando no se calculan y son 0
-                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
-                            rentabilidad = 0.00
-                        else:
-                            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                    #comprobamos se es actual o esta obsoleto
 
-                        if (max52 != 'NULL' and max52 > resistencia[2]) or (maxDia != 'NULL' and maxDia > resistencia[2]) or (valorActual != 'NULL' and valorActual > resistencia[2]):
-                            # si true, analisis ya cumplido, obsoleto y lo actualizamos
-                            if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterioralcista, rentabilidad, codigo)
-                                cursor.execute(sql)
-                            elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterioralcista, rentabilidad)
-                                cursor.execute(sql)
+                    #Alcista obsoleto
+                    # Alcista, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
 
-                        else:#anali
-                            #si false, analisis valido, sin cumplir
-                            if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, resistencia[2], timming, soporteanterioralcista, rentabilidad, codigo)
-                                cursor.execute(sql)
-                            elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, resistencia[2], codigo, timming, soporteanterioralcista, rentabilidad)
-                                cursor.execute(sql)
+                    #Bajista obsoleto
+                    # Bajista, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
 
-                    elif LTi[1] > LTf[1]:#analisis bajista
-                        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
-                            rentabilidad = 0.00
-                        else:
-                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                    if ((entrada > stoploss) and \
+                    \
+                    ((max52 != 'NULL' and max52 > resistencia[2]) or \
+                    (maxDia != 'NULL' and maxDia > resistencia[2]) or \
+                    (valorActual != 'NULL' and valorActual > resistencia[2]) or \
+                    (entrada > resistencia[2])))\
+                    \
+                    or\
+                    \
+                    ((entrada < stoploss) and \
+                    \
+                    ((min52 != 'NULL' and min52 < soporte[3]) or \
+                    (minDia != 'NULL' and minDia < soporte[3]) or \
+                    (valorActual != 'NULL' and valorActual < soporte[3]) or \
+                    (entrada < soporte[3]))):
 
-                        if (min52 != 'NULL' and min52 < soporte[3]) or (minDia != 'NULL' and minDia < soporte[3]) or (valorActual != 'NULL' and valorActual < soporte[3]):
-                            # si true, analisis ya cumplido, obsoleto y lo actualizamos
-                            if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanteriorbajista, rentabilidad, codigo)
-                                cursor.execute(sql)
-                            elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanteriorbajista, rentabilidad)
-                                cursor.execute(sql)
+                        # si true, analisis ya cumplido, obsoleto y lo actualizamos
+                        if numeroResultado == 1:
+                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterioralcista, rentabilidad, codigo)
+                        elif numeroResultado == 0:
+                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterioralcista, rentabilidad)
 
-                        else:#anali
-                            #si false, analisis valido, sin cumplir
-                            if numeroResultado == 1:
-                                sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, soporte[3], timming, soporteanteriorbajista, rentabilidad, codigo)
-                                cursor.execute(sql)
-                            elif numeroResultado == 0:
-                                sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, soporte[3], codigo, timming, soporteanteriorbajista, rentabilidad)
-                                cursor.execute(sql)
+                    #Alcista/Bajista Validos    
+                    else:#anali
+                        #si false, analisis valido, sin cumplir
+                        if numeroResultado == 1:
+                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterioralcista, rentabilidad, codigo)
+                        elif numeroResultado == 0:
+                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterioralcista, rentabilidad)
 
+                    cursor.execute(sql)
 
                 cuentaatras -= 1
                 db.commit()
