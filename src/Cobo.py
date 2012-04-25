@@ -2799,7 +2799,7 @@ if __name__ == '__main__':
                 print('')
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
-
+                proximidadalcista, proximidadbajista = 0, 0
                 if ExistenDatos(ticket):
 
                     #al final si utilizamos indicadorMME, el indicadorMME sera la decision de si es alcista o bajista
@@ -2811,7 +2811,7 @@ if __name__ == '__main__':
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                             soporte, stoploss = soporte
                             ruptura, entrada = ruptura
-                            proximidadalcista = min((abs((resistencia[2] / precio) - 1))for precio in (ruptura[4], maxDia, valorActual))
+                            proximidadalcista = min(abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
 #                            for precio in (ruptura[4], maxDia, valorActual):
 #                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
 #                            proximidadalcista = min(proximidadalcista)
@@ -2825,7 +2825,7 @@ if __name__ == '__main__':
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                             resistencia, stoploss = resistencia
                             ruptura, entrada = ruptura
-                            proximidadbajista = min((abs(1 - (soporte[3] / precio))) for precio in (ruptura[4], minDia, valorActual))
+                            proximidadbajista = min(abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
 #                            for precio in (ruptura[4], minDia, valorActual):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
@@ -2871,10 +2871,11 @@ if __name__ == '__main__':
                         fechafinal = map(int, (fechafinal.split('-')))
                         diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
 
-                        if entrada > stoploss:#Alcista
-                            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
-                        elif entrada < stoploss:#Bajista
-                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+#                        if entrada > stoploss:#Alcista
+                        rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+#                        elif entrada < stoploss:#Bajista
+                            #TODO: la rentabilidad en bajista tiene que ser negativa, pero el equivalente en positiva
+#                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
 
                     # no nos interesan los datos almacenados de analisis anteriores
                     #comprobamos que el analisis obtenido y que vamos a almacenar en la BBDD es o
