@@ -195,8 +195,11 @@ def ticketsdeMercado(mercado):
             except urllib2.HTTPError as e:
                 print('Conexion Perdida')
                 print(e.code)
-                web = None
-                raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+                if e.code=='500':
+                    return ticketsanadidos
+                else:
+                    web = None
+                    raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
             except urllib2.URLError as e:
                 print('Conexion Erronea')
                 print(e.reason)
