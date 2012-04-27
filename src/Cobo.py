@@ -2847,24 +2847,29 @@ if __name__ == '__main__':
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
+                        soporteanterior = soporteanterioralcista
                     #la minima proximidadbajista es menor a la proximidadalcista, bajista
                     elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
                         soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                         resistencia, stoploss = resistencia
                         ruptura, entrada = ruptura
+                        soporteanterior = soporteanteriorbajista
                     # Uno de los analisis no existe, asignamos el contrario
                     elif analisisalcista == None and analisisbajista != None:
                         soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                         resistencia, stoploss = resistencia
                         ruptura, entrada = ruptura
+                        soporteanterior = soporteanteriorbajista
                     elif analisisbajista == None and analisisalcista != None:
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
+                        soporteanterior = soporteanterioralcista
                     else:# Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
                         resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
+                        soporteanterior = soporteanterioralcista
 
                     sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
                     cursor.execute(sql)
@@ -2914,17 +2919,17 @@ if __name__ == '__main__':
 
                         # si true, analisis ya cumplido, obsoleto y lo actualizamos
                         if numeroResultado == 1:
-                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterioralcista, rentabilidad, codigo)
+                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
                         elif numeroResultado == 0:
-                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterioralcista, rentabilidad)
+                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
 
                     #Alcista/Bajista Validos    
                     else:#anali
                         #si false, analisis valido, sin cumplir
                         if numeroResultado == 1:
-                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterioralcista, rentabilidad, codigo)
+                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
                         elif numeroResultado == 0:
-                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterioralcista, rentabilidad)
+                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
 
                     cursor.execute(sql)
 
