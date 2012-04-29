@@ -1140,7 +1140,7 @@ def analisisBajistaAccion(naccion, **config):
 
             assert (fechaTAR == fechaanterior)
 
-            if len(analisisalcista) > 0 and stoploss > (round((cierreanterior + (puntoTAR * filtro)), 3)):
+            if len(analisisbajista) > 0 and stoploss > (round((cierreanterior + (puntoTAR * filtro)), 3)):
                 stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
                 listastoploss.append((fecha, stoploss))
 
