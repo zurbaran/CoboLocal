@@ -64,6 +64,12 @@ logging.basicConfig(filename = ARCHIVO_LOG, level = logging.DEBUG)
 # Buscar tikets a las que les falte relacion entre mercados y monedas
 # SELECT `tiket`,`mercado` FROM `componentes` where `mercado` not in (SELECT `nombreUrl` FROM `mercado_moneda`)
 
+#Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dará la negativa y al revés 1- la rentabilidad negativa dividido por esa negativa te da la positiva
+#35 dividido por 1,35 te da 25,925 y al revés 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
+# rentabilidadnegativa= - (rentabilidadpositiva / 1+rentabilidadpositiva)
+# rentabilidadpositiva= 1-rentabilidadnegativa / (1-rentabilidadnegativa)
+
+
 ############################################################
 # definicion de funciones
 
@@ -1140,7 +1146,7 @@ def analisisBajistaAccion(naccion, **config):
 
             assert (fechaTAR == fechaanterior)
 
-            if len(analisisalcista) > 0 and stoploss > (round((cierreanterior + (puntoTAR * filtro)), 3)):
+            if len(analisisbajista) > 0 and stoploss > (round((cierreanterior + (puntoTAR * filtro)), 3)):
                 stoploss = round((cierreanterior + (puntoTAR * filtro)), 3)
                 listastoploss.append((fecha, stoploss))
 
