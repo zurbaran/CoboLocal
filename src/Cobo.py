@@ -201,7 +201,7 @@ def ticketsdeMercado(mercado):
             except urllib2.HTTPError as e:
                 print('Conexion Perdida')
                 print(e.code)
-                if e.code=='500':
+                if e.code == '500':
                     return ticketsanadidos
                 else:
                     web = None
@@ -2820,10 +2820,10 @@ if __name__ == '__main__':
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                             soporte, stoploss = soporte
                             ruptura, entrada = ruptura
-                            if maxDia==None or maxDia==0.0:
-                                maxDia=ruptura[4]
-                            if valorActual==None or valorActual==0.0:
-                                valorActual=ruptura[4]
+                            if maxDia == None or maxDia == 0.0:
+                                maxDia = ruptura[4]
+                            if valorActual == None or valorActual == 0.0:
+                                valorActual = ruptura[4]
                             proximidadalcista = (abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
 #                            for precio in (ruptura[4], maxDia, valorActual):
 #                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
@@ -2838,10 +2838,10 @@ if __name__ == '__main__':
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                             resistencia, stoploss = resistencia
                             ruptura, entrada = ruptura
-                            if minDia==None or minDia==0.0:
-                                minDia=ruptura[4]
-                            if valorActual==None or valorActual==0.0:
-                                valorActual=ruptura[4]
+                            if minDia == None or minDia == 0.0:
+                                minDia = ruptura[4]
+                            if valorActual == None or valorActual == 0.0:
+                                valorActual = ruptura[4]
                             proximidadbajista = (abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
 #                            for precio in (ruptura[4], minDia, valorActual):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
@@ -3243,7 +3243,8 @@ if __name__ == '__main__':
                                 numeroacciones = int(inversionmaxima / resistencia[2])
                                 inversion = numeroacciones * resistencia[2]
                             elif estrategia == 'Bajista':
-                                numeroacciones = int(inversionmaxima / soporte[3])
+                                #la inversion maxima es en negativo, arriba comparamos el valor absoluto pero en el numero de acciones tiene que ser negativo
+                                numeroacciones = (int(inversionmaxima / soporte[3])) * (-1)
                                 inversion = numeroacciones * soporte[3]
 
                         if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
@@ -3298,7 +3299,10 @@ if __name__ == '__main__':
                                 else:
                                     fechasalida, preciosalida = salida
                                 inversionrecuperada = numeroaccionesoperacion * preciosalida
-                                balance = inversionrecuperada - inversion
+                                if estrategia == 'Alcista':
+                                    balance = inversionrecuperada - inversion
+                                elif estrategia == 'Bajista':
+                                    balance = inversion - inversionrecuperada
 
                             elif fechasalida <= fecharuptura:
                             #elif fechasalida <= fecharuptura:
@@ -3407,7 +3411,10 @@ if __name__ == '__main__':
                 j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (negativas, (((negativas * 1.0) / (len(backtest))) * 100))).replace('.', ','))
                 j.write(('Inversion Total : %.2f\n' % inversionTotal).replace('.', ','))
                 j.write(('Inversion Recuperada : %.2f\n' % inversionrecuperadaTotal).replace('.', ','))
-                j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)).replace('.', ','))
+                if estrategia == 'Alcista':
+                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)).replace('.', ','))
+                elif estrategia == 'Bajista':
+                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)).replace('.', ','))
 
                 j.close()
 
@@ -3418,7 +3425,10 @@ if __name__ == '__main__':
                 print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (negativas, (((negativas * 1.0) / (len(backtest))) * 100))))
                 print(('Inversion Total : %.2f' % inversionTotal))
                 print(('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
-                print(('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
+                if estrategia == 'Alcista':
+                    print(('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
+                elif estrategia == 'Bajista':
+                    print(('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
                 print('')
             else:
                 raw_input('Backtest no realizado')
