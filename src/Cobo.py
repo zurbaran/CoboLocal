@@ -64,8 +64,8 @@ logging.basicConfig(filename = ARCHIVO_LOG, level = logging.DEBUG)
 # Buscar tikets a las que les falte relacion entre mercados y monedas
 # SELECT `tiket`,`mercado` FROM `componentes` where `mercado` not in (SELECT `nombreUrl` FROM `mercado_moneda`)
 
-#Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dará la negativa y al revés 1- la rentabilidad negativa dividido por esa negativa te da la positiva
-#35 dividido por 1,35 te da 25,925 y al revés 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
+#Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
+#35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
 # rentabilidadnegativa= - (rentabilidadpositiva / 1+rentabilidadpositiva)
 # rentabilidadpositiva= 1-rentabilidadnegativa / (1-rentabilidadnegativa)
 
@@ -201,19 +201,14 @@ def ticketsdeMercado(mercado):
             except urllib2.HTTPError as e:
                 print('Conexion Perdida')
                 print(e.code)
-                if e.code == '500':
+                if e.code == 500:
                     return ticketsanadidos
                 else:
                     web = None
                     raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except urllib2.URLError as e:
+            except (urllib2.URLError,IOError) as e:
                 print('Conexion Erronea')
                 print(e.reason)
-                web = None
-                sleep (pausareconexion)
-                print ('Pausa de %d segundos' % pausareconexion)
-            except IOError as e:
-                print('Conexion Erronea')
                 print(url, e)
                 web = None
                 sleep (pausareconexion)
@@ -1863,9 +1858,9 @@ def cotizacionesTicket(nombreticket):
             if numeroResultado == 1:
                 ident, precio_ini, precio_fin, _fecha_ini, _fecha_fin, _timing, _precio_salida, salida, entrada, _rentab, _codigoBBDD = datosBBDDoperaciones[0]
 
-                if salida == None:
+                if salida == None or salida =='':
                     salida = 0.0
-                if entrada == None:
+                if entrada == None or salida =='':
                     entrada = 0.0
 
                 if precio_ini <= precio_fin:# datos de una accion alcista
