@@ -693,6 +693,9 @@ def analisisAlcistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    MME2 = config.get('MME2', False)
+    if MME == False:
+        MME2 = False
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
