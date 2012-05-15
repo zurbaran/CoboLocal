@@ -693,9 +693,10 @@ def analisisAlcistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
-    MME2 = config.get('MME2', False)
     if MME == False:
         MME2 = False
+    else:
+        MME2 = config.get('MME2', False)
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
@@ -751,7 +752,8 @@ def analisisAlcistaAccion(naccion, **config):
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
-
+        if not(MME2 == False):
+            puntosMME2 = indicadorMME(datoshistoricos, MME = MME2)
     if not (TAR == False):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
@@ -778,25 +780,27 @@ def analisisAlcistaAccion(naccion, **config):
         if not (MME == False):# and len( datoshistoricos ) >= MME:
 
             fechaMME, puntoMME = puntosMME[i]
+            if not (MME2 == False):
+                fechaMME2, puntoMME2 = puntosMME2[i]
+                assert (fechaMME == fecha and fechaMME == fechaMME2)
 
             assert (fechaMME == fecha)
 
             #if i >= ( MME - 1 ):# Empieza a utilizar el indicadorMME en una barra en concreto, para la MME30 lo utiliza apartir de la barra 30(cuyo indice es 29)
             if puntoMME > 0:
-                if maximo < puntoMME:# Grafica completamente bajo Media Movil Exponencial, no buscamos resistencias ni soportes, y consideramos la barra actual como resistencia
+                if resistencia == False and soporte == False and puntoMME < minimo:# Si no buscamos ni resistencias ni soportes es porque venimos de debajo de la MME
+                    #la grafica esta completamente por encima de la MME,  y empezamos a buscar resistencias sobre la MMe
+                    r = i
+                    _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
+                    resistencia = True
+                    soporte = False
+                #elif maximo < puntoMME:# Grafica completamente bajo Media Movil Exponencial, no buscamos resistencias ni soportes, y consideramos la barra actual como resistencia
+                elif maximo < puntoMME and (MME2 == False or (MME2 != False and puntoMME <= puntoMME2)):
                     # con esta logica, si hemos creado una resistencia y en algun momento bajamos una MME muy cercana a la grafica, habremos "borrado" esa resistencia anterior asignandole la barra actual como resistencia
                     r = i
                     _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
                     resistencia = False
                     soporte = False
-                else:# grafica sobre o parcialmente sobre Media Movil Exponencial
-                        # hay un problema con esta logica, si teniamos una resistencia anterior al periodo MME, aunque puntoMME<minimo y resistencia==False, soporte==True lo que significa que hasta que la resistencia no se rompa... no utilizaremos la MMe
-                    if resistencia == False and soporte == False and puntoMME < minimo:# Si no buscamos ni resistencias ni soportes es porque venimos de debajo de la MME
-                        #la grafica esta completamente por encima de la MME,  y empezamos a buscar resistencias sobre la MMe
-                        r = i
-                        _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
-                        resistencia = True
-                        soporte = False
 
         #anade en analisisalcista, los puntos de entrada por Linea de tendencia
         if len(analisisalcista) > 0 and entradapuntoLT:
@@ -1087,6 +1091,10 @@ def analisisBajistaAccion(naccion, **config):
 
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
+    if MME == False:
+        MME2 = False
+    else:
+        MME2 = config.get('MME2', False)
     TAR = config.get('TAR', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
@@ -1142,7 +1150,8 @@ def analisisBajistaAccion(naccion, **config):
 
     if not(MME == False):
         puntosMME = indicadorMME(datoshistoricos, MME = MME)
-
+        if not(MME2 == False):
+            puntosMME2 = indicadorMME(datoshistoricos, MME = MME2)
     if not (TAR == False):
         puntosTAR = indicadorTAR(datoshistoricos, TAR = TAR)
 
@@ -1169,22 +1178,26 @@ def analisisBajistaAccion(naccion, **config):
         if not (MME == False):# and len( datoshistoricos ) >= MME:
 
             fechaMME, puntoMME = puntosMME[i]
+            if not (MME2 == False):
+                fechaMME2, puntoMME2 = puntosMME2[i]
+                assert (fechaMME == fecha and fechaMME == fechaMME2)
 
             assert (fechaMME == fecha)
 
             #if i >= ( MME - 1 ):# Empieza a utilizar el indicadorMME en una barra en concreto, para la MME30 lo utiliza apartir de la barra 30(cuyo indice es 29)
             if puntoMME > 0:
-                if puntoMME < minimo:# Media Movil Exponencial bajo grafica, no buscamos soportes ni resistencias, y consideramos la barra actual como soporte
+                if resistencia == False and soporte == False and puntoMME > maximo:# Si no buscamos ni resistencias ni soportes y la grafica esta completamente por abajo de la MME, es porque estamos buscando soportes
+                    s = i
+                    _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
+                    soporte = True
+                    resistencia = False
+                #if puntoMME < minimo:# Media Movil Exponencial bajo grafica, no buscamos soportes ni resistencias, y consideramos la barra actual como soporte
+                elif puntoMME < minimo and (MME2 == False or (MME2 != False and puntoMME2 <= puntoMME)):
+                #elif puntoMME2 <= puntoMME < minimo:
                     s = i
                     _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
                     soporte = False
                     resistencia = False
-                else:# Media Movil Exponencial sobre grafica
-                    if resistencia == False and soporte == False and puntoMME > maximo:# Si no buscamos ni resistencias ni soportes y la grafica esta completamente por abajo de la MME, es porque estamos buscando soportes
-                        s = i
-                        _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
-                        soporte = True
-                        resistencia = False
 
         #anade en analisisbajista, los puntos de entrada por Linea de tendencia
         if len(analisisbajista) > 0 and entradapuntoLT:
@@ -3040,14 +3053,53 @@ if __name__ == '__main__':
             else:
                 inversionmaxima = int(inversionmaxima)
 
-            MMe = raw_input('Media Movil Exponencial (Sin MME): ')
-            if MMe == '':
-                MMe = False
+            if raw_input('Media Movil Exponencial (Sin MME en todos los timmings): ') == '':
+                MMediario = False
+                MMesemanal = False
+                MMemensual = False
+                MMe2diario = False
+                MMe2semanal = False
+                MMe2mensual = False
             else:
-                MMe = int(MMe)
 
-            TAR = raw_input('True Avenrange xrange (Sin TAR): ')
-            if TAR == '':
+                MMediario = raw_input('Media Movil Exponencial diario (Sin MME): ')
+                if MMediario == '':
+                    MMediario = False
+                    MMe2diario = False
+                else:
+                    MMediario = int(MMediario)
+                    MMe2diario = raw_input('2ª Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    if MMe2diario == '':
+                        MMe2diario = False
+                    else:
+                        MMe2diario = int(MMe2diario)
+
+                MMesemanal = raw_input('Media Movil Exponencial semanal (Sin MME): ')
+                if MMesemanal == '':
+                    MMesemanal = False
+                    MMe2semanal = False
+                else:
+                    MMesemanal = int(MMesemanal)
+                    MMe2semanal = raw_input('2ª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    if MMe2semanal == '':
+                        MMe2semanal = False
+                    else:
+                        MMe2semanal = int(MMe2semanal)
+
+                MMemensual = raw_input('Media Movil Exponencial mensual (Sin MME): ')
+                if MMemensual == '':
+                    MMemensual = False
+                    MMe2mensual = False
+                else:
+                    MMemensual = int(MMemensual)
+                    MMe2mensual = raw_input('2ª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    if MMe2mensual == '':
+                        MMe2mensual = False
+                    else:
+                        MMe2mensual = int(MMe2mensual)
+
+
+            if raw_input('True Avenrange xrange (Sin TAR en todos los timmings): ') == '':
                 TARmensual = False
                 TARsemanal = False
                 TARdiario = False
@@ -3123,13 +3175,13 @@ if __name__ == '__main__':
                 if ExistenDatos(ticket):
                     backtestaccion = []
                     if estrategia == 'Alcista':
-                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
-                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
-                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
                     elif estrategia == 'Bajista':
-                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
-                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
-                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
 
                     fecharesistenciadiario = 0
                     fecharesistenciasemanal = 0
@@ -3412,7 +3464,12 @@ if __name__ == '__main__':
                 j.write('Rentabilidad 0 igual a rentabilidad minima : %s\n' % rentabilidad0)
                 j.write(('Inversion Minima : %.2f\n' % inversionminima).replace('.', ','))
                 j.write('Inversion Maxima : %s\n' % inversionmaxima)
-                j.write(('Media Movil Exponencial : %s\n' % MMe))
+                j.write(('Media Movil Exponencial diario  : %s\n' % MMediario))
+                j.write(('Media Movil Exponencial semanal : %s\n' % MMesemanal))
+                j.write(('Media Movil Exponencial mensual : %s\n' % MMemensual))
+                j.write(('Media Movil Exponencial 2ª para cruce de medias diario  : %s\n' % MMe2diario))
+                j.write(('Media Movil Exponencial 2ª para cruce de medias semanal : %s\n' % MMe2semanal))
+                j.write(('Media Movil Exponencial 2ª para cruce de medias mensual : %s\n' % MMe2mensual))
                 j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
                 j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
                 j.write(('True Averange xrange Diario : %s\n' % TARdiario))
