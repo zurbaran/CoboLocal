@@ -14,7 +14,7 @@ try:
     import cPickle as pickle
 except ImportError:
     print ('Modulo cPickle deshabilitado')
-    import pickle   # TODO : buscar la manera de comprimir los datos para que ocupen menos en el HD.
+    import pickle   # TODO: buscar la manera de comprimir los datos para que ocupen menos en el HD.
     # una posiblidad es utilizar el modulo zlib zlib.compress(datos) zlib.descompress(datos)
 import os
 #import wx
@@ -500,7 +500,7 @@ def descargaHistoricoAccion (naccion, **config):
 #    return timming,difregistros
 
 def actualizacionDatosHisAccion(naccion, **config):
-    # TODO : Podemos intentar integrar la funcion actualizacionDatosHisAccion dentro de la propia funcion descargaHistoricoAccion, nos ahorrariamos una funcion y seguramente procesos duplicados
+    # TODO: Podemos intentar integrar la funcion actualizacionDatosHisAccion dentro de la propia funcion descargaHistoricoAccion, nos ahorrariamos una funcion y seguramente procesos duplicados
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
     registro = {'d':'Diario', 'w':'Semanal', 'm':'Mensual'}
@@ -1226,7 +1226,7 @@ def analisisBajistaAccion(naccion, **config):
                     entradapuntoLT = False
 
 
-        # TODO : hay un stoploss que se calcula en funcion al precio de entrada, precio objetivo, recogemos beneficios cuando el precio toque una venta limite.
+        # TODO: hay un stoploss que se calcula en funcion al precio de entrada, precio objetivo, recogemos beneficios cuando el precio toque una venta limite.
         #cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
         if maximo >= stoploss and len(analisisbajista) > 0:
 
@@ -1820,7 +1820,7 @@ def cotizacionesTicket(nombreticket):
             r = urllib2.Request(urldatos, headers = webheaders)
             f = urllib2.urlopen(r)
             #f= urllib.urlopen (urldatos)
-            # TODO : mirar que pasa con espacios en blanco y en la 1 posicion
+            # TODO: mirar que pasa con espacios en blanco y en la 1 posicion
             datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')#UTF-16le
             f.close()
         except urllib2.HTTPError as e:
