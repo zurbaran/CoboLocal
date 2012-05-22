@@ -22,6 +22,9 @@ from random import randint
 import glob
 import csv
 from collections import deque
+import logging
+#import sys
+#import traceback
 #from decimal import Decimal
 
 
@@ -41,7 +44,7 @@ pausareconexion = 20
 backtestoperacionessospechosas = 1.50
 
 
-import logging
+
 #import logging.config
 ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
 #CONFIG_LOG = os.path.join(os.getcwd(), carpetas['Log'], "logging.conf")
@@ -50,8 +53,8 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
 #logging.basicConfig(filename = ARCHIVO_LOG)
 #logging.captureWarnings(True)
 #basic setup with ISO 8601 time format
-logging.basicConfig(filename = ARCHIVO_LOG, format = '%(asctime)sZ; modulo: %(module)s; nombre: %(name)s ; funcion : %(funcName)s ;nivel: %(levelname)s; %(message)s', level = logging.DEBUG)
-
+logging.basicConfig(filename = ARCHIVO_LOG, format = '%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s', level = logging.DEBUG)
+logging.debug('\nInicio de Aplicacion\n')
 #logging.basicConfig(filename='/tmp/test.log', , level=logging.INFO)
 # switch to UTC / GMT
 #logging.Formatter.converter = time.gmtime
@@ -129,24 +132,27 @@ def LeeDatos(naccion):
                 #datos = pickle.Unpickler(archivo)
                 datos = pickle.load(archivo)
                 #datos = pickle.loads(codificado)
-            except KeyError:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
+            except (KeyError, EOFError, pickle.UnpicklingError) as e:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
                 archivo.close()
                 borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
                 errorenTicket(naccion)
-                logging.debug('Funcion; %s; Error; %s; Accion; %s; Funcion LeeDatos al utilizar pickle, Archivo; %s' % (__name__, KeyError, naccion, archivo))
-                log(nombrelog = 'LeeDatos', error = KeyError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
-            except EOFError:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
-                archivo.close()
-                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
-                errorenTicket(naccion)
-                logging.debug('Funcion; %s; Error; %s; Accion; %s; Funcion LeeDatos al utilizar pickle, Archivo; %s' % (__name__, EOFError, naccion, archivo))
-                log(nombrelog = 'LeeDatos', error = EOFError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
-            except pickle.UnpicklingError:
-                archivo.close()
-                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
-                errorenTicket(naccion)
-                logging.debug('Funcion; %s; Error; %s; Accion; %s; Funcion LeeDatos al utilizar pickle, Archivo; %s' % (__name__, pickle.UnpicklingError, naccion, archivo))
-                log(nombrelog = 'LeeDatos', error = pickle.UnpicklingError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
+                #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, e, naccion, archivo))
+                #log(nombrelog = 'LeeDatos', error = KeyError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
+#            except EOFError:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
+#                archivo.close()
+#                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
+#                errorenTicket(naccion)
+#                #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+#                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, EOFError, naccion, archivo))
+#                #log(nombrelog = 'LeeDatos', error = EOFError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
+#            except pickle.UnpicklingError:
+#                archivo.close()
+#                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
+#                errorenTicket(naccion)
+#                #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+#                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, pickle.UnpicklingError, naccion, archivo))
+#                #log(nombrelog = 'LeeDatos', error = pickle.UnpicklingError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
 
             else:
                 historicoMensual = datos['historicoMensual']
@@ -224,11 +230,12 @@ def ticketsdeMercado(mercado):
                 else:
                     web = None
                     raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib2.URLError, IOError) as e:
+            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
                 print('Conexion Erronea')
                 print(e.reason)
                 print(url, e)
                 web = None
+                logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
                 sleep (pausareconexion)
                 print ('Pausa de %d segundos' % pausareconexion)
 
@@ -341,20 +348,22 @@ def descargaHistoricoAccion (naccion, **config):
             print(url)
             f = None
             return 'URL invalida'
-        except urllib2.URLError as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Perdida')
             print(e.reason)
+            print(url, e)
+            logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
             f = None
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             # cuando la conexion se pierde, pasa por aqui, dando como error
             #[Errno 11004] getaddrinfo failed
-        except IOError as e:
-            print('Conexion Erronea')
-            print(url, e)
-            f = None
-            sleep (pausareconexion)
-            print ('Pausa de %d segundos' % pausareconexion)
+#        except IOError as e:
+#            print('Conexion Erronea')
+#            print(url, e)
+#            f = None
+#            sleep (pausareconexion)
+#            print ('Pausa de %d segundos' % pausareconexion)
 
     lineas = f.readlines()
     f.close()
@@ -1301,13 +1310,14 @@ def analisisBajistaAccion(naccion, **config):
                         try:
                             #puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
-                        except OverflowError:# en el calculo de la linea de tendencia bajista hacia atras, aveces, la linea llega al infinito
+                        except (OverflowError, ZeroDivisionError) as e:# en el calculo de la linea de tendencia bajista hacia atras, aveces, la linea llega al infinito
     #                            puntoLTanterior=round((maximoLTi*((1+(((1.0+(((maximoLTf-maximoLTi)/maximoLTi)))**(12.0/(LTf-LTi)))-1.0))**((j-LTi-1)/12.0))),3)
     #                            maximohistorico=max([maxi[2] for maxi in datoshistoricos[0:j]])
     #                            if puntoLTanterior>maximohistorico:
                             j = 0 #El error lo da en
-                            logging.debug('Funcion; %s; Error; %s; Accion; %s; timming; %s; FechaLTi; %s; FechaLTf; %s; Fecha de la barra donde se produce el Error; %s' % (__name__, OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
-                            log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, e, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaj))
                                     #ABL(4 analisis j=2954 timming='d')
                                     #ACOM.ST (22 analisis j=357 timming='d')
                                     #ADI.L (4 analisis j=567 timming='d')
@@ -1315,11 +1325,12 @@ def analisisBajistaAccion(naccion, **config):
                                     #AEG.L (18 analisis j=572 timming='d')
                                     #AiG (5 analisis j=1069 timming='d')aig
                                     #AIG(3 analisis j=283 timming='w')
-                        except ZeroDivisionError:
-                            j = 0
-                            logging.debug('Funcion; %s; Error; %s; Accion; %s; timming; %s; FechaLTi; %s; FechaLTf; %s; Fecha de la barra donde se produce el Error; %s' % (__name__, ZeroDivisionError, naccion, timming, fechaLTi, fechaLTf, fechaLTf))
-                            log(nombrelog = 'analisisBajistaAccion', error = ZeroDivisionError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaLTf))
-                        #print j,puntoLT,'localizaLTi',i
+#                        except ZeroDivisionError:
+#                            j = 0
+#                            #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+#                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, ZeroDivisionError, naccion, timming, fechaLTi, fechaLTf, fechaj))
+#                            #log(nombrelog = 'analisisBajistaAccion', error = ZeroDivisionError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaLTf))
+#                        #print j,puntoLT,'localizaLTi',i
 
                         if puntoLT < maximoj:
                             LTi = j
@@ -1362,8 +1373,9 @@ def analisisBajistaAccion(naccion, **config):
                             #puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except OverflowError:
-                            logging.debug('Funcion; %s; Error; %s; Accion; %s; timming; %s; FechaLTi; %s; FechaLTf; %s; Fecha de la barra donde se produce el Error; %s' % (__name__, OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
-                            log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTf', naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
+                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTf', naccion, timming, fechaLTi, fechaLTf, fechaj))
                             puntoLT = maximoj# asi no altero el LTf
     #                        elif timming=='semanal':
                         #else:
@@ -1813,11 +1825,11 @@ def cotizacionesTicket(nombreticket):
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
     urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=nsxkhjgl1a2ve1&e=.csv"
-
+    r = urllib2.Request(urldatos, headers = webheaders)
     datosurl = None
     while datosurl == None:
         try:
-            r = urllib2.Request(urldatos, headers = webheaders)
+            #r = urllib2.Request(urldatos, headers = webheaders)
             f = urllib2.urlopen(r)
             #f= urllib.urlopen (urldatos)
             # TODO: mirar que pasa con espacios en blanco y en la 1 posicion
@@ -1828,20 +1840,22 @@ def cotizacionesTicket(nombreticket):
             print(e.code)
             datosurl = None
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except urllib2.URLError as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Erronea')
             print(e.reason)
-            datosurl = None
-            sleep (pausareconexion)
-            print ('Pausa de %d segundos' % pausareconexion)
-            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
-        except IOError as e:
-            print('Conexion Erronea')
             print(e)
             datosurl = None
+            logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
+#        except IOError as e:
+#            print('Conexion Erronea')
+#            print(e)
+#            datosurl = None
+#            sleep (pausareconexion)
+#            print ('Pausa de %d segundos' % pausareconexion)
+#            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 
     datosurl2 = datosurl.rsplit(',', 10)
     datonombre , datoticket , datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror = datosurl2
@@ -1937,20 +1951,22 @@ def cotizacionesMoneda(nombreticket):
             print(e.code)
             datosurl = None
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except urllib2.URLError as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Erronea')
             print(e.reason)
-            datosurl = None
-            sleep (pausareconexion)
-            print ('Pausa de %d segundos' % pausareconexion)
-            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
-        except IOError as e:
-            print('Conexion Erronea')
             print(e)
             datosurl = None
+            logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
+#        except IOError as e:
+#            print('Conexion Erronea')
+#            print(e)
+#            datosurl = None
+#            sleep (pausareconexion)
+#            print ('Pausa de %d segundos' % pausareconexion)
+#            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 
     datosurl2 = datosurl.split(',')
     datoticket = datosurl2[0].strip('"')
@@ -2086,39 +2102,39 @@ def conexionBBDD():
 
 
 
-def log(**config):
-    '''
-    la ubicacion deberia ser igual a __name__ de la funcion donde viene
-    nombrelog=archivo dondes queremos guardar el registro, normalmente nombre da la funcion donde queremos ubicar la funcion
-    error = Mensaje del error o causa del mismo, normalmente capturamos el error o le asignamos el nombre de la excepcion
-    explicacion = ubicacion y explicacion de las variables, son constantes ('Fecha; Tipo Error; Ubicacion; ')
-    variables = lista con breve explicacion y variables que nos interesa registrar
-    '''
-    nombrelog = config.get('nombrelog', 'Cobo')
-    error = str(config.get('error', ''))
-    explicacion = 'Fecha; Tipo Error; Ubicacion; ' + (config.get('explicacion', '')) + '\n'
-    variables = ((((str(config.get('variables', dir()))).strip('(')).strip(')')).strip()).replace(',', ';')
-
-
-    if nombrelog == '':
-        nombrelog = 'Cobo'
-
-    archivo = os.path.join(os.getcwd(), carpetas['Log'], nombrelog + ".log")
-    linea = (((datetime.now()).strftime("%Y-%m-%d %H:%M")) + ';' + error + ';' + variables + '\n')
-
-    if not os.path.exists(archivo):
-
-        f = open(archivo, "w")
-        f.write(explicacion)
-        f.write(linea)
-        f.close()
-
-    else:
-        f = open(archivo, "a")
-        f.write(linea)
-        f.close()
-
-    return
+#def log(**config):
+#    '''
+#    la ubicacion deberia ser igual a __name__ de la funcion donde viene
+#    nombrelog=archivo dondes queremos guardar el registro, normalmente nombre da la funcion donde queremos ubicar la funcion
+#    error = Mensaje del error o causa del mismo, normalmente capturamos el error o le asignamos el nombre de la excepcion
+#    explicacion = ubicacion y explicacion de las variables, son constantes ('Fecha; Tipo Error; Ubicacion; ')
+#    variables = lista con breve explicacion y variables que nos interesa registrar
+#    '''
+#    nombrelog = config.get('nombrelog', 'Cobo')
+#    error = str(config.get('error', ''))
+#    explicacion = 'Fecha; Tipo Error; Ubicacion; ' + (config.get('explicacion', '')) + '\n'
+#    variables = ((((str(config.get('variables', dir()))).strip('(')).strip(')')).strip()).replace(',', ';')
+#
+#
+#    if nombrelog == '':
+#        nombrelog = 'Cobo'
+#
+#    archivo = os.path.join(os.getcwd(), carpetas['Log'], nombrelog + ".log")
+#    linea = (((datetime.now()).strftime("%Y-%m-%d %H:%M")) + ';' + error + ';' + variables + '\n')
+#
+#    if not os.path.exists(archivo):
+#
+#        f = open(archivo, "w")
+#        f.write(explicacion)
+#        f.write(linea)
+#        f.close()
+#
+#    else:
+#        f = open(archivo, "a")
+#        f.write(linea)
+#        f.close()
+#
+#    return
 
 #def compruebaactualizaticket(naccion):
 #def actualizartickets():
