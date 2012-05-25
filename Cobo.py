@@ -232,7 +232,7 @@ def ticketsdeMercado(mercado):
                     raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
             except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
                 print('Conexion Erronea')
-                print(e.reason)
+                #print(e.reason)
                 print(url, e)
                 web = None
                 logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
@@ -350,7 +350,7 @@ def descargaHistoricoAccion (naccion, **config):
             return 'URL invalida'
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Perdida')
-            print(e.reason)
+            #print(e.reason)
             print(url, e)
             logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
             f = None
@@ -1842,7 +1842,7 @@ def cotizacionesTicket(nombreticket):
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Erronea')
-            print(e.reason)
+            #print(e.reason)
             print(e)
             datosurl = None
             logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
@@ -1953,7 +1953,7 @@ def cotizacionesMoneda(nombreticket):
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Erronea')
-            print(e.reason)
+            #print(e.reason)
             print(e)
             datosurl = None
             logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
