@@ -137,21 +137,21 @@ def LeeDatos(naccion):
                 borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
                 errorenTicket(naccion)
                 #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, e, naccion, archivo))
+                logging.debug('Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (e, naccion, archivo))
                 #log(nombrelog = 'LeeDatos', error = KeyError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
 #            except EOFError:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
 #                archivo.close()
 #                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
 #                errorenTicket(naccion)
 #                #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-#                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, EOFError, naccion, archivo))
+#                logging.debug( Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, EOFError, naccion, archivo))
 #                #log(nombrelog = 'LeeDatos', error = EOFError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
 #            except pickle.UnpicklingError:
 #                archivo.close()
 #                borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
 #                errorenTicket(naccion)
 #                #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-#                logging.debug('__name__: %s; Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, pickle.UnpicklingError, naccion, archivo))
+#                logging.debug( Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (__name__, pickle.UnpicklingError, naccion, archivo))
 #                #log(nombrelog = 'LeeDatos', error = pickle.UnpicklingError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
 
             else:
@@ -235,7 +235,7 @@ def ticketsdeMercado(mercado):
                 #print(e.reason)
                 print(url, e)
                 web = None
-                logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
+                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado, url))
                 sleep (pausareconexion)
                 print ('Pausa de %d segundos' % pausareconexion)
 
@@ -352,7 +352,7 @@ def descargaHistoricoAccion (naccion, **config):
             print('Conexion Perdida')
             #print(e.reason)
             print(url, e)
-            logging.debug('__name__: %s; Error: %s; Mercado: %s; Url: %s' % (__name__, e, mercado, url))
+            logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado, url))
             f = None
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
@@ -1316,7 +1316,7 @@ def analisisBajistaAccion(naccion, **config):
     #                            if puntoLTanterior>maximohistorico:
                             j = 0 #El error lo da en
                             #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, e, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (e, naccion, timming, fechaLTi, fechaLTf, fechaj))
                             #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaj))
                                     #ABL(4 analisis j=2954 timming='d')
                                     #ACOM.ST (22 analisis j=357 timming='d')
@@ -1328,7 +1328,7 @@ def analisisBajistaAccion(naccion, **config):
 #                        except ZeroDivisionError:
 #                            j = 0
 #                            #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-#                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, ZeroDivisionError, naccion, timming, fechaLTi, fechaLTf, fechaj))
+#                            logging.debug( Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, ZeroDivisionError, naccion, timming, fechaLTi, fechaLTf, fechaj))
 #                            #log(nombrelog = 'analisisBajistaAccion', error = ZeroDivisionError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaLTf))
 #                        #print j,puntoLT,'localizaLTi',i
 
@@ -1374,7 +1374,7 @@ def analisisBajistaAccion(naccion, **config):
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except OverflowError:
                             #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('__name__: %s; Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
                             #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTf', naccion, timming, fechaLTi, fechaLTf, fechaj))
                             puntoLT = maximoj# asi no altero el LTf
     #                        elif timming=='semanal':
@@ -1845,7 +1845,7 @@ def cotizacionesTicket(nombreticket):
             #print(e.reason)
             print(e)
             datosurl = None
-            logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket, urldatos))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
@@ -1956,7 +1956,7 @@ def cotizacionesMoneda(nombreticket):
             #print(e.reason)
             print(e)
             datosurl = None
-            logging.debug('__name__: %s; Error: %s; Ticket: %s; Url: %s' % (__name__, e, nombreticket, urldatos))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket, urldatos))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
