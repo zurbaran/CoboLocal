@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# Correccion en el Error del backtest donde en las transiciones no se actualiza el precio de salida cuando se hace la transicion correctamente y el precio de salida de la transicion1 es posterior a la posibilidad de entrada en la transicion2
-# Correccion en el Error del backtest donde en la misma barra que nos saca de una operacion, nos vuelve a dejar entrar por LT, se supone que si estamos dentro y nos saca, no volveremos a entrar en LT si no en Ruptura de LT
+# -*- coding: UTF-8 -*-
+
 
 ############################################################
 # modulos estandar importados
@@ -10,6 +9,7 @@ import urllib2
 import sqlite3
 from datetime import date, datetime, timedelta
 from time import sleep
+#from adodbapi.adodbapi import type
 try:
     import cPickle as pickle
 except ImportError:
@@ -23,15 +23,16 @@ import glob
 import csv
 from collections import deque
 import logging
-#import sys
 #import traceback
 #from decimal import Decimal
-
+#import sys
+#import locale
 
 #################################################
+setdefaultencoding=('UTF-8')
+#sys.setdefaultencoding('UTF-8')
+#locale.setlocale(locale.LC_ALL, "")
 
-import locale
-locale.setlocale(locale.LC_ALL, '')
 
 ##########################
 # Constantes locales
@@ -91,7 +92,18 @@ logging.debug('\nInicio de Aplicacion\n')
 ############################################################
 # definicion de funciones
 
+def _test():
+    import doctest
+    doctest.testmod()
+    #TODO: implementar pruebas doctest
+    # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
+    #Externalizar los test
+    #doctest.testfile('example2.txt')
+
 def ExistenDatos(naccion):
+    """
+    
+    """
     tickets = obtenTicketsBBDD(naccion)
     naccion = naccion.upper()
     if naccion in tickets:
@@ -112,6 +124,9 @@ def ExistenDatos(naccion):
 
 
 def LeeDatos(naccion):
+    """
+    
+    """
     naccion = naccion.upper()
     tickets = obtenTicketsBBDD(naccion)
     if naccion in tickets:
@@ -137,7 +152,7 @@ def LeeDatos(naccion):
                 borraTicket (naccion, BBDD = False, codigo = False)# Borramos solo los archivos
                 errorenTicket(naccion)
                 #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                logging.debug('Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (e, naccion, archivo))
+                logging.debug('Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (e, naccion.encode('UTF-8'), archivo))
                 #log(nombrelog = 'LeeDatos', error = KeyError, explicacion = 'Accion; archivo', variables = ('Funcion LeeDatos al utilizar pickle', naccion, archivo))
 #            except EOFError:# no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
 #                archivo.close()
@@ -173,6 +188,9 @@ def grabaDatos(naccion,
                historicoSemanal,
                historicoDiario,
                correcciones,):
+    """
+    
+    """
     naccion = naccion.upper()
     datos = {'historicoMensual':historicoMensual,
              'historicoSemanal':historicoSemanal,
@@ -193,7 +211,9 @@ def grabaDatos(naccion,
     #f.close()
 
 def duerme(tiempo = 1500):
-
+    """
+    
+    """
     x = (randint(0, tiempo)) / 1000.0
     print('Pausa de %.3f segundos' % x)
     sleep (x)
@@ -201,6 +221,9 @@ def duerme(tiempo = 1500):
 
 
 def ticketsdeMercado(mercado):
+    """
+    
+    """
     #global webheaders
     # habra que buscar los ticket y utilizar como fin de pagina el texto en la primera
     # <a href="/q/cp?s=%5EDJA&amp;c=1">Last< donde c=1 indica el final de la pagina
@@ -235,7 +258,7 @@ def ticketsdeMercado(mercado):
                 #print(e.reason)
                 print(url, e)
                 web = None
-                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado, url))
+                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url))
                 sleep (pausareconexion)
                 print ('Pausa de %d segundos' % pausareconexion)
 
@@ -276,7 +299,7 @@ def ticketsdeMercado(mercado):
 
 def descargaHistoricoAccion (naccion, **config):
     #global webheaders
-    ''' Funcion para la descarga de las cotizaciones historicas de una accion.
+    """ Funcion para la descarga de las cotizaciones historicas de una accion.
     Parametros : naccion - nombre de la accion
                 fechaini - fecha de inicio
                 fechafin - fecha fin
@@ -293,7 +316,7 @@ def descargaHistoricoAccion (naccion, **config):
         los datos
         que ha habido pago de dividendos
         o que la url no es valida
-    '''
+    """
 
     naccion = naccion.upper()
     fechaini = config.get('fechaini', None)
@@ -352,7 +375,7 @@ def descargaHistoricoAccion (naccion, **config):
             print('Conexion Perdida')
             #print(e.reason)
             print(url, e)
-            logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado, url))
+            logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url))
             f = None
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
@@ -509,6 +532,9 @@ def descargaHistoricoAccion (naccion, **config):
 #    return timming,difregistros
 
 def actualizacionDatosHisAccion(naccion, **config):
+    """
+    
+    """
     # TODO: Podemos intentar integrar la funcion actualizacionDatosHisAccion dentro de la propia funcion descargaHistoricoAccion, nos ahorrariamos una funcion y seguramente procesos duplicados
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
@@ -549,6 +575,9 @@ def actualizacionDatosHisAccion(naccion, **config):
 
 
 def corregirDatosHistoricosAccion(naccion):
+    """
+    
+    """
     naccion = naccion.upper()
     historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(naccion)
 
@@ -1316,7 +1345,7 @@ def analisisBajistaAccion(naccion, **config):
     #                            if puntoLTanterior>maximohistorico:
                             j = 0 #El error lo da en
                             #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (e, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaLTf, fechaj))
                             #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaj))
                                     #ABL(4 analisis j=2954 timming='d')
                                     #ACOM.ST (22 analisis j=357 timming='d')
@@ -1374,7 +1403,7 @@ def analisisBajistaAccion(naccion, **config):
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except OverflowError:
                             #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (OverflowError, naccion, timming, fechaLTi, fechaLTf, fechaj))
+                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (OverflowError, naccion.encode('UTF-8'), timming, fechaLTi, fechaLTf, fechaj))
                             #log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTf', naccion, timming, fechaLTi, fechaLTf, fechaj))
                             puntoLT = maximoj# asi no altero el LTf
     #                        elif timming=='semanal':
@@ -1518,13 +1547,13 @@ def analisisBajistaAccion(naccion, **config):
         return None
 
 def indicadorMME(datos, **config):
-    '''
+    """
     devuelve de la lista, datos, el indicadorMME calculado
     indice, si es True devueve una tupla completa que corresponde al indicadorMME con el formato (Fecha, indicadorMME) para la lista de datos completa
     indice, si es un valor en concreto, nos devuelve el valor del indicadorMME para ese indice en concreto
 
     indicedatos, es el valor del indice de las tuplas de datos al que se utiliza para calcular el indicador, por defecto 4 que corresponde al precio de cierre.
-    '''
+    """
     # para los indicadores como la Media Movil 30 en la que en los primeros 29 periodos no se puede calcular, hay que asignarles valor 0
     resultado = []
     MME = config.get('MME', 30)
@@ -1558,12 +1587,12 @@ def indicadorMME(datos, **config):
     return resultado
 
 def indicadorTAR(datos, **config):
-    '''
+    """
     Indicador True Averange xrange
     TAR = False/Entero
     Si TAR es false devuelve una lista de los rangos, si es un entero devuelve la media de los rangos de los periodos especificados
 
-    '''
+    """
 
     listaTR = []
     TR = []
@@ -1597,30 +1626,48 @@ def indicadorTAR(datos, **config):
 
 def cruceconindicador(naccion):
     #TODO: funcion que compare el indicadorMME con el precio de cotizacion actual de la accion para comprobar si esta por arriba, centrado o abajo de la ultima barra y con esta informacion, realizar el analisis alcista o bajista
-    '''
+    """
     configurar el resultado que buscamos:
         Solo buscamos en el ultimo periodo mas actual almacenado, compare el indicadorMME con el precio de cotizacion actual y la ultima barra del historico de la accion para comprobar si esta por arriba, centrado o abajo y distacia porcentual al precio y con esta informacion, realizar el analisis alcista o bajista y busquedas de valores de su situacion y cercania en concreto
         Buscamos en todo el historico de la accion haciendo que nos devuelva una lista con las fechas de las barras en las que cruza y nos indique si esta arriba, abajo o si esta en medio en que direccion esta cruzando
 
-    '''
+    """
     return
 
 
 def creaMenu(sep, lmenu):
     """Le damos el separador de la opcion y una lista con las opciones del menu,
-    nos devuelve una tupla con la opcion elegida y la decripcion"""
+    nos devuelve una lista de tuplas con la cola de opciones y descripciones elegidas,
+    añade al final de la lista una tupla mas que contiene (None,None)
+    
+    
+    
+    
+    """
     control = []
+    respdescp = []
 
     for n in lmenu:
         print(n)
         control.append(n[0:n.find(sep)].lower())
 
     while True:
-        resp = (raw_input('Opcion?')).lower()
-        if resp in control:
+        resp = ((raw_input('Opcion?')).lower()).strip()
+
+        if len(resp) == 1:
+            if resp in control:
+                descp = lmenu[control.index(resp)]
+                respdescp = [(resp, descp), ]
+                break
+        elif len(resp) > 1:
+            for n in resp:
+                if n in control:
+                    respdescp.append((n, lmenu[control.index(n)]))
             break
 
-    return (resp, lmenu[control.index(resp)])
+    respdescp.append((None, None))
+
+    return (respdescp)
 
 #def actualizardescargaranalizarticket(naccion,timmingdescarga):
 #    datosaccion=os.path.join(os.getcwd(),"Datos\\"+naccion+".pck")
@@ -1669,6 +1716,9 @@ def creaMenu(sep, lmenu):
 #    print alcista
 
 def borraTicket (ticket, **config):
+    """
+    
+    """
     tickets = obtenTicketsBBDD(ticket)
     cursor, db = conexionBBDD()
     ticket = ticket.upper()
@@ -1729,6 +1779,9 @@ def borraTicket (ticket, **config):
         return False
 
 def cambiaTicket (ticketviejo, ticketnuevo):
+    """
+    
+    """
     ticketviejo = ticketviejo.upper()
     cursor, db = conexionBBDD()
     ticketnuevo = (ticketnuevo.upper()).strip('"')
@@ -1796,6 +1849,9 @@ def cambiaTicket (ticketviejo, ticketnuevo):
     #borraTicket(ticketviejo, BBDD=False)# Se supone que esta funcion ya lo ha borrado, solo queremos borrar los archivos
 
 def errorenTicket (ticket):
+    """
+    
+    """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
     sql = "SELECT `nombreticket`.`fechaError` FROM `nombreticket` WHERE `nombreticket`.`nombre` = '" + ticket + "'"
@@ -1810,6 +1866,9 @@ def errorenTicket (ticket):
         db.commit()
 
 def actualizadoTicket(ticket):
+    """
+    
+    """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
     sql = "UPDATE `nombreticket` SET `fechaActualizacion`='" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + "', `fechaError` = NULL  WHERE `nombreticket`.`nombre`='" + ticket + "' "
@@ -1817,6 +1876,9 @@ def actualizadoTicket(ticket):
     db.commit()
 
 def cotizacionesTicket(nombreticket):
+    """
+    
+    """
     #global webheaders
     cursor, db = conexionBBDD()
 
@@ -1845,7 +1907,7 @@ def cotizacionesTicket(nombreticket):
             #print(e.reason)
             print(e)
             datosurl = None
-            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket, urldatos))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
@@ -1931,6 +1993,9 @@ def cotizacionesTicket(nombreticket):
         actualizadoTicket(nombreticket)
 
 def cotizacionesMoneda(nombreticket):
+    """
+    
+    """
     #global webheaders
     cursor, db = conexionBBDD()
     nombreticket = nombreticket.upper()
@@ -1956,7 +2021,7 @@ def cotizacionesMoneda(nombreticket):
             #print(e.reason)
             print(e)
             datosurl = None
-            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket, urldatos))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
@@ -2015,7 +2080,9 @@ def pidedato(texto, tipodato):
 
 
 def pidefecha():
+    """
 
+    """
     while True:
         fecha = raw_input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
 
@@ -2044,6 +2111,9 @@ def pidefecha():
         print('Formato de fecha mal introducido. Vuelve a intentarlo')
 
 def obtenTicketsBBDD(ticket = None):
+    """
+    
+    """
     cursor, _db = conexionBBDD()
     if ticket == None:
         sql = "SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` ORDER BY `componentes`.`tiket` ASC"
@@ -2069,6 +2139,9 @@ def obtenTicketsBBDD(ticket = None):
         return False
 
 def obtenMercadosBBDD():
+    """
+    
+    """
     cursor, _db = conexionBBDD()
     sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
     cursor.execute(sql)
@@ -2090,6 +2163,9 @@ def obtenMercadosBBDD():
     return mercados
 
 def conexionBBDD():
+    """
+    
+    """
     try:
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
         #db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
@@ -2103,13 +2179,13 @@ def conexionBBDD():
 
 
 #def log(**config):
-#    '''
+#    """
 #    la ubicacion deberia ser igual a __name__ de la funcion donde viene
 #    nombrelog=archivo dondes queremos guardar el registro, normalmente nombre da la funcion donde queremos ubicar la funcion
 #    error = Mensaje del error o causa del mismo, normalmente capturamos el error o le asignamos el nombre de la excepcion
 #    explicacion = ubicacion y explicacion de las variables, son constantes ('Fecha; Tipo Error; Ubicacion; ')
 #    variables = lista con breve explicacion y variables que nos interesa registrar
-#    '''
+#    """
 #    nombrelog = config.get('nombrelog', 'Cobo')
 #    error = str(config.get('error', ''))
 #    explicacion = 'Fecha; Tipo Error; Ubicacion; ' + (config.get('explicacion', '')) + '\n'
@@ -2253,75 +2329,80 @@ if __name__ == '__main__':
 #    print 'Total de tickets %d'%(len(tickets.keys()))
 
 
-    opcion = ""
-    while opcion != "z":
+    opcion = None
+    while True:
 
         cursor, db = conexionBBDD()
         tickets = obtenTicketsBBDD()
         mercados = obtenMercadosBBDD()
 
-        print('Total de mercados : %d' % (len(mercados)))
-        print('Total de tickets : %d' % (len(tickets.keys())))
-
-        sql = "SELECT `nombre` FROM `nombreticket` WHERE `fechaError` is not null"
-        cursor.execute(sql)
-        numeroResultado = len(cursor.fetchall())
-        print('Tickets con errores : %d' % numeroResultado)
-
-        diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
-        diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
-        sql = "SELECT `nombre` FROM `nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `nombreticket`.`fechaError` DESC, `nombreticket`.`fechaActualizacion` ASC"
-        cursor.execute(sql)
-        numeroResultado = len(cursor.fetchall())
-        print('Tickets pendientes de realiar una actualizacion : %d' % numeroResultado)
-        sql = "SELECT * FROM `nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `componentes`)"
-        cursor.execute(sql)
-        numeroResultado = len(cursor.fetchall())
-        print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
-
 
         print('')
-        opcion, seleccion = creaMenu(')', (
-        'Acciones para un solo ticket',
-        '------------------------------',
-        'A) Alta/Actualizar/Descargar Datos de 1 Ticket',
-        'B) Corregir Datos de 1 Ticket',
-        'C) Analizar Datos de 1 Ticket',
-        'D) Eliminar 1 Ticket',
-        'E) Generar Archivos Grafico',
-        '',
-        'Acciones para los mercados',
-        '------------------------------',
-        'F) Listar Tickets Mercados',
-        'G) Anadir Ticket Mercado',
-        'H) Eliminar Ticket Mercado',
-        '',
-        'Acciones para las monedas',
-        '-------------------------------',
-        'I) Actualizar cotizaciones de las Monedas',
-        '',
-        'Acciones para todos los tickets en BBDD',
-        '------------------------------',
-        'L) Listar Tickets',
-        'M) Actualizar Tickets componentes de Mercados',
-        'N) Actualizar cotizaciones de todos los Tickets',
-        'O) Actualizar/Descargar Datos Cotizaciones Historicas todos los Tickets',
-        'P) Actualizar Max/Min Historicos de todos los Tickets',
-        'Q) Analizar Datos de todos los Tickets',
-        '------------------------------',
-        '',
-        'S) BackTest',
-        '',
-        '------------------------------',
-        'Acciones Masivas',
-        '------------------------------',
-        'V) Exportar datos a arhivos csv',
-        'W) Dar de alta acciones desde archivo',
-        '------------------------------',
-        '',
-        'X) Guardar Datos',
-        'Z) Salir'))
-        print('')
+        if opcion == None:
+
+            print('Total de mercados : %d' % (len(mercados)))
+            print('Total de tickets : %d' % (len(tickets.keys())))
+
+            sql = "SELECT `nombre` FROM `nombreticket` WHERE `fechaError` is not null"
+            cursor.execute(sql)
+            numeroResultado = len(cursor.fetchall())
+            print('Tickets con errores : %d' % numeroResultado)
+
+            diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
+            diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
+            sql = "SELECT `nombre` FROM `nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `nombreticket`.`fechaError` DESC, `nombreticket`.`fechaActualizacion` ASC"
+            cursor.execute(sql)
+            numeroResultado = len(cursor.fetchall())
+            print('Tickets pendientes de realiar una actualizacion : %d' % numeroResultado)
+            sql = "SELECT * FROM `nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `componentes`)"
+            cursor.execute(sql)
+            numeroResultado = len(cursor.fetchall())
+            print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
+
+            iopciones = 0
+            opciones = creaMenu(')', (
+            'Acciones para un solo ticket',
+            '------------------------------',
+            'A) Alta/Actualizar/Descargar Datos de 1 Ticket',
+            'B) Corregir Datos de 1 Ticket',
+            'C) Analizar Datos de 1 Ticket',
+            'D) Eliminar 1 Ticket',
+            'E) Generar Archivos Grafico',
+            '',
+            'Acciones para los mercados',
+            '------------------------------',
+            'F) Listar Tickets Mercados',
+            'G) Anadir Ticket Mercado',
+            'H) Eliminar Ticket Mercado',
+            '',
+            'Acciones para las monedas',
+            '-------------------------------',
+            'I) Actualizar cotizaciones de las Monedas',
+            '',
+            'Acciones para todos los tickets en BBDD',
+            '------------------------------',
+            'L) Listar Tickets',
+            'M) Actualizar Tickets componentes de Mercados',
+            'N) Actualizar cotizaciones de todos los Tickets',
+            'O) Actualizar/Descargar Datos Cotizaciones Historicas todos los Tickets',
+            'P) Actualizar Max/Min Historicos de todos los Tickets',
+            'Q) Analizar Datos de todos los Tickets',
+            '------------------------------',
+            '',
+            'S) BackTest',
+            '',
+            '------------------------------',
+            'Acciones Masivas',
+            '------------------------------',
+            'V) Exportar datos a arhivos csv',
+            'W) Dar de alta acciones desde archivo',
+            '------------------------------',
+            '',
+            'X) Guardar Datos',
+            'Z) Salir'))
+            print('')
+        opcion, seleccion = opciones[iopciones]
+        iopciones += 1
 
 
 #'A) Alta/Actualizar/Descargar Datos de 1 Ticket'
@@ -2373,7 +2454,7 @@ if __name__ == '__main__':
                         borraTicket (naccion)
 
 #        'B) Corregir Datos de 1 Ticket',
-        if opcion == 'b':
+        elif opcion == 'b':
             print(seleccion)
             naccion = raw_input('Introduce nombre de la accion : ').upper()
 
@@ -2384,7 +2465,7 @@ if __name__ == '__main__':
 
 
 #        'C) Analizar Datos de 1 Ticket',
-        if opcion == 'c':
+        elif opcion == 'c':
             print(seleccion)
             while True:
                 naccion = raw_input('Introduce ticket de la accion : ').upper()
@@ -2438,7 +2519,7 @@ if __name__ == '__main__':
 
 
 #        'D) Eliminar 1 Ticket',
-        if opcion == 'd':
+        elif opcion == 'd':
             print(seleccion)
             naccion = raw_input('Introduce nombre de la accion : ').upper()
 
@@ -2446,7 +2527,7 @@ if __name__ == '__main__':
 
 
 #        'E) Generar Archivos Grafico'
-        if opcion == 'e':
+        elif opcion == 'e':
             print(seleccion)
 
             while True:
@@ -2540,14 +2621,14 @@ if __name__ == '__main__':
 
 
 #        'F) Listar Tickets Mercados',
-        if opcion == 'f':
+        elif opcion == 'f':
             print(seleccion)
             for mercado in mercados:
                 print (mercado)
             print('Total de mercados %d' % (len(mercados)))
 
         #G) Anadir Ticket Mercado',
-        if opcion == 'g':
+        elif opcion == 'g':
             print(seleccion)
             mercado = raw_input('Introduce ticket del mercado a anadir : ').upper()
             mercado = mercado.replace('@%5E', '^')
@@ -2583,7 +2664,7 @@ if __name__ == '__main__':
             print('Total de mercados %d' % (len(mercados)))
 
 #        'H) Eliminar Ticket Mercado',
-        if opcion == 'h':
+        elif opcion == 'h':
             print(seleccion)
             mercado = raw_input('Introduce ticket del mercado a borrar : ').upper()
             mercado = mercado.replace('@%5E', '^')
@@ -2594,7 +2675,7 @@ if __name__ == '__main__':
             print('Total de mercados %d' % (len(mercados)))
 
 #        'I) Actualizar cotizaciones monedas
-        if opcion == 'i':
+        elif opcion == 'i':
             print(seleccion)
             sql = "SELECT `url_Inet` FROM `monedas`"
             cursor.execute(sql)
@@ -2610,7 +2691,7 @@ if __name__ == '__main__':
 
 
 #        'L) Listar Tickets',
-        if opcion == 'l':
+        elif opcion == 'l':
             listatickets = tickets.keys()
             listatickets.sort()
             ticketsnoBBDD = 0
@@ -2624,7 +2705,7 @@ if __name__ == '__main__':
             del listatickets, ticketsnoBBDD
 
 #        'M) Actualizar Tickets componentes de Mercados',
-        if opcion == 'm':
+        elif opcion == 'm':
             print(seleccion)
             sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
             cursor.execute(sql)
@@ -2670,7 +2751,7 @@ if __name__ == '__main__':
 
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
-        if opcion == 'n':
+        elif opcion == 'n':
             print(seleccion)
             diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
             diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
@@ -2689,7 +2770,7 @@ if __name__ == '__main__':
                 duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
-        if opcion == 'o':
+        elif opcion == 'o':
             print(seleccion)
             ticketsborrados = []
             sql = "SELECT `tiket` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
@@ -2782,7 +2863,7 @@ if __name__ == '__main__':
             del ticketsborrados
 
 
-        if opcion == 'p':
+        elif opcion == 'p':
             #P) Actualizar Max/Min Historicos de todos los Tickets',
             print(seleccion)
             ticketsnodescargados = []
@@ -2842,7 +2923,7 @@ if __name__ == '__main__':
                 print(ticket)
             print('Un total de : ', len (ticketsnodescargados))
 
-        if opcion == 'q':
+        elif opcion == 'q':
             #Q) Analizar Datos de todos los Tickets',
             print(seleccion)
             sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
@@ -2996,7 +3077,7 @@ if __name__ == '__main__':
 
 #        'S) BackTest
 
-        if opcion == 's':
+        elif opcion == 's':
             #ticket='AAPL'
             print(seleccion)
             backtest = []
@@ -3084,7 +3165,7 @@ if __name__ == '__main__':
                     MMe2diario = False
                 else:
                     MMediario = int(MMediario)
-                    MMe2diario = raw_input('2ª Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2diario = raw_input('2Âª Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2diario == '':
                         MMe2diario = False
                     else:
@@ -3096,7 +3177,7 @@ if __name__ == '__main__':
                     MMe2semanal = False
                 else:
                     MMesemanal = int(MMesemanal)
-                    MMe2semanal = raw_input('2ª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2semanal = raw_input('2Âª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2semanal == '':
                         MMe2semanal = False
                     else:
@@ -3108,7 +3189,7 @@ if __name__ == '__main__':
                     MMe2mensual = False
                 else:
                     MMemensual = int(MMemensual)
-                    MMe2mensual = raw_input('2ª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2mensual = raw_input('2Âª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2mensual == '':
                         MMe2mensual = False
                     else:
@@ -3483,9 +3564,9 @@ if __name__ == '__main__':
                 j.write(('Media Movil Exponencial diario  : %s\n' % MMediario))
                 j.write(('Media Movil Exponencial semanal : %s\n' % MMesemanal))
                 j.write(('Media Movil Exponencial mensual : %s\n' % MMemensual))
-                j.write(('Media Movil Exponencial 2ª para cruce de medias diario  : %s\n' % MMe2diario))
-                j.write(('Media Movil Exponencial 2ª para cruce de medias semanal : %s\n' % MMe2semanal))
-                j.write(('Media Movil Exponencial 2ª para cruce de medias mensual : %s\n' % MMe2mensual))
+                j.write(('Media Movil Exponencial 2Âª para cruce de medias diario  : %s\n' % MMe2diario))
+                j.write(('Media Movil Exponencial 2Âª para cruce de medias semanal : %s\n' % MMe2semanal))
+                j.write(('Media Movil Exponencial 2Âª para cruce de medias mensual : %s\n' % MMe2mensual))
                 j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
                 j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
                 j.write(('True Averange xrange Diario : %s\n' % TARdiario))
@@ -3529,7 +3610,7 @@ if __name__ == '__main__':
             #bigben
 
 #        'V) Exportar datos a arhivos csv',
-        if opcion == 'v':
+        elif opcion == 'v':
             print (seleccion)
             print ('Limpiando Directorio')
             os.remove(glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*")))
@@ -3605,7 +3686,7 @@ if __name__ == '__main__':
 
 
 #        'W) Dar de alta acciones desde archivo',
-        if opcion == 'w':
+        elif opcion == 'w':
             print(seleccion)
 
             incluidos = 0
@@ -3613,7 +3694,7 @@ if __name__ == '__main__':
             archivowtickers = os.path.join('C:\\xampp\\htdocs\\jstock' , 'wtickers.dat')
 
             if not os.path.exists(archivowtickers):
-                '''
+                """
                 print ('Indica la ruta del archivo wtickers.dat')
                 application = (wx()).wx.PySimpleApp()
                 dialog = (wx()).wx.DirDialog (None, 'Archivo wtickers.dat',
@@ -3626,7 +3707,7 @@ if __name__ == '__main__':
                     print 'No directory.'
                 dialog.Destroy()
                 application.Destroy()
-                '''
+                """
             f = open(archivowtickers, "r")
             lineas = f.readlines()
             f.close()
@@ -3666,7 +3747,7 @@ if __name__ == '__main__':
 
 
 
-        if opcion == 'x':
+        elif opcion == 'x':
             print(seleccion)
             print('Funcion desabilitada')
 #            ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
@@ -3675,7 +3756,7 @@ if __name__ == '__main__':
 #            f=open(ficheroDatos,"w")
 #            f.write(codificado)
 #            f.close()
-#
+#        
 #
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
 #    datos = {'tickets':tickets, 'mercados':mercados}
@@ -3684,5 +3765,8 @@ if __name__ == '__main__':
 #    f.write(datos)
 #    f.close()
     #os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
-    cursor.close()
-    db.close()
+        elif opcion == 'z':
+
+            cursor.close()
+            db.close()
+            break
