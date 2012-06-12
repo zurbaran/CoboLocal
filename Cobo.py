@@ -6,7 +6,11 @@
 
 #import urllib
 import urllib2
-import sqlite3
+try:
+    from pysqlite2 import dbapi2 as sqlite3
+except ImportError:
+    print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
+    import sqlite3
 from datetime import date, datetime, timedelta
 from time import sleep
 #from adodbapi.adodbapi import type
@@ -29,7 +33,7 @@ import logging
 #import locale
 
 #################################################
-setdefaultencoding=('UTF-8')
+setdefaultencoding = ('UTF-8')
 #sys.setdefaultencoding('UTF-8')
 #locale.setlocale(locale.LC_ALL, "")
 
@@ -55,7 +59,8 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
 #logging.captureWarnings(True)
 #basic setup with ISO 8601 time format
 logging.basicConfig(filename = ARCHIVO_LOG, format = '%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s', level = logging.DEBUG)
-logging.debug('\nInicio de Aplicacion\n')
+logging.debug('\n')
+logging.debug('Inicio de Aplicacion')
 #logging.basicConfig(filename='/tmp/test.log', , level=logging.INFO)
 # switch to UTC / GMT
 #logging.Formatter.converter = time.gmtime
@@ -258,9 +263,9 @@ def ticketsdeMercado(mercado):
                 #print(e.reason)
                 print(url, e)
                 web = None
-                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url))
-                sleep (pausareconexion)
+                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url.encode('UTF-8')))
                 print ('Pausa de %d segundos' % pausareconexion)
+                sleep (pausareconexion)
 
         if ultimapagina == 0:
             busqueda = 'Next</a> | <a href="/q/cp?s=' + (mercado.upper().replace('^', '%5E')) + '&amp;c='
@@ -375,10 +380,11 @@ def descargaHistoricoAccion (naccion, **config):
             print('Conexion Perdida')
             #print(e.reason)
             print(url, e)
-            logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, naccion.encode('UTF-8'), url.encode('UTF-8')))
             f = None
-            sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
+            sleep (pausareconexion)
+            
             # cuando la conexion se pierde, pasa por aqui, dando como error
             #[Errno 11004] getaddrinfo failed
 #        except IOError as e:
@@ -1908,8 +1914,8 @@ def cotizacionesTicket(nombreticket):
             print(e)
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
-            sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
+            sleep (pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 #        except IOError as e:
 #            print('Conexion Erronea')
@@ -2022,8 +2028,8 @@ def cotizacionesMoneda(nombreticket):
             print(e)
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
-            sleep (pausareconexion)
             print ('Pausa de %d segundos' % pausareconexion)
+            sleep (pausareconexion)
             #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 #        except IOError as e:
 #            print('Conexion Erronea')
@@ -2170,6 +2176,8 @@ def conexionBBDD():
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
         #db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
         cursor = db.cursor()
+	#TODO: Crear excepcion especifica para cuando no se encuentra el archivo
+	#Crear el archivo Cobo.dat, y ejecutar Cobo.sql para "rellenar" la Base de datos desde "cero"
     except:
         raw_input ('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
         quit()
@@ -2410,48 +2418,46 @@ if __name__ == '__main__':
             print(seleccion)
 
             naccion = raw_input('Introduce ticket de la accion : ').upper()
-
-            sql = "SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = '" + naccion + "')"
-            cursor.execute(sql)
+            naccion = (naccion,)
+            cursor.execute("SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = ?)", naccion)
             numeroResultado = len(cursor.fetchall())
             if numeroResultado == 0:
-                sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
-                cursor.execute(sql)
+                cursor.execute("INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                 db.commit()
-                print(naccion + ' anadido a la base de datos')
+                print(naccion[0] + ' anadido a la base de datos')
 
-            if not ExistenDatos(naccion):
-                print('Ticket %s nuevo, descarga completa del historico de la accion' % naccion)
-                cotizacionesTicket(naccion)
+            if not ExistenDatos(naccion[0]):
+                print('Ticket %s nuevo, descarga completa del historico de la accion' % naccion[0])
+                cotizacionesTicket(naccion[0])
 
                 for timmingdescargado in 'dwm':
 
-                    accioninvalida = descargaHistoricoAccion (naccion, timming = timmingdescargado)
+                    accioninvalida = descargaHistoricoAccion (naccion[0], timming = timmingdescargado)
                     duerme()
 
             else:
-                print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % naccion)
+                print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % naccion[0])
                 for timmingdescargado in 'dwm':
 
-                    fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(naccion, timming = timmingdescargado)
+                    fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(naccion[0], timming = timmingdescargado)
 
                     if actualizaractualizar:# and (desdefechamodificacionarchivo(datosaccion)):
 
-                        accioninvalida = descargaHistoricoAccion(naccion, fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar)
+                        accioninvalida = descargaHistoricoAccion(naccion[0], fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar)
                         duerme()
                     else:
                         accioninvalida = None
 
                     if accioninvalida == 'Pago Dividendos':
-                        borraTicket (naccion, BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
+                        borraTicket (naccion[0], BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
                         print('Reintento de la descarga, el error viene de un pago de Dividendos')
                         for timmingdescargado in 'dwm':
 
-                            accioninvalida = descargaHistoricoAccion (naccion, timming = timmingdescargado)
+                            accioninvalida = descargaHistoricoAccion (naccion[0], timming = timmingdescargado)
                             duerme()
 
                     if accioninvalida == 'URL invalida':
-                        borraTicket (naccion)
+                        borraTicket (naccion[0])
 
 #        'B) Corregir Datos de 1 Ticket',
         elif opcion == 'b':
@@ -2535,9 +2541,8 @@ if __name__ == '__main__':
                 if ExistenDatos(ticket):
                     break
             historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(ticket)
-
-            sql = "SELECT `nombre` FROM `componentes` WHERE `componentes`.`tiket` LIKE '" + ticket + "'"
-            cursor.execute(sql)
+            ticket = (ticket,)
+            cursor.execute("SELECT `nombre` FROM `componentes` WHERE `componentes`.`tiket` LIKE ?", ticket)
             nombre = cursor.fetchall()
             nombre = (nombre[0][0].strip('"')).replace(',', '')
 
@@ -2632,7 +2637,8 @@ if __name__ == '__main__':
             print(seleccion)
             mercado = raw_input('Introduce ticket del mercado a anadir : ').upper()
             mercado = mercado.replace('@%5E', '^')
-            if not (mercado in mercados):
+            mercado = (mercado,)
+            if not (mercado[0] in mercados):
                 sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
                 cursor.execute(sql)
                 resultadoM = cursor.fetchall()
@@ -2640,8 +2646,8 @@ if __name__ == '__main__':
                 m = None
                 while m in resultadoM:
                     m = raw_input ('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
-                sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo`  = '" + m + "')"
-                cursor.execute(sql)
+                m = (m,)
+                cursor.execute("SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo`  = ?)", m)
                 mercadosvalidos = cursor.fetchall()
                 numeroResultado = len(mercadosvalidos)
                 if numeroResultado == 1:
@@ -2654,8 +2660,7 @@ if __name__ == '__main__':
                     mercadosvalidos = mercadosvalidos.replace('"', '')
                     mercadosvalidos = mercadosvalidos.replace(' ', '')
 
-                    sql = "UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` ='" + m + "')"
-                    cursor.execute(sql)
+                    cursor.execute("UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` =?)", m)
                     db.commit()
                     mercados.append(mercado)
 
@@ -3248,18 +3253,17 @@ if __name__ == '__main__':
             while True:
                 moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest : ')
                 if moneda == '' or moneda == None:
-                    moneda = (raw_input('Introduce sufijo de tickets del mercado en la que se hace el backtest : ')).upper()
-                    sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and `componentes`.`tiket` LIKE '%." + moneda + "' ORDER BY `componentes`.`tiket` ASC"
+                    moneda = ((raw_input('Introduce sufijo de tickets del mercado en la que se hace el backtest : ')).upper(),)
+                    cursor.execute ("SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and `componentes`.`tiket` LIKE ? ORDER BY `componentes`.`tiket` ASC", moneda)
                     break
                 if moneda in monedas:
-                    sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC"
+                    cursor.execute ("SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC")
                     break
 
 
             #consulta en la tabla componentes que pertenecen a los mercados de una moneda
             #sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC"
 
-            cursor.execute(sql)
             resultado = cursor.fetchall()
             cuentaatras = len(resultado)
             for registro in resultado:
@@ -3564,9 +3568,9 @@ if __name__ == '__main__':
                 j.write(('Media Movil Exponencial diario  : %s\n' % MMediario))
                 j.write(('Media Movil Exponencial semanal : %s\n' % MMesemanal))
                 j.write(('Media Movil Exponencial mensual : %s\n' % MMemensual))
-                j.write(('Media Movil Exponencial 2Âª para cruce de medias diario  : %s\n' % MMe2diario))
-                j.write(('Media Movil Exponencial 2Âª para cruce de medias semanal : %s\n' % MMe2semanal))
-                j.write(('Media Movil Exponencial 2Âª para cruce de medias mensual : %s\n' % MMe2mensual))
+                j.write(('Media Movil Exponencial 2Â para cruce de medias diario  : %s\n' % MMe2diario))
+                j.write(('Media Movil Exponencial 2Â para cruce de medias semanal : %s\n' % MMe2semanal))
+                j.write(('Media Movil Exponencial 2Â para cruce de medias mensual : %s\n' % MMe2mensual))
                 j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
                 j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
                 j.write(('True Averange xrange Diario : %s\n' % TARdiario))
@@ -3620,11 +3624,11 @@ if __name__ == '__main__':
 
             moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
             if moneda == '' or moneda == None:
-                sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC")
             else:
-                sql = "SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' `componentes`.`tiket` LIKE '%." + moneda + "' ORDER BY `componentes`.`tiket` ASC"
+                moneda = (moneda,)
+                cursor.execute ("SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' `componentes`.`tiket` LIKE ? ORDER BY `componentes`.`tiket` ASC", moneda)
 
-            cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
@@ -3718,13 +3722,12 @@ if __name__ == '__main__':
 
                 punto = naccion.find('.')
                 if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):# encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-                    sql = "SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = '" + naccion + "')"
-                    cursor.execute(sql)
+                    naccion = (naccion,)
+                    cursor.execute ("SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = ?)", naccion)
                     numeroResultado = len(cursor.fetchall())
                     if numeroResultado == 0:
-                        sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
-                        cursor.execute(sql)
-                        print(naccion + ' anadido a la base de datos')
+                        cursor.execute ("INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                        print(naccion[0] + ' anadido a la base de datos')
                         incluidos += 1
 
                 #for suf in sufijosexcluidos:# Todas las comparaciones con los sufijosexcluidos tienen que ser -1(no existe) para que lo anadamos, si hay uno, no se anade
