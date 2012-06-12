@@ -384,7 +384,7 @@ def descargaHistoricoAccion (naccion, **config):
             f = None
             print ('Pausa de %d segundos' % pausareconexion)
             sleep (pausareconexion)
-            
+
             # cuando la conexion se pierde, pasa por aqui, dando como error
             #[Errno 11004] getaddrinfo failed
 #        except IOError as e:
@@ -2042,6 +2042,9 @@ def cotizacionesMoneda(nombreticket):
     datosurl2 = datosurl.split(',')
     datoticket = datosurl2[0].strip('"')
     datoprecio = datosurl2[1]
+    if nombreticket == 'EURGBP=X':
+        print ('Caso especial, libra Esterlina convertida en peniques')
+        datoprecio = str(float(datoprecio) * 100)
 
     if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:#".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
         print(('La Moneda %s no existe' % nombreticket))
