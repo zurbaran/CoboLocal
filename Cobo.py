@@ -90,8 +90,8 @@ logging.debug('Inicio de Aplicacion')
 
 #Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
 #35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
-# rentabilidadnegativa= - (rentabilidadpositiva / 1+rentabilidadpositiva)
-# rentabilidadpositiva= 1-rentabilidadnegativa / (1-rentabilidadnegativa)
+# rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
+# rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
 
 
 ############################################################
