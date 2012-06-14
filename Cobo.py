@@ -80,13 +80,13 @@ logging.debug('Inicio de Aplicacion')
 #assert
 
 # Buscar tickets duplicados en la BBDD
-# SELECT `tiket`, count(*) FROM `componentes` GROUP BY `tiket` HAVING count(*) > 1
+# SELECT `tiket`, count(*) FROM `Cobo_componentes` GROUP BY `tiket` HAVING count(*) > 1
 
 # Lista de los distintos mercados a los que pertenecen los tickets y cantidad de tickets para cada uno de ellos
-# SELECT `mercado`, count(*) FROM `componentes` GROUP BY `mercado` HAVING count(*) > 0
+# SELECT `mercado`, count(*) FROM `Cobo_componentes` GROUP BY `mercado` HAVING count(*) > 0
 
 # Buscar tikets a las que les falte relacion entre mercados y monedas
-# SELECT `tiket`,`mercado` FROM `componentes` where `mercado` not in (SELECT `nombreUrl` FROM `mercado_moneda`)
+# SELECT `tiket`,`mercado` FROM `Cobo_componentes` where `mercado` not in (SELECT `nombreUrl` FROM `Cobo_mercado_moneda`)
 
 #Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
 #35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
@@ -1737,28 +1737,28 @@ def borraTicket (ticket, **config):
         if BBDD:
             print('Borrando de la BBDD el ticket %s' % ticket)
 
-            sql = "SELECT `componentes`.`codigo` FROM `componentes` WHERE (`componentes`.`tiket` = '" + ticket + "')"
+            sql = "SELECT `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '" + ticket + "')"
             cursor.execute(sql)
             codigo = cursor.fetchall()
             numeroResultado = len(codigo)
             if numeroResultado == 1:
                 codigo = str(codigo[0][0])
-                sql = "SELECT `params_operaciones`.`id` FROM `params_operaciones` WHERE (`params_operaciones`.`codigo`=" + codigo + ")"
+                sql = "SELECT `Cobo_params_operaciones`.`id` FROM `Cobo_params_operaciones` WHERE (`Cobo_params_operaciones`.`codigo`=" + codigo + ")"
                 cursor.execute(sql)
                 numeroResultado = len(cursor.fetchall())
                 if numeroResultado == 1:
-                    sql = "DELETE FROM `params_operaciones` WHERE `params_operaciones`.`codigo`= " + codigo
+                    sql = "DELETE FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo`= " + codigo
                     cursor.execute(sql)
-                sql = "DELETE FROM `componentes` WHERE `componentes`.`tiket` = '" + ticket + "'"
+                sql = "DELETE FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = '" + ticket + "'"
                 cursor.execute(sql)
 
-            sql = "SELECT `maximini`.`nombre` FROM `maximini` WHERE (`maximini`.`nombre` = '" + ticket + "')"
+            sql = "SELECT `Cobo_maximini`.`nombre` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticket + "')"
             cursor.execute(sql)
             numeroResultado = len(cursor.fetchall())
             if numeroResultado == 1:
-                sql = "DELETE FROM `maximini` WHERE `maximini`.`nombre`='" + ticket + "' "
+                sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticket + "' "
                 cursor.execute(sql)
-            sql = "DELETE FROM `nombreticket` WHERE `nombreticket`.`nombre`='" + ticket + "' "
+            sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
             cursor.execute(sql)
             db.commit()
 
@@ -1793,58 +1793,58 @@ def cambiaTicket (ticketviejo, ticketnuevo):
     ticketnuevo = (ticketnuevo.upper()).strip('"')
     #cursor,db=conexionBBDD()
 
-    sql = "SELECT * FROM `nombreticket` WHERE (`nombreticket`.`nombre`='" + ticketnuevo + "') "
+    sql = "SELECT * FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre`='" + ticketnuevo + "') "
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if numeroResultado == 0:
-        sql = "INSERT INTO `nombreticket` (`nombre`,`fechaRegistro`,`fechaError`,`fechaActualizacion`) VALUES ('%s','%s',NULL, NULL)" % (ticketnuevo, date.today())
+        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`,`fechaRegistro`,`fechaError`,`fechaActualizacion`) VALUES ('%s','%s',NULL, NULL)" % (ticketnuevo, date.today())
         cursor.execute(sql)
 
-    sql = "SELECT * FROM `componentes` WHERE (`componentes`.`tiket`='" + ticketnuevo + "') "
+    sql = "SELECT * FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket`='" + ticketnuevo + "') "
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if numeroResultado == 0:
-        sql = "UPDATE `componentes` SET `tiket`='" + ticketnuevo + "' WHERE `componentes`.`tiket` = '" + ticketviejo + "'"
+        sql = "UPDATE `Cobo_componentes` SET `tiket`='" + ticketnuevo + "' WHERE `Cobo_componentes`.`tiket` = '" + ticketviejo + "'"
         cursor.execute(sql)
     elif numeroResultado == 1:
-        sql = "SELECT `componentes`.`codigo` FROM `componentes` WHERE (`componentes`.`tiket` = '" + ticketviejo + "')"
+        sql = "SELECT `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '" + ticketviejo + "')"
         cursor.execute(sql)
         codigo = cursor.fetchall()
         numeroResultado = len(codigo)
         if numeroResultado == 1:
             codigo = str(codigo[0][0])
-            sql = "SELECT `params_operaciones`.`id` FROM `params_operaciones` WHERE (`params_operaciones`.`codigo`=" + codigo + ")"
+            sql = "SELECT `Cobo_params_operaciones`.`id` FROM `Cobo_params_operaciones` WHERE (`Cobo_params_operaciones`.`codigo`=" + codigo + ")"
             cursor.execute(sql)
             numeroResultado = len(cursor.fetchall())
             if numeroResultado == 1:
-                sql = "DELETE FROM `params_operaciones` WHERE `params_operaciones`.`codigo`= " + codigo
+                sql = "DELETE FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo`= " + codigo
                 cursor.execute(sql)
-            sql = "DELETE FROM `componentes` WHERE `componentes`.`tiket`='" + ticketviejo + "'"
+            sql = "DELETE FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket`='" + ticketviejo + "'"
             cursor.execute(sql)
 
 
-    sql = "SELECT * FROM `maximini` WHERE (`maximini`.`nombre`='" + ticketnuevo + "') "
+    sql = "SELECT * FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre`='" + ticketnuevo + "') "
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if numeroResultado == 0:
-        sql = "SELECT `maximini`.`id` FROM `maximini` WHERE (`maximini`.`nombre`='" + ticketviejo + "')"
+        sql = "SELECT `Cobo_maximini`.`id` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre`='" + ticketviejo + "')"
         cursor.execute(sql)
         codigo = cursor.fetchall()
         numeroResultado = len(codigo)
         if numeroResultado == 1:
             codigo = str(codigo[0][0])
-            sql = "UPDATE `maximini` SET `nombre` = '%s', `fechaRegistro` = '%s' WHERE `maximini`.`id` =%s" % (ticketnuevo, ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")), codigo)
+            sql = "UPDATE `Cobo_maximini` SET `nombre` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_maximini`.`id` =%s" % (ticketnuevo, ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")), codigo)
             cursor.execute(sql)
     elif numeroResultado == 1:
-        sql = "SELECT * FROM `maximini` WHERE (`maximini`.`nombre` = '" + ticketviejo + "')"
+        sql = "SELECT * FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticketviejo + "')"
         cursor.execute(sql)
         numeroResultado = len(cursor.fetchall())
         if numeroResultado == 1:
-            sql = "DELETE FROM `maximini` WHERE `maximini`.`nombre`='" + ticketviejo + "' "
+            sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticketviejo + "' "
             cursor.execute(sql)
 
 
-    sql = "DELETE FROM `nombreticket` WHERE `nombreticket`.`nombre`='" + ticketviejo + "'"
+    sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticketviejo + "'"
     cursor.execute(sql)
     db.commit()
 
@@ -1860,14 +1860,14 @@ def errorenTicket (ticket):
     """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
-    sql = "SELECT `nombreticket`.`fechaError` FROM `nombreticket` WHERE `nombreticket`.`nombre` = '" + ticket + "'"
+    sql = "SELECT `Cobo_nombreticket`.`fechaError` FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre` = '" + ticket + "'"
     cursor.execute(sql)
     hayerror = cursor.fetchall()
     print('')
     print('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket)
     print('')
     if hayerror[0][0] == None:#Solo almacenamos error si no habia otro error
-        sql = "UPDATE `nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `nombreticket`.`nombre`='" + ticket + "' "
+        sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
         cursor.execute(sql)
         db.commit()
 
@@ -1877,7 +1877,7 @@ def actualizadoTicket(ticket):
     """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
-    sql = "UPDATE `nombreticket` SET `fechaActualizacion`='" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + "', `fechaError` = NULL  WHERE `nombreticket`.`nombre`='" + ticket + "' "
+    sql = "UPDATE `Cobo_nombreticket` SET `fechaActualizacion`='" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + "', `fechaError` = NULL  WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
     cursor.execute(sql)
     db.commit()
 
@@ -1957,20 +1957,20 @@ def cotizacionesTicket(nombreticket):
         cambiaTicket(nombreticket, datoticket)
 
     else:
-        sql = "SELECT * FROM `componentes` WHERE `tiket` = '" + nombreticket + "'"
+        sql = "SELECT * FROM `Cobo_componentes` WHERE `tiket` = '" + nombreticket + "'"
         cursor.execute(sql)
         datosBBDDcomponentes = cursor.fetchall()
         numeroResultado = len(datosBBDDcomponentes)
         if numeroResultado == 0:
-            sql = "INSERT INTO `componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (NULL , " + datosurl + ",'" + str(date.today()) + "')"
+            sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (NULL , " + datosurl + ",'" + str(date.today()) + "')"
             cursor.execute(sql)
 
         elif numeroResultado == 1:
             codigo = datosBBDDcomponentes[0][0]
-            sql = "UPDATE `componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`tiket` = '%s'" % (datonombre, datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror, date.today(), nombreticket)
-            #sql = "UPDATE `componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
+            sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror, date.today(), nombreticket)
+            #sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
             cursor.execute(sql)
-            sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
+            sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
             cursor.execute(sql)
             datosBBDDoperaciones = cursor.fetchall()
             numeroResultado = len(datosBBDDoperaciones)
@@ -1984,12 +1984,12 @@ def cotizacionesTicket(nombreticket):
 
                 if precio_ini <= precio_fin:# datos de una accion alcista
                     if (datomax52 != 'NULL' and datomax52 > entrada) or (datomaxDia != 'NULL' and datomaxDia > entrada) or (datoValorActual != 'NULL' and datoValorActual > entrada):# si true, analisis ya cumplido, obsoleto y lo actualizamos
-                        sql = "UPDATE `params_operaciones` SET `entrada` = NULL, `salida` = NULL, `precio_salida` = %.3f WHERE `params_operaciones`.`id` =%s" % (salida, ident)
+                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = NULL, `salida` = NULL, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
                         cursor.execute(sql)
 
                 if precio_ini > precio_fin:# datos de una accion bajista
                     if (datomin52 != 'NULL' and datomin52 < entrada) or (datominDia != 'NULL' and datominDia < entrada) or (datoValorActual != 'NULL' and datoValorActual < entrada):
-                        sql = "UPDATE `params_operaciones` SET `entrada` = NULL, `salida` = NULL, `precio_salida` = %.3f WHERE `params_operaciones`.`id` =%s" % (salida, ident)
+                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = NULL, `salida` = NULL, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
                         cursor.execute(sql)
             #en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
 
@@ -2055,12 +2055,12 @@ def cotizacionesMoneda(nombreticket):
 
     else:
 
-        sql = "SELECT `codigo` FROM `monedas` WHERE `url_Inet` = '" + nombreticket + "'"
+        sql = "SELECT `codigo` FROM `Cobo_monedas` WHERE `url_Inet` = '" + nombreticket + "'"
         cursor.execute(sql)
         datosBBDDcomponentes = cursor.fetchall()
         codigo = datosBBDDcomponentes[0][0]
-        #sql = "UPDATE `lomiologes_cobodb`.`monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
-        sql = "UPDATE `monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
+        #sql = "UPDATE `lomiologes_cobodb`.`Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
+        sql = "UPDATE `Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
         cursor.execute(sql)
         db.commit()
 
@@ -2125,10 +2125,10 @@ def obtenTicketsBBDD(ticket = None):
     """
     cursor, _db = conexionBBDD()
     if ticket == None:
-        sql = "SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` ORDER BY `componentes`.`tiket` ASC"
+        sql = "SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` ORDER BY `Cobo_componentes`.`tiket` ASC"
     else:
-        sql = ("SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` WHERE (`componentes`.`tiket` = '%s') ORDER BY `componentes`.`tiket` ASC" % ticket)
-#        sql="SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` WHERE `componentes`.`error` = 'N/A' ORDER BY `componentes`.`tiket` ASC"
+        sql = ("SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '%s') ORDER BY `Cobo_componentes`.`tiket` ASC" % ticket)
+#        sql="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
     tickets = {}
     cursor.execute(sql)
     resultado = cursor.fetchall()
@@ -2152,13 +2152,13 @@ def obtenMercadosBBDD():
     
     """
     cursor, _db = conexionBBDD()
-    sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
+    sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
     cursor.execute(sql)
     resultado = cursor.fetchall()
     resultado = (resultado[0][0].strip("'")).split(',')
     mercados = []
     for m in resultado:
-        sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='" + m + "')"
+        sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='" + m + "')"
         cursor.execute(sql)
         resultadoM = cursor.fetchall()
         resultadoM = resultadoM[0][0].strip("'").split(',')
@@ -2258,8 +2258,8 @@ if __name__ == '__main__':
 
     # Elimina los Tickets de los mercados que no nos interesan
     for n in sufijosexcluidos:
-        sql = "SELECT `nombre` FROM `nombreticket` WHERE `nombre` LIKE '%" + n + "'"
-        #sql = ("DELETE FROM `lomiologes_cobodb`.`nombreticket` WHERE `nombreticket`.`nombre` = '%" + n + "'")
+        sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `nombre` LIKE '%" + n + "'"
+        #sql = ("DELETE FROM `lomiologes_cobodb`.`Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre` = '%" + n + "'")
         cursor.execute(sql)
         listatickets = cursor.fetchall()
         numeroResultado = len(listatickets)
@@ -2273,7 +2273,7 @@ if __name__ == '__main__':
                 borraTicket(ticket)
     #db.commit()
     # Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
-    # SELECT * FROM `nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `componentes`)
+    # SELECT * FROM `Cobo_nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `Cobo_componentes`)
 
 
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
@@ -2296,8 +2296,8 @@ if __name__ == '__main__':
 #
 #    print
 #    if basedatos:
-#        sql="SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` ORDER BY `componentes`.`tiket` ASC"
-##        sql="SELECT `componentes`.`tiket`, `componentes`.`codigo` FROM `componentes` WHERE `componentes`.`error` = 'N/A' ORDER BY `componentes`.`tiket` ASC"
+#        sql="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` ORDER BY `Cobo_componentes`.`tiket` ASC"
+##        sql="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
 #
 #        cursor.execute(sql)
 #        resultado=cursor.fetchall()
@@ -2320,12 +2320,12 @@ if __name__ == '__main__':
 ##            print 'Los tickets problematicos CON.DE, AUX.V ,PRN y CON.L no existen en la base de datos'
 #
 #
-#        sql="SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
+#        sql="SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
 #        cursor.execute(sql)
 #        resultado=cursor.fetchall()
 #        resultado=(resultado[0][0].strip("'")).split(',')
 #        for m in resultado:
-#            sql="SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='"+m+"')"
+#            sql="SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='"+m+"')"
 #            cursor.execute(sql)
 #            resultadoM=cursor.fetchall()
 #            resultadoM=resultadoM[0][0].strip("'").split(',')
@@ -2354,18 +2354,18 @@ if __name__ == '__main__':
             print('Total de mercados : %d' % (len(mercados)))
             print('Total de tickets : %d' % (len(tickets.keys())))
 
-            sql = "SELECT `nombre` FROM `nombreticket` WHERE `fechaError` is not null"
+            sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` is not null"
             cursor.execute(sql)
             numeroResultado = len(cursor.fetchall())
             print('Tickets con errores : %d' % numeroResultado)
 
             diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
             diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
-            sql = "SELECT `nombre` FROM `nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `nombreticket`.`fechaError` DESC, `nombreticket`.`fechaActualizacion` ASC"
+            sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
             cursor.execute(sql)
             numeroResultado = len(cursor.fetchall())
             print('Tickets pendientes de realiar una actualizacion : %d' % numeroResultado)
-            sql = "SELECT * FROM `nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `componentes`)"
+            sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `Cobo_componentes`)"
             cursor.execute(sql)
             numeroResultado = len(cursor.fetchall())
             print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
@@ -2422,10 +2422,10 @@ if __name__ == '__main__':
 
             naccion = raw_input('Introduce ticket de la accion : ').upper()
             naccion = (naccion,)
-            cursor.execute("SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = ?)", naccion)
+            cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
             numeroResultado = len(cursor.fetchall())
             if numeroResultado == 0:
-                cursor.execute("INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                 db.commit()
                 print(naccion[0] + ' anadido a la base de datos')
 
@@ -2545,7 +2545,7 @@ if __name__ == '__main__':
                     break
             historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(ticket)
             ticket = (ticket,)
-            cursor.execute("SELECT `nombre` FROM `componentes` WHERE `componentes`.`tiket` LIKE ?", ticket)
+            cursor.execute("SELECT `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` LIKE ?", ticket)
             nombre = cursor.fetchall()
             nombre = (nombre[0][0].strip('"')).replace(',', '')
 
@@ -2642,7 +2642,7 @@ if __name__ == '__main__':
             mercado = mercado.replace('@%5E', '^')
             mercado = (mercado,)
             if not (mercado[0] in mercados):
-                sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
+                sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
                 cursor.execute(sql)
                 resultadoM = cursor.fetchall()
                 print(resultadoM)
@@ -2650,7 +2650,7 @@ if __name__ == '__main__':
                 while m in resultadoM:
                     m = raw_input ('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
                 m = (m,)
-                cursor.execute("SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo`  = ?)", m)
+                cursor.execute("SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo`  = ?)", m)
                 mercadosvalidos = cursor.fetchall()
                 numeroResultado = len(mercadosvalidos)
                 if numeroResultado == 1:
@@ -2663,7 +2663,7 @@ if __name__ == '__main__':
                     mercadosvalidos = mercadosvalidos.replace('"', '')
                     mercadosvalidos = mercadosvalidos.replace(' ', '')
 
-                    cursor.execute("UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` =?)", m)
+                    cursor.execute("UPDATE `Cobo_configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`Cobo_configuracion`.`codigo` =?)", m)
                     db.commit()
                     mercados.append(mercado)
 
@@ -2685,7 +2685,7 @@ if __name__ == '__main__':
 #        'I) Actualizar cotizaciones monedas
         elif opcion == 'i':
             print(seleccion)
-            sql = "SELECT `url_Inet` FROM `monedas`"
+            sql = "SELECT `url_Inet` FROM `Cobo_monedas`"
             cursor.execute(sql)
             urlmonedas = cursor.fetchall()
             urlmonedas = ((moneda[0]) for moneda in urlmonedas)
@@ -2715,12 +2715,12 @@ if __name__ == '__main__':
 #        'M) Actualizar Tickets componentes de Mercados',
         elif opcion == 'm':
             print(seleccion)
-            sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
+            sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
             cursor.execute(sql)
             resultado = cursor.fetchall()
             resultado = (resultado[0][0].strip("'")).split(',')
             for m in resultado:
-                sql = "SELECT `configuracion`.`valor` FROM `configuracion` WHERE (`configuracion`.`codigo` ='" + m + "')"
+                sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='" + m + "')"
                 cursor.execute(sql)
                 resultadoM = cursor.fetchall()
                 resultadoM = resultadoM[0][0].strip("'").split(',')
@@ -2732,11 +2732,11 @@ if __name__ == '__main__':
                     mercado = mercado.upper()
                     ticketscomponentesmercados = ticketsdeMercado(mercado)
                     for ticket in ticketscomponentesmercados:
-                        sql = "SELECT * FROM `nombreticket` WHERE `nombre` = '" + ticket + "'"
+                        sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` = '" + ticket + "'"
                         cursor.execute(sql)
                         numeroResultado = len(cursor.fetchall())
                         if numeroResultado == 0:
-                            sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + ticket + "', '" + str(date.today()) + "', NULL, NULL)"
+                            sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + ticket + "', '" + str(date.today()) + "', NULL, NULL)"
                             cursor.execute(sql)
                             print(ticket + ' anadido a la base de datos')
                             ticketsanadidos += 1
@@ -2751,7 +2751,7 @@ if __name__ == '__main__':
                     mercadosvalidos2 = mercadosvalidos2 + ',' + mer
                 mercadosvalidos = mercadosvalidos2.strip(',')
 
-                sql = "UPDATE `configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`configuracion`.`codigo` ='" + m + "')"
+                sql = "UPDATE `Cobo_configuracion` SET valor = '" + mercadosvalidos + "' WHERE (`Cobo_configuracion`.`codigo` ='" + m + "')"
                 cursor.execute(sql)
                 db.commit()
                 print("Total tickets anadidos %s" % ticketsanadidos)
@@ -2764,7 +2764,7 @@ if __name__ == '__main__':
             diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
             diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
             # si en este select hacemos una comparacion de la fecha actual con la fecha de actualizacion, obtendremos directamente la lista a actualizar, comparando las fechas por haber pasado mas de una cantidad de tiempo desde la ultima actualizacion o las que esten supuestamente actualizadas mas alla de la fecha actual
-            sql = "SELECT `nombre` FROM `nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `nombreticket`.`fechaError` DESC, `nombreticket`.`fechaActualizacion` ASC"
+            sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0]) for ticket in listatickets)
@@ -2781,7 +2781,7 @@ if __name__ == '__main__':
         elif opcion == 'o':
             print(seleccion)
             ticketsborrados = []
-            sql = "SELECT `tiket` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0]) for ticket in listatickets)
@@ -2875,7 +2875,7 @@ if __name__ == '__main__':
             #P) Actualizar Max/Min Historicos de todos los Tickets',
             print(seleccion)
             ticketsnodescargados = []
-            sql = "SELECT `tiket` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0]) for ticket in listatickets)
@@ -2899,7 +2899,7 @@ if __name__ == '__main__':
                         minimohistorico = min([mini[3] for mini in datosaccion])
 
                         # fin de funcion
-                        sql = "SELECT `maximini`.`nombre` FROM `maximini` WHERE (`maximini`.`nombre` = '" + ticket + "')"
+                        sql = "SELECT `Cobo_maximini`.`nombre` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticket + "')"
 
                         print('Actualizando el ticket %s con un Maximo Historico de %s y un Minimo Historico de %s' % (ticket, maximohistorico, minimohistorico))
                         cursor.execute(sql)
@@ -2907,11 +2907,11 @@ if __name__ == '__main__':
                         if numeroResultado == 1:
                             #codigo=cursor.fetchall()
                             #codigo=str(codigo[0][0])
-                            #sql="UPDATE `maximini` SET `maximo` = %.2f, `minimo` = %.2f, `fechaRegistro` = `%s` WHERE `maximini`.`id` = '%s'"%(maximohistorico,minimohistorico,((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")),codigo)
-                            sql = "UPDATE `maximini` SET `maximo` = " + str(maximohistorico) + ", `minimo` = " + str(minimohistorico) + ", `fechaRegistro` = '" + str((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `maximini`.`nombre` = '" + ticket + "'"
+                            #sql="UPDATE `Cobo_maximini` SET `maximo` = %.2f, `minimo` = %.2f, `fechaRegistro` = `%s` WHERE `Cobo_maximini`.`id` = '%s'"%(maximohistorico,minimohistorico,((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")),codigo)
+                            sql = "UPDATE `Cobo_maximini` SET `maximo` = " + str(maximohistorico) + ", `minimo` = " + str(minimohistorico) + ", `fechaRegistro` = '" + str((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_maximini`.`nombre` = '" + ticket + "'"
                             cursor.execute(sql)
                         elif numeroResultado == 0:
-                            sql = "INSERT INTO `maximini` (`id` ,`nombre` ,`maximo` ,`minimo` ,`fechaRegistro`) VALUES (NULL ,'%s',%.3f,%.3f,'%s')" % (ticket, maximohistorico, minimohistorico, (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"))
+                            sql = "INSERT INTO `Cobo_maximini` (`id` ,`nombre` ,`maximo` ,`minimo` ,`fechaRegistro`) VALUES (NULL ,'%s',%.3f,%.3f,'%s')" % (ticket, maximohistorico, minimohistorico, (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"))
                             cursor.execute(sql)
                         #print 'Ticket %s con cotizaciones historicas, actualizando max/min historicos'%naccion
                         db.commit()
@@ -2934,7 +2934,7 @@ if __name__ == '__main__':
         elif opcion == 'q':
             #Q) Analizar Datos de todos los Tickets',
             print(seleccion)
-            sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC"
+            sql = "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
 
             cursor.execute(sql)
             listadetickets = cursor.fetchall()
@@ -3017,7 +3017,7 @@ if __name__ == '__main__':
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanterioralcista
 
-                    sql = "SELECT * FROM `params_operaciones` WHERE `params_operaciones`.`codigo` = %s" % codigo
+                    sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
                     cursor.execute(sql)
                     numeroResultado = len(cursor.fetchall())
 
@@ -3065,17 +3065,17 @@ if __name__ == '__main__':
 
                         # si true, analisis ya cumplido, obsoleto y lo actualizamos
                         if numeroResultado == 1:
-                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
+                            sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
                         elif numeroResultado == 0:
-                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
+                            sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
 
                     #Alcista/Bajista Validos
                     else:#anali
                         #si false, analisis valido, sin cumplir
                         if numeroResultado == 1:
-                            sql = "UPDATE `params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
+                            sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
                         elif numeroResultado == 0:
-                            sql = "INSERT INTO params_operaciones (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
+                            sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
 
                     cursor.execute(sql)
 
@@ -3244,7 +3244,7 @@ if __name__ == '__main__':
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
             #obtenemos la lista de las monedas
-            sql = "SELECT `codigo` FROM `monedas`"
+            sql = "SELECT `codigo` FROM `Cobo_monedas`"
             cursor.execute(sql)
             resultado = cursor.fetchall()
             #lo mostramos en una lista
@@ -3257,15 +3257,15 @@ if __name__ == '__main__':
                 moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest : ')
                 if moneda == '' or moneda == None:
                     moneda = ((raw_input('Introduce sufijo de tickets del mercado en la que se hace el backtest : ')).upper(),)
-                    cursor.execute ("SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and `componentes`.`tiket` LIKE ? ORDER BY `componentes`.`tiket` ASC", moneda)
+                    cursor.execute ("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
                     break
                 if moneda in monedas:
-                    cursor.execute ("SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC")
+                    cursor.execute ("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC")
                     break
 
 
             #consulta en la tabla componentes que pertenecen a los mercados de una moneda
-            #sql = "SELECT * FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' and `componentes`.`tiket` NOT LIKE '^%' and`componentes`.`mercado` IN (SELECT `nombreUrl` FROM `mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `componentes`.`tiket` ASC"
+            #sql = "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC"
 
             resultado = cursor.fetchall()
             cuentaatras = len(resultado)
@@ -3627,10 +3627,10 @@ if __name__ == '__main__':
 
             moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
             if moneda == '' or moneda == None:
-                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' ORDER BY `componentes`.`tiket` ASC")
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC")
             else:
                 moneda = (moneda,)
-                cursor.execute ("SELECT `tiket`, `codigo`, `nombre` FROM `componentes` WHERE `componentes`.`error` LIKE 'N/A' `componentes`.`tiket` LIKE ? ORDER BY `componentes`.`tiket` ASC", moneda)
+                cursor.execute ("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
 
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
@@ -3726,10 +3726,10 @@ if __name__ == '__main__':
                 punto = naccion.find('.')
                 if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):# encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
                     naccion = (naccion,)
-                    cursor.execute ("SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = ?)", naccion)
+                    cursor.execute ("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
                     numeroResultado = len(cursor.fetchall())
                     if numeroResultado == 0:
-                        cursor.execute ("INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                        cursor.execute ("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                         print(naccion[0] + ' anadido a la base de datos')
                         incluidos += 1
 
@@ -3739,11 +3739,11 @@ if __name__ == '__main__':
                 #        incluir = False
 
                 #if incluir:
-                #    sql = "SELECT *  FROM `nombreticket` WHERE (`nombreticket`.`nombre` = '" + naccion + "')"
+                #    sql = "SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = '" + naccion + "')"
                 #
 
                 #    if len(cursor.execute(sql).fetchall()) == 0:
-                #        sql = "INSERT INTO `nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
+                #        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
                 #        cursor.execute(sql)
                 #        print(naccion + ' anadido a la base de datos')
                 #        incluidos += 1
