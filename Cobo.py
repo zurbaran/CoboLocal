@@ -1866,7 +1866,7 @@ def errorenTicket (ticket):
     print('')
     print('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket)
     print('')
-    if hayerror[0][0] == None:#Solo almacenamos error si no habia otro error
+    if len(hayerror)>0 and hayerror[0][0] == None:#Solo almacenamos error si no habia otro error
         sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
         cursor.execute(sql)
         db.commit()
