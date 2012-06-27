@@ -1641,10 +1641,10 @@ def cruceconindicador(naccion):
     return
 
 
-def creaMenu(sep, lmenu):
+def creaMenu(sep, lmenu, cola = True):
     """Le damos el separador de la opcion y una lista con las opciones del menu,
     nos devuelve una lista de tuplas con la cola de opciones y descripciones elegidas,
-    añade al final de la lista una tupla mas que contiene (None,None)
+    anade al final de la lista una tupla mas que contiene (None,None)
     
     
     
@@ -1672,6 +1672,9 @@ def creaMenu(sep, lmenu):
             break
 
     respdescp.append((None, None))
+
+    if cola == False:
+        respdescp = respdescp[0]
 
     return (respdescp)
 
@@ -1866,7 +1869,7 @@ def errorenTicket (ticket):
     print('')
     print('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket)
     print('')
-    if len(hayerror)>0 and hayerror[0][0] == None:#Solo almacenamos error si no habia otro error
+    if len(hayerror) > 0 and hayerror[0][0] == None:#Solo almacenamos error si no habia otro error
         sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
         cursor.execute(sql)
         db.commit()
@@ -2179,8 +2182,8 @@ def conexionBBDD():
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
         #db = MySQLdb.connect(host = 'localhost', user = 'root', passwd = '0000', db = 'lomiologes_cobodb')
         cursor = db.cursor()
-	#TODO: Crear excepcion especifica para cuando no se encuentra el archivo
-	#Crear el archivo Cobo.dat, y ejecutar Cobo.sql para "rellenar" la Base de datos desde "cero"
+    #TODO: Crear excepcion especifica para cuando no se encuentra el archivo
+    #Crear el archivo Cobo.dat, y ejecutar Cobo.sql para "rellenar" la Base de datos desde "cero"
     except:
         raw_input ('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
         quit()
@@ -3173,7 +3176,7 @@ if __name__ == '__main__':
                     MMe2diario = False
                 else:
                     MMediario = int(MMediario)
-                    MMe2diario = raw_input('2Âª Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2diario = raw_input('2A Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2diario == '':
                         MMe2diario = False
                     else:
@@ -3185,7 +3188,7 @@ if __name__ == '__main__':
                     MMe2semanal = False
                 else:
                     MMesemanal = int(MMesemanal)
-                    MMe2semanal = raw_input('2Âª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2semanal = raw_input('2A Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2semanal == '':
                         MMe2semanal = False
                     else:
@@ -3197,7 +3200,7 @@ if __name__ == '__main__':
                     MMe2mensual = False
                 else:
                     MMemensual = int(MMemensual)
-                    MMe2mensual = raw_input('2Âª Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2mensual = raw_input('2A Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2mensual == '':
                         MMe2mensual = False
                     else:
@@ -3239,7 +3242,7 @@ if __name__ == '__main__':
             '3) Todo Semanal',
             '4) Semanal con transicion a Mensual',
             '5) Todo Mensual',
-            '6) Diario con transicion a Semanal y Mensual'))
+            '6) Diario con transicion a Semanal y Mensual'), cola = False)
 
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
@@ -3275,17 +3278,26 @@ if __name__ == '__main__':
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
 
+                diario = None
+                semanal = None
+                mensual = None
 
                 if ExistenDatos(ticket):
                     backtestaccion = []
                     if estrategia == 'Alcista':
-                        diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
-                        semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
-                        mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                        if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
+                            diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
+                            semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
+                            mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
                     elif estrategia == 'Bajista':
-                        diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
-                        semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
-                        mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                        if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
+                            diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                        if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
+                            semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                        if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
+                            mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
 
                     fecharesistenciadiario = 0
                     fecharesistenciasemanal = 0
@@ -3571,9 +3583,9 @@ if __name__ == '__main__':
                 j.write(('Media Movil Exponencial diario  : %s\n' % MMediario))
                 j.write(('Media Movil Exponencial semanal : %s\n' % MMesemanal))
                 j.write(('Media Movil Exponencial mensual : %s\n' % MMemensual))
-                j.write(('Media Movil Exponencial 2Â para cruce de medias diario  : %s\n' % MMe2diario))
-                j.write(('Media Movil Exponencial 2Â para cruce de medias semanal : %s\n' % MMe2semanal))
-                j.write(('Media Movil Exponencial 2Â para cruce de medias mensual : %s\n' % MMe2mensual))
+                j.write(('Media Movil Exponencial 2A para cruce de medias diario  : %s\n' % MMe2diario))
+                j.write(('Media Movil Exponencial 2A para cruce de medias semanal : %s\n' % MMe2semanal))
+                j.write(('Media Movil Exponencial 2A para cruce de medias mensual : %s\n' % MMe2mensual))
                 j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
                 j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
                 j.write(('True Averange xrange Diario : %s\n' % TARdiario))
