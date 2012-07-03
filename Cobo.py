@@ -713,7 +713,7 @@ def corregirDatosHistoricosAccion(naccion):
 def analisisAlcistaAccion(naccion, **config):
     """ Analisis alcista
     timming=d/w/m, timming a analizar
-    desdefecha=False/AAAA-MM-DD, fecha desde la que queremos recuperar analisis, fecha incluida, devuelbe todos los analisis cuya resistencia sea desde esta fecha
+    desdefecha=False o tupla (true/false,AAAA-MM-DD), fecha desde la que queremos recuperar analisis, fecha incluida, devuelbe todos los analisis cuya resistencia sea desde esta fecha
     txt=True/False, configuracion para hacer que genere archivos txt del analisis
     conEntradaLT = True/False, si queremos que nos incluya los analisis de LT, posibles entradas en LT
     MME = False/entero, Si queremos que se trace una Media Movil Exponencial, no utilizando el concepto de Maximo historico como tal
@@ -749,6 +749,9 @@ def analisisAlcistaAccion(naccion, **config):
 
     if desdefecha == '' or desdefecha == ' ' or desdefecha == None:
         desdefecha = False
+    elif desdefecha != False:
+        todohistorico, desdefecha = desdefecha
+
 
     if timming == 'd':
         datoshistoricos2 = historicoDiario
@@ -792,6 +795,19 @@ def analisisAlcistaAccion(naccion, **config):
         datoshistoricos.append((fecha, apertura, maximo, minimo, cierre, volumenMME[i][1]))
         i += 1
     del datoshistoricos2
+
+    if desdefecha != False and todohistorico == False: # Borramos el historico anterior a la fecha
+        i = 0
+        while i < len(datoshistoricos):
+            fecha, _apertura, _maximo, _minimo, _cierre, _volumen = datoshistoricos[i]
+            if fecha >= desdefecha:
+                datoshistoricos = datoshistoricos[i:]
+                del fecha, _apertura, _maximo, _minimo, _cierre, _volumen
+                break
+            if i == (len(datoshistoricos) - 1) and fecha < desdefecha:#Ha llegado al final de sin encontrar una fecha de analisis mayor a desdefecha
+                datoshistoricos = []
+            i += 1
+
     i = 0
 
     if not(MME == False):
@@ -1062,7 +1078,7 @@ def analisisAlcistaAccion(naccion, **config):
 
 
 
-    if desdefecha:
+    if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisalcista):
             resistencia, soporte, ruptura, LTi, LTf, salida, timming = analisisalcista[i]
@@ -1147,6 +1163,8 @@ def analisisBajistaAccion(naccion, **config):
 
     if desdefecha == '' or desdefecha == ' ' or desdefecha == None:
         desdefecha = False
+    elif desdefecha != False:
+        todohistorico, desdefecha = desdefecha
 
     if timming == 'd':
         datoshistoricos2 = historicoDiario
@@ -1190,6 +1208,19 @@ def analisisBajistaAccion(naccion, **config):
         datoshistoricos.append((fecha, apertura, maximo, minimo, cierre, volumenMME[i][1]))
         i += 1
     del datoshistoricos2
+
+    if desdefecha != False and todohistorico == False:
+        i = 0
+        while i < len(datoshistoricos):
+            fecha, _apertura, _maximo, _minimo, _cierre, _volumen = datoshistoricos[i]
+            if fecha >= desdefecha:
+                datoshistoricos = datoshistoricos[i:]
+                del fecha, _apertura, _maximo, _minimo, _cierre, _volumen
+                break
+            if i == (len(datoshistoricos) - 1) and fecha < desdefecha:#Ha llegado al final de sin encontrar una fecha de analisis mayor a desdefecha
+                datoshistoricos = []
+            i += 1
+
     i = 0
 
     if not(MME == False):
@@ -1494,7 +1525,7 @@ def analisisBajistaAccion(naccion, **config):
 
         i += 1
 
-    if desdefecha:
+    if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisbajista):
             soporte, resistencia, ruptura, LTi, LTf, salida, timming = analisisbajista[i]
@@ -3106,6 +3137,14 @@ if __name__ == '__main__':
                 estrategia = 'Bajista'
 
             analizardesde = pidefecha()
+            if analizardesde != False:
+                todohistorico = raw_input('Utilizamos todo el historico para el analisis, (Si): ')
+                if todohistorico == '':
+                    todohistorico = True
+                else:
+                    todohistorico = False
+                analizardesde = (todohistorico, analizardesde)
+
 
             riesgo = raw_input('Riesgo por operacion (200): ')
             if riesgo == '':
@@ -3570,7 +3609,7 @@ if __name__ == '__main__':
 
                 j.write('Parametros : \n')
                 j.write('Estrategia : %s\n' % estrategia)
-                j.write('Backtest desde la fecha : %s\n' % analizardesde)
+                j.write('Backtest desde la fecha : %s\n' % str(analizardesde))
                 j.write('Riesgo : %d\n' % riesgo)
                 j.write('Volumen Minimo : %d\n' % volumenminimo)
                 j.write(('Filtro Mensual : %.2f\n' % (filtrosalidamensual)).replace('.', ','))
@@ -3625,8 +3664,6 @@ if __name__ == '__main__':
             else:
                 raw_input('Backtest no realizado')
 
-            #import bigben
-            #bigben
 
 #        'V) Exportar datos a arhivos csv',
         elif opcion == 'v':

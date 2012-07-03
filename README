@@ -2,3 +2,7 @@ Alta/Baja/Actualizacion de cotizaciones de acciones y de sus cotizaciones Histor
 Analisis automatico con diferentes parametros.
 Permite tambien el backtesting
 Base de Datos contenida en Cobo.dat en sqlite3, no incluida.
+
+Probar las librerias http://code.google.com/p/ultra-finance/
+					TA-Lib
+					numpys
