@@ -1,4 +1,5 @@
 Alta/Baja/Actualizacion de cotizaciones de acciones y de sus cotizaciones Historicas
+
 Analisis automatico con diferentes parametros.
 Permite tambien el backtesting
 Base de Datos contenida en Cobo.dat en sqlite3, no incluida.
