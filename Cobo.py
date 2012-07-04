@@ -107,7 +107,7 @@ def _test():
 
 def ExistenDatos(naccion):
     """
-    
+
     """
     tickets = obtenTicketsBBDD(naccion)
     naccion = naccion.upper()
@@ -130,7 +130,7 @@ def ExistenDatos(naccion):
 
 def LeeDatos(naccion):
     """
-    
+
     """
     naccion = naccion.upper()
     tickets = obtenTicketsBBDD(naccion)
@@ -194,7 +194,7 @@ def grabaDatos(naccion,
                historicoDiario,
                correcciones,):
     """
-    
+
     """
     naccion = naccion.upper()
     datos = {'historicoMensual':historicoMensual,
@@ -217,7 +217,7 @@ def grabaDatos(naccion,
 
 def duerme(tiempo = 1500):
     """
-    
+
     """
     x = (randint(0, tiempo)) / 1000.0
     print('Pausa de %.3f segundos' % x)
@@ -227,7 +227,7 @@ def duerme(tiempo = 1500):
 
 def ticketsdeMercado(mercado):
     """
-    
+
     """
     #global webheaders
     # habra que buscar los ticket y utilizar como fin de pagina el texto en la primera
@@ -539,7 +539,7 @@ def descargaHistoricoAccion (naccion, **config):
 
 def actualizacionDatosHisAccion(naccion, **config):
     """
-    
+
     """
     # TODO: Podemos intentar integrar la funcion actualizacionDatosHisAccion dentro de la propia funcion descargaHistoricoAccion, nos ahorrariamos una funcion y seguramente procesos duplicados
 
@@ -582,7 +582,7 @@ def actualizacionDatosHisAccion(naccion, **config):
 
 def corregirDatosHistoricosAccion(naccion):
     """
-    
+
     """
     naccion = naccion.upper()
     historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(naccion)
@@ -1676,10 +1676,10 @@ def creaMenu(sep, lmenu, cola = True):
     """Le damos el separador de la opcion y una lista con las opciones del menu,
     nos devuelve una lista de tuplas con la cola de opciones y descripciones elegidas,
     anade al final de la lista una tupla mas que contiene (None,None)
-    
-    
-    
-    
+
+
+
+
     """
     control = []
     respdescp = []
@@ -1757,7 +1757,7 @@ def creaMenu(sep, lmenu, cola = True):
 
 def borraTicket (ticket, **config):
     """
-    
+
     """
     tickets = obtenTicketsBBDD(ticket)
     cursor, db = conexionBBDD()
@@ -1820,7 +1820,7 @@ def borraTicket (ticket, **config):
 
 def cambiaTicket (ticketviejo, ticketnuevo):
     """
-    
+
     """
     ticketviejo = ticketviejo.upper()
     cursor, db = conexionBBDD()
@@ -1890,7 +1890,7 @@ def cambiaTicket (ticketviejo, ticketnuevo):
 
 def errorenTicket (ticket):
     """
-    
+
     """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
@@ -1907,7 +1907,7 @@ def errorenTicket (ticket):
 
 def actualizadoTicket(ticket):
     """
-    
+
     """
     ticket = ticket.upper()
     cursor, db = conexionBBDD()
@@ -1917,7 +1917,7 @@ def actualizadoTicket(ticket):
 
 def cotizacionesTicket(nombreticket):
     """
-    
+
     """
     #global webheaders
     cursor, db = conexionBBDD()
@@ -2034,7 +2034,7 @@ def cotizacionesTicket(nombreticket):
 
 def cotizacionesMoneda(nombreticket):
     """
-    
+
     """
     #global webheaders
     cursor, db = conexionBBDD()
@@ -2155,7 +2155,7 @@ def pidefecha():
 
 def obtenTicketsBBDD(ticket = None):
     """
-    
+
     """
     cursor, _db = conexionBBDD()
     if ticket == None:
@@ -2183,7 +2183,7 @@ def obtenTicketsBBDD(ticket = None):
 
 def obtenMercadosBBDD():
     """
-    
+
     """
     cursor, _db = conexionBBDD()
     sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
@@ -2207,7 +2207,7 @@ def obtenMercadosBBDD():
 
 def conexionBBDD():
     """
-    
+
     """
     try:
         db = sqlite3.connect(os.path.join(os.getcwd(), "Cobo.dat"))
