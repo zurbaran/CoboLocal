@@ -2578,8 +2578,8 @@ if __name__ == '__main__':
                 if ExistenDatos(ticket):
                     break
             historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(ticket)
-            ticket = (ticket,)
-            cursor.execute("SELECT `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` LIKE ?", ticket)
+            ticketconsulta = (ticket,)
+            cursor.execute("SELECT `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` LIKE ?", ticketconsulta)
             nombre = cursor.fetchall()
             nombre = (nombre[0][0].strip('"')).replace(',', '')
 
