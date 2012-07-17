@@ -2080,23 +2080,23 @@ def ticketsexcluidos(sufijosexcluidos):
 def comprobacionesBBDD():
     """
     """
-
-    # Buscar tickets duplicados en la BBDD
-    sql = "SELECT `tiket`, count(*) FROM `Cobo_componentes` GROUP BY `tiket` HAVING count(*) > 1"
-    cursor.execute(sql)
-    numeroResultado = len(cursor.fetchall())
-    print('Tickets duplicados : %d' % numeroResultado)
     # Lista de los distintos mercados a los que pertenecen los tickets y cantidad de tickets para cada uno de ellos
     sql = "SELECT `mercado`, count(*) FROM `Cobo_componentes` GROUP BY `mercado` HAVING count(*) >= 0"
     cursor.execute(sql)
     resultado = cursor.fetchall()
     for n in resultado:
-        print('Mercado %s contiene %d tickets' % (n))
+        print('%s contiene %d tickets' % (n))
+    print ('')
+    # Buscar tickets duplicados en la BBDD
+    sql = "SELECT `tiket`, count(*) FROM `Cobo_componentes` GROUP BY `tiket` HAVING count(*) > 1"
+    cursor.execute(sql)
+    numeroResultado = len(cursor.fetchall())
+    print('Tickets duplicados : %d' % numeroResultado)
     # Buscar tikets a las que les falte relacion entre mercados y monedas
     sql = " SELECT `tiket`,`mercado` FROM `Cobo_componentes` where `mercado` not in (SELECT `nombreUrl` FROM `Cobo_mercado_moneda`)"
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
-    print('Tickets a los que les falte relacion entre mercados y monedas : %d' % numeroResultado)
+    print('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado)
     # Tickets con errores
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` is not null"
     cursor.execute(sql)
