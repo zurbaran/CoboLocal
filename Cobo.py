@@ -3270,10 +3270,10 @@ def main():
                                 else:
                                     fechasalida, preciosalida = salida
                                 inversionrecuperada = numeroaccionesoperacion * preciosalida
-                                if estrategia == 'Alcista':
-                                    balance = inversionrecuperada - inversion
-                                elif estrategia == 'Bajista':
-                                    balance = inversion - inversionrecuperada
+                                #if estrategia == 'Alcista':
+                                balance = inversionrecuperada - inversion
+                                #elif estrategia == 'Bajista':
+                                #    balance = inversion - inversionrecuperada
 
                             elif fechasalida <= fecharuptura:
                             #elif fechasalida <= fecharuptura:
