@@ -1,18 +1,34 @@
 # -*- coding: UTF-8 -*-
-
+############################################################
+# Name:        Cobo.py
+# Purpose:
+#
+# Author:      Antonio
+#
+# Created:     23/07/2012
+# Copyright:   (c) Antonio 2012
+# Licence:     <your licence>
+############################################################
 
 ############################################################
 # modulos estandar importados
 
 #import urllib
+from collections import deque
+from datetime import date, datetime, timedelta
+from random import randint
+from time import sleep
+import csv
+import glob
+import indicador
+import logging
+import os
 import urllib2
 try:
     from pysqlite2 import dbapi2 as sqlite3
 except ImportError:
     print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
     import sqlite3
-from datetime import date, datetime, timedelta
-from time import sleep
 #from adodbapi.adodbapi import type
 try:
     import cPickle as pickle
@@ -20,13 +36,7 @@ except ImportError:
     print ('Modulo cPickle deshabilitado')
     import pickle   # TODO: buscar la manera de comprimir los datos para que ocupen menos en el HD.
     # una posiblidad es utilizar el modulo zlib zlib.compress(datos) zlib.descompress(datos)
-import os
 #import wx
-from random import randint
-import glob
-import csv
-from collections import deque
-import logging
 
 #import traceback
 #from decimal import Decimal
@@ -61,10 +71,6 @@ logging.basicConfig(filename = ARCHIVO_LOG, format = '%(asctime)sZ; nivel: %(lev
 logging.debug('\n')
 logging.debug('Inicio de Aplicacion')
 
-
-############################################################
-# modulos propios importados
-import indicador
 
 ############################################################
 # comprobaciones especiales
@@ -2115,11 +2121,7 @@ def comprobacionesBBDD():
     numeroResultado = len(cursor.fetchall())
     print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
 
-############################################################
-# programa principal
-
-
-if __name__ == '__main__':
+def main():
 
     for carpeta in carpetas.keys():
         nombrecarpeta = os.path.join(os.getcwd(), carpetas[carpeta])
@@ -2128,7 +2130,7 @@ if __name__ == '__main__':
             #os.path.dirname
 
 
-    cursor, db = conexionBBDD()
+
 
     opcion = None
     while True:
@@ -2320,7 +2322,7 @@ if __name__ == '__main__':
                 ticket = raw_input('Introduce ticket de la accion : ').upper()
                 if ExistenDatos(ticket):
                     break
-            historicoMensual, historicoSemanal, historicoDiario, correcciones = LeeDatos(ticket)
+            historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(ticket)
             ticketconsulta = (ticket,)
             cursor.execute("SELECT `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` LIKE ?", ticketconsulta)
             nombre = cursor.fetchall()
@@ -2607,7 +2609,7 @@ if __name__ == '__main__':
                             # existe un caso especifico que es cuando comprobamos la actualizacion de datos de una accion y esta tiene menos de 3 periodos en el timming en que estemos trabajando, la funcion actualizacionDatosHisAccion la trata de forma especial, devolviendo (None, timming, True), para que con estos parametros la funcion descargaHistoricosAccion descarge todo el historico otra vez
                             # por esta razon en el siguiente if comprobamos con fechaactualizar2!=None que no sea este caso.
                             # FIXME : al hacer la comprobacion en mensual, casi siempre me da que no ha actualizado correctamente, ejemplo EGL.SW
-                            fechaactualizar2, timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(ticket, timming = timmingdescargado)
+                            fechaactualizar2, _timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(ticket, timming = timmingdescargado)
                             if fechaactualizar2 != None and actualizaractualizar == actualizaractualizar2 and fechaactualizar == fechaactualizar2:
                                 fechahoy = ((date.today().timetuple()))
                                 fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
@@ -2718,7 +2720,7 @@ if __name__ == '__main__':
             cuentaatras = len(listadetickets)
             for registro in listadetickets:
                 #resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, volumenMedio, volumen, error, fechaRegistro = registro
+                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
                 print('')
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
@@ -2730,7 +2732,7 @@ if __name__ == '__main__':
                         print('Timming del analisis alcista: %s' % timminganalisis)
                         analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
                         if analisisalcista != None:
-                            alcista, soporteanterioralcista, analisisalcistatotal = analisisalcista
+                            alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
                             resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
                             soporte, stoploss = soporte
                             ruptura, entrada = ruptura
@@ -2748,7 +2750,7 @@ if __name__ == '__main__':
                         print('Timming del analisis bajista: %s' % timminganalisis)
                         analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
                         if analisisbajista != None:
-                            bajista, soporteanteriorbajista, analisisbajistatotal = analisisbajista
+                            bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
                             soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
                             resistencia, stoploss = resistencia
                             ruptura, entrada = ruptura
@@ -3056,7 +3058,7 @@ if __name__ == '__main__':
             cuentaatras = len(resultado)
             for registro in resultado:
                 #resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, volumenMedio, volumen, error, fechaRegistro = registro
+                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
 
@@ -3081,8 +3083,8 @@ if __name__ == '__main__':
                         if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
                             mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
 
-                    fecharesistenciadiario = 0
-                    fecharesistenciasemanal = 0
+                    #fecharesistenciadiario = 0
+                    #fecharesistenciasemanal = 0
 
                     if not diario == None:
                         diario = diario[2]
@@ -3235,8 +3237,8 @@ if __name__ == '__main__':
                             timmingtransicion = timming
                             inversionoperacion = numeroaccionesoperacion * precionentrada
                             inversionrecuperada = numeroaccionesoperacion * preciosalida
-                            soporteentrada = soporte[3]
-                            resistenciaentrada = resistencia[2]
+                            _soporteentrada = soporte[3]
+                            _resistenciaentrada = resistencia[2]
                             fechaentrada = ruptura[0]
                             precionentrada2 = precionentrada
                             if estrategia == 'Alcista' and resistencia[2] <= ruptura[2]:# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
@@ -3554,7 +3556,7 @@ if __name__ == '__main__':
 #            f=open(ficheroDatos,"w")
 #            f.write(codificado)
 #            f.close()
-#        
+#
 #
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
 #    datos = {'tickets':tickets, 'mercados':mercados}
@@ -3568,3 +3570,9 @@ if __name__ == '__main__':
             cursor.close()
             db.close()
             break
+
+############################################################
+# programa principal
+if __name__ == '__main__':
+    cursor, db = conexionBBDD()
+    main()
