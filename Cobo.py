@@ -763,7 +763,7 @@ def analisisAlcistaAccion(naccion, **config):
     listastoploss = []
     indicadores={}
 
-    i, r, s, LTi, LTf = 0
+    i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = True
     soporte = False
     stoploss = 0.0
@@ -895,9 +895,9 @@ def analisisAlcistaAccion(naccion, **config):
 
             i2 = 0
             while i2 < len(analisisalcista):
-                resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisalcista[i2]
+                resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisalcista[i2]
                 if salidaOperacionAnalisis == False:
-                    analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                    analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
             entradapuntoLT = False
@@ -1060,10 +1060,10 @@ def analisisAlcistaAccion(naccion, **config):
 
                 i2 = 0
                 while i2 < len(analisisalcista):
-                    resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisalcista[i2]
+                    resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisalcista[i2]
                     #salidaOperacionAnalisis=analisisalcista[i2][5]
                     if salidaOperacionAnalisis == False:
-                        analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                        analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                         #analisisalcista[i2][5]=datoshistoricos[i]
                     i2 += 1
 
@@ -1197,7 +1197,7 @@ def analisisBajistaAccion(naccion, **config):
     listastoploss = []
     indicadores={}
 
-    i, r, s, LTi, LTf = 0
+    i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = False
     soporte = True
     stoploss = 0.0
@@ -1332,10 +1332,10 @@ def analisisBajistaAccion(naccion, **config):
 
             i2 = 0
             while i2 < len(analisisbajista):
-                soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisbajista[i2]
+                soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisbajista[i2]
                 #salidaOperacionAnalisis=analisisalcista[i2][5]
                 if salidaOperacionAnalisis == False:
-                    analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                    analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
             entradapuntoLT = False
@@ -1526,10 +1526,10 @@ def analisisBajistaAccion(naccion, **config):
 
                 i2 = 0
                 while i2 < len(analisisbajista):
-                    soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisbajista[i2]
+                    soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisbajista[i2]
                     #salidaOperacionAnalisis=analisisalcista[i2][5]
                     if salidaOperacionAnalisis == False:
-                        analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                        analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                         #analisisalcista[i2][5]=datoshistoricos[i]
                     i2 += 1
             s = i #como la ultima barra que ha roto la resistencia es mas alta que la resistencia, la considero como nueva resistencia
@@ -2811,29 +2811,29 @@ def main():
                     #Existen ambos analisis, comparamos proximidada a ruptura
                     #la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
                     if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                        resistencia, soporte, ruptura, LTi, LTf, salida, timming, _indices = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanterioralcista
                     #la minima proximidadbajista es menor a la proximidadalcista, bajista
                     elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
-                        soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
+                        soporte, resistencia, ruptura, LTi, LTf, salida, timming, _indices = bajista
                         resistencia, stoploss = resistencia
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanteriorbajista
                     # Uno de los analisis no existe, asignamos el contrario
                     elif analisisalcista == None and analisisbajista != None:
-                        soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
+                        soporte, resistencia, ruptura, LTi, LTf, salida, timming, _indices = bajista
                         resistencia, stoploss = resistencia
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanteriorbajista
                     elif analisisbajista == None and analisisalcista != None:
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                        resistencia, soporte, ruptura, LTi, LTf, salida, timming, _indices = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanterioralcista
                     else:# Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
+                        resistencia, soporte, ruptura, LTi, LTf, salida, timming, _indices = alcista
                         soporte, stoploss = soporte
                         ruptura, entrada = ruptura
                         soporteanterior = soporteanterioralcista
@@ -3054,7 +3054,7 @@ def main():
                 else:
                     TARdiario = int(TARdiario)
 
-            ADXobjetivo = raw_input('Average Directional Movement Index, excluir entradas que no lleguen a (Sin ADX en todos los timmings): ')
+            ADXobjetivo = raw_input('Average Directional Movement Index, introduce entero, excluir entradas que no lleguen a (deja en blanco pulsando intro para Sin ADX en todos los timmings): ')
             if ADXobjetivo == '':
                 ADXmensual = False
                 ADXsemanal = False
@@ -3062,17 +3062,17 @@ def main():
                 ADXobjetivo=False
             else:
                 ADXobjetivo=int(ADXobjetivo)
-                ADXmensual = raw_input('Average Directional Movement Index Mensual (Sin ADX): ')
+                ADXmensual = raw_input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): ')
                 if ADXmensual == '':
                     ADXmensual = False
                 else:
                     ADXmensual = int(ADXmensual)
-                ADXsemanal = raw_input('Average Directional Movement Index Semanal (Sin ADX): ')
+                ADXsemanal = raw_input('Average Directional Movement Index Semanal (deja en blanco pulsando intro para Sin ADX): ')
                 if ADXsemanal == '':
                     ADXsemanal = False
                 else:
                     ADXsemanal = int(ADXsemanal)
-                ADXdiario = raw_input('Average Directional Movement Index Diario (Sin ADX): ')
+                ADXdiario = raw_input('Average Directional Movement Index Diario (deja en blanco pulsando intro para Sin ADX): ')
                 if ADXdiario == '':
                     ADXdiario = False
                 else:
@@ -3318,7 +3318,7 @@ def main():
                             _resistenciaentrada = resistencia[2]
                             fechaentrada = ruptura[0]
                             precionentrada2 = precionentrada
-							indicadoresentrada=indicadores
+                            indicadoresentrada=indicadores
                             if (estrategia == 'Alcista' and resistencia[2] <= ruptura[2])\
                                or (estrategia == 'Bajista' and soporte[3] >= ruptura[3]):# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
