@@ -699,13 +699,12 @@ def analisisAlcistaAccion(naccion, **config):
     filtro = 0.00, flotante filtro aplicado al soporte como precio de salida
     ADX=False/entero
 
-    indicadores es un diccionario que contiene los indices de los indicadores con sus valores convenidos
     Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis, indicadores
                     el formato obtenido es:
                                 Resistencia , soporte , Salida Lt = fecha,apertura, maximo, minimo, cierre, volumen
                                 punto LT = fecha inicio, precio inicio
                                 salida Lt = Soporte anterior
-                                indicadores= diccionario que contiene el valor de los indicadores agregados
+                                indicadores=(ADX, DI+, DI-)
 
     """
 
@@ -761,7 +760,6 @@ def analisisAlcistaAccion(naccion, **config):
 
     analisisalcista = []
     listastoploss = []
-    indicadores={}
 
     i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = True
@@ -819,13 +817,11 @@ def analisisAlcistaAccion(naccion, **config):
             fechaADX, puntoADX = puntosADX[ant]
             fechaDI, puntoDIplus,puntoDIminus = puntosDI[ant]
             assert (fechaADX == fechaanterior or fechaDI==fechaanterior)
-            indicadores['ADX']=puntoADX
-            indicadores['DI+']=puntoDIplus
-            indicadores['DI-']=puntoDIminus
         else:
-            indicadores['ADX']=False
-            indicadores['DI+']=False
-            indicadores['DI-']=False
+            puntoADX = False
+            puntoDIplus = False
+            puntoDIminus = False
+        indicadores = (puntoADX, puntoDIplus, puntoDIminus)
 
         if not (TAR == False):
             fechaTAR, puntoTAR = puntosTAR[ant]
@@ -1080,7 +1076,7 @@ def analisisAlcistaAccion(naccion, **config):
     if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisalcista):
-            resistencia, soporte, ruptura, LTi, LTf, salida, timming,_indicadores = analisisalcista[i]
+            resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = analisisalcista[i]
             fecha, _apertura, _maximo, _minimo, _cierre, _volumen = resistencia
             if fecha >= desdefecha:
                 analisisalcista = analisisalcista[i:]
@@ -1100,7 +1096,7 @@ def analisisAlcistaAccion(naccion, **config):
         j.write(str(config) + '\n')
         for n in analisisalcista:
             #~ j.write(str(n)+'\n')
-            resistencia, soporte, ruptura, LTi, LTf, salida, timming,indicadores = n
+            resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = n
             j.write("Resistencia " + str(resistencia) + '\n')
             j.write("Soporte     " + str(soporte) + '\n')
             j.write("Ruptura     " + str(ruptura) + '\n')
@@ -1108,7 +1104,7 @@ def analisisAlcistaAccion(naccion, **config):
             j.write("LT Final    " + str(LTf) + '\n')
             j.write("Salida      " + str(salida) + '\n')
             j.write("Timming     " + str(timming) + '\n')
-            j.write("Indicadores     " + str(indicadores) + '\n')
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
         for n in xrange (5):
@@ -1140,13 +1136,12 @@ def analisisBajistaAccion(naccion, **config):
     filtro = 0.00, flotante filtro aplicado al soporte como precio de salida
     ADX=False/entero
 
-    indicadores es un diccionario que contiene los indices de los indicadores con sus valores convenidos
     Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis,indicadores
                     el formato obtenido es:
                                 Resistencia , soporte , Salida Lt = fecha,apertura, maximo, minimo, cierre, volumen
                                 punto LT = fecha inicio, precio inicio
                                 salida Lt = Soporte anterior
-                                indicadores= diccionario que contiene el valor de los indicadores agregados
+                                indicadores=(ADX, DI+, DI-)
 
     """
     naccion = naccion.upper()
@@ -1195,7 +1190,7 @@ def analisisBajistaAccion(naccion, **config):
 
     analisisbajista = []
     listastoploss = []
-    indicadores={}
+
 
     i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = False
@@ -1253,13 +1248,11 @@ def analisisBajistaAccion(naccion, **config):
             fechaADX, puntoADX = puntosADX[ant]
             fechaDI, puntoDIplus,puntoDIminus = puntosDI[ant]
             assert (fechaADX == fechaanterior or fechaDI==fechaanterior)
-            indicadores['ADX']=puntoADX
-            indicadores['DI+']=puntoDIplus
-            indicadores['DI-']=puntoDIminus
         else:
-            indicadores['ADX']=False
-            indicadores['DI+']=False
-            indicadores['DI-']=False
+            puntoADX = False
+            puntoDIplus = False
+            puntoDIminus = False
+        indicadores = (puntoADX, puntoDIplus, puntoDIminus)
 
         if not (TAR == False):
             fechaTAR, puntoTAR = puntosTAR[ant]
@@ -1548,7 +1541,7 @@ def analisisBajistaAccion(naccion, **config):
     if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisbajista):
-            soporte, resistencia, ruptura, LTi, LTf, salida, timming,_indicadores = analisisbajista[i]
+            soporte, resistencia, ruptura, LTi, LTf, salida, timming, indicadores = analisisbajista[i]
             fecha, _apertura, _maximo, _minimo, _cierre, _volumen = soporte
             if fecha >= desdefecha:
                 analisisbajista = analisisbajista[i:]
@@ -1574,7 +1567,7 @@ def analisisBajistaAccion(naccion, **config):
         j.write(str(config) + '\n')
         for n in analisisbajista:
             #~ j.write(str(n)+'\n')
-            soporte, resistencia, ruptura, LTi, LTf, salida, timming,indicadores = n
+            soporte, resistencia, ruptura, LTi, LTf, salida, timming, indicadores = n
             j.write("Soporte     " + str(soporte) + '\n')
             j.write("Resistencia " + str(resistencia) + '\n')
             j.write("Ruptura     " + str(ruptura) + '\n')
@@ -1582,7 +1575,7 @@ def analisisBajistaAccion(naccion, **config):
             j.write("LT Final    " + str(LTf) + '\n')
             j.write("Salida      " + str(salida) + '\n')
             j.write("Timming     " + str(timming) + '\n')
-            j.write("Indicadores     " + str(indicadores) + '\n')
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
         for n in xrange (5):
@@ -3061,7 +3054,7 @@ def main():
                 ADXdiario = False
                 ADXobjetivo=False
             else:
-                ADXobjetivo=int(ADXobjetivo)
+                ADXobjetivo = float(ADXobjetivo)
                 ADXmensual = raw_input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): ')
                 if ADXmensual == '':
                     ADXmensual = False
@@ -3230,6 +3223,8 @@ def main():
                             ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
 
+                        puntoADX, puntoDIplus, puntoDIminus = indicadores
+
                         if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
                             if rentabilidad0:
                                 rentabilidad = rentabilidadminima
@@ -3290,11 +3285,11 @@ def main():
                         rentabilidad >= rentabilidadminima and \
                         volumenoperacion >= volumenminimo and \
                         abs(inversion) >= inversionminima and \
-                        (indicadores['ADX'] == False or indicadores['ADX'] == 0.0 or indicadores['ADX'] >= ADXobjetivo) and \
+                        (puntoADX == False or puntoADX == 0.0 or puntoADX >= ADXobjetivo) and \
                         (
-                         (indicadores['DI+']==False and indicadores['DI-']==False) or
-                         (estrategia == 'Alcista' and indicadores['DI+']>=indicadores['DI-']) or
-                         (estrategia == 'Bajista' and indicadores['DI-']>=indicadores['DI+'])
+                         (puntoDIplus == False and puntoDIminus == False) or
+                         (estrategia == 'Alcista' and puntoDIplus >= puntoDIminus) or
+                         (estrategia == 'Bajista' and puntoDIminus >= puntoDIplus)
                         ):
 
                             if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
@@ -3406,13 +3401,49 @@ def main():
 
                 archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'] , ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
-                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado\n')
+                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
                 #writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
 
 
                 for n in backtest:
                     ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance,indicadores = n
-                    texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%s\n") % (ticket, mercado, fechaentrada.replace('-', ';'), precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida.replace('-', ';'), preciosalida, timming, inversion, inversionrecuperada, balance),indicadores).replace('.', ',')
+                    # FIXME: si los indicadores son False, esto no funcionara
+                    if ADXobjetivo==False:# la otra opcion era asignarle a los indicacores valor Falso o 0 , pero no me parecio bien y es lioso imprimir columnas inecesarias
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f\n") \
+                                 % (
+                                    ticket,
+                                    mercado,
+                                    fechaentrada.replace('-', ';'),
+                                    precionentrada,
+                                    timmingentrada,
+                                    numeroaccionesoperacion,
+                                    fechasalida.replace('-', ';'),
+                                    preciosalida,
+                                    timming,
+                                    inversion,
+                                    inversionrecuperada,
+                                    balance
+                                    )).replace('.', ',')
+                    else:
+
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n") \
+                                 % (
+                                    ticket,
+                                    mercado,
+                                    fechaentrada.replace('-', ';'),
+                                    precionentrada,
+                                    timmingentrada,
+                                    numeroaccionesoperacion,
+                                    fechasalida.replace('-', ';'),
+                                    preciosalida,
+                                    timming,
+                                    inversion,
+                                    inversionrecuperada,
+                                    balance,
+                                    indicadores[0],
+                                    indicadores[1],
+                                    indicadores[2]
+                                    )).replace('.', ',')
                     j.write(texto)
 
                     #writercsv.writerow(n)
