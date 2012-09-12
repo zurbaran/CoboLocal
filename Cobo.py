@@ -697,11 +697,14 @@ def analisisAlcistaAccion(naccion, **config):
     conEntradaLT = True/False, si queremos que nos incluya los analisis de LT, posibles entradas en LT
     MME = False/entero, Si queremos que se trace una Media Movil Exponencial, no utilizando el concepto de Maximo historico como tal
     filtro = 0.00, flotante filtro aplicado al soporte como precio de salida
-    Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis
+    ADX=False/entero
+
+    Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis, indicadores
                     el formato obtenido es:
                                 Resistencia , soporte , Salida Lt = fecha,apertura, maximo, minimo, cierre, volumen
                                 punto LT = fecha inicio, precio inicio
                                 salida Lt = Soporte anterior
+                                indicadores=(ADX, DI+, DI-)
 
     """
 
@@ -721,6 +724,7 @@ def analisisAlcistaAccion(naccion, **config):
     else:
         MME2 = config.get('MME2', False)
     TAR = config.get('TAR', False)
+    ADX = config.get('ADX', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
     desdefecha = config.get('desdefecha', False)
@@ -757,9 +761,7 @@ def analisisAlcistaAccion(naccion, **config):
     analisisalcista = []
     listastoploss = []
 
-    i = 0
-    r = 0
-    s = 0
+    i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = True
     soporte = False
     stoploss = 0.0
@@ -796,6 +798,10 @@ def analisisAlcistaAccion(naccion, **config):
     if not (TAR == False):
         puntosTAR = indicador.TAR(datoshistoricos, TAR = TAR)
 
+    if not (ADX == False):
+        puntosADX = indicador.ADX(datoshistoricos, ADX = ADX)
+        puntosDI=indicador.DI(datoshistoricos,DI=ADX)
+
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
 
@@ -806,6 +812,16 @@ def analisisAlcistaAccion(naccion, **config):
         fechaanterior, _aperturaanterior, _maximoanterior, minimoanterior, cierreanterior, _volumenanterior = datoshistoricos[ant]
         _fecharesisten, aperturaresisten, maximoresisten, _minimoresisten, cierreresisten, _volumenresisten = datoshistoricos[r]
         _fechasoporte, _aperturasoporte, _maximosoporte, minimosoporte, _cierresoporte, _volumensoporte = datoshistoricos[s]
+
+        if not (ADX == False):
+            fechaADX, puntoADX = puntosADX[ant]
+            fechaDI, puntoDIplus,puntoDIminus = puntosDI[ant]
+            assert (fechaADX == fechaanterior or fechaDI==fechaanterior)
+        else:
+            puntoADX = False
+            puntoDIplus = False
+            puntoDIminus = False
+        indicadores = (puntoADX, puntoDIplus, puntoDIminus)
 
         if not (TAR == False):
             fechaTAR, puntoTAR = puntosTAR[ant]
@@ -862,7 +878,7 @@ def analisisAlcistaAccion(naccion, **config):
                     #ultimo soporte consolidado
                     soporteanterior = analisisalcista[-1][1][0]
                     barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
-                    analisisalcista.append((barraentradapuntoLT, (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    analisisalcista.append((barraentradapuntoLT, (soporteanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming,indicadores))
                     entradapuntoLT = False
 
         #cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
@@ -875,9 +891,9 @@ def analisisAlcistaAccion(naccion, **config):
 
             i2 = 0
             while i2 < len(analisisalcista):
-                resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisalcista[i2]
+                resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisalcista[i2]
                 if salidaOperacionAnalisis == False:
-                    analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                    analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
             entradapuntoLT = False
@@ -1024,7 +1040,7 @@ def analisisAlcistaAccion(naccion, **config):
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = maximoresistencia
 
-            analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            analisisalcista.append((datoshistoricos[r], (datoshistoricos[s], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming,indicadores))
             if conEntradaLT:
                 entradapuntoLT = True
 
@@ -1040,10 +1056,10 @@ def analisisAlcistaAccion(naccion, **config):
 
                 i2 = 0
                 while i2 < len(analisisalcista):
-                    resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisalcista[i2]
+                    resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisalcista[i2]
                     #salidaOperacionAnalisis=analisisalcista[i2][5]
                     if salidaOperacionAnalisis == False:
-                        analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                        analisisalcista[i2] = resistenciaAnalisis, soporteAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                         #analisisalcista[i2][5]=datoshistoricos[i]
                     i2 += 1
 
@@ -1060,7 +1076,7 @@ def analisisAlcistaAccion(naccion, **config):
     if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisalcista):
-            resistencia, soporte, ruptura, LTi, LTf, salida, timming = analisisalcista[i]
+            resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = analisisalcista[i]
             fecha, _apertura, _maximo, _minimo, _cierre, _volumen = resistencia
             if fecha >= desdefecha:
                 analisisalcista = analisisalcista[i:]
@@ -1080,7 +1096,7 @@ def analisisAlcistaAccion(naccion, **config):
         j.write(str(config) + '\n')
         for n in analisisalcista:
             #~ j.write(str(n)+'\n')
-            resistencia, soporte, ruptura, LTi, LTf, salida, timming = n
+            resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = n
             j.write("Resistencia " + str(resistencia) + '\n')
             j.write("Soporte     " + str(soporte) + '\n')
             j.write("Ruptura     " + str(ruptura) + '\n')
@@ -1088,6 +1104,7 @@ def analisisAlcistaAccion(naccion, **config):
             j.write("LT Final    " + str(LTf) + '\n')
             j.write("Salida      " + str(salida) + '\n')
             j.write("Timming     " + str(timming) + '\n')
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
         for n in xrange (5):
@@ -1117,11 +1134,14 @@ def analisisBajistaAccion(naccion, **config):
     conEntradaLT = True/False, si queremos que nos incluya los analisis de LT, posibles entradas en LT
     MME = False/entero, Si queremos que se trace una Media Movil Exponencial, no utilizando el concepto de Maximo historico como tal
     filtro = 0.00, flotante filtro aplicado al soporte como precio de salida
-    Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis
+    ADX=False/entero
+
+    Resultado es: Resistencia,Soporte,Ruptura Resistencia,Punto LineaTendenciaInicio,Punto LineaTendenciaFin,timming del analisis,indicadores
                     el formato obtenido es:
                                 Resistencia , soporte , Salida Lt = fecha,apertura, maximo, minimo, cierre, volumen
                                 punto LT = fecha inicio, precio inicio
                                 salida Lt = Soporte anterior
+                                indicadores=(ADX, DI+, DI-)
 
     """
     naccion = naccion.upper()
@@ -1135,6 +1155,7 @@ def analisisBajistaAccion(naccion, **config):
     else:
         MME2 = config.get('MME2', False)
     TAR = config.get('TAR', False)
+    ADX = config.get('ADX', False)
     filtro = config.get('filtro', 0.0)
     timming = config.get('timming', "m")
     desdefecha = config.get('desdefecha', False)
@@ -1170,9 +1191,8 @@ def analisisBajistaAccion(naccion, **config):
     analisisbajista = []
     listastoploss = []
 
-    i = 0
-    r = 0 # indice de la tabla de datoshistoricos que nos indica la posicion dentro de la tupla donde se encuentra la resistencia
-    s = 0
+
+    i, r, s, LTi, LTf = 0,0,0,0,0
     resistencia = False
     soporte = True
     stoploss = 0.0
@@ -1209,6 +1229,10 @@ def analisisBajistaAccion(naccion, **config):
     if not (TAR == False):
         puntosTAR = indicador.TAR(datoshistoricos, TAR = TAR)
 
+    if not (ADX == False):
+        puntosADX = indicador.ADX(datoshistoricos, ADX = ADX)
+        puntosDI=indicador.DI(datoshistoricos,DI=ADX)
+
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
 
@@ -1219,6 +1243,16 @@ def analisisBajistaAccion(naccion, **config):
         fechaanterior, _aperturaanterior, maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datoshistoricos[ant]
         _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, _volumenresisten = datoshistoricos[r]
         _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
+
+        if not (ADX == False):
+            fechaADX, puntoADX = puntosADX[ant]
+            fechaDI, puntoDIplus,puntoDIminus = puntosDI[ant]
+            assert (fechaADX == fechaanterior or fechaDI==fechaanterior)
+        else:
+            puntoADX = False
+            puntoDIplus = False
+            puntoDIminus = False
+        indicadores = (puntoADX, puntoDIplus, puntoDIminus)
 
         if not (TAR == False):
             fechaTAR, puntoTAR = puntosTAR[ant]
@@ -1276,7 +1310,7 @@ def analisisBajistaAccion(naccion, **config):
                     #ultima resistencia consolidado
                     resistenciaanterior = analisisbajista[-1][1][0]
                     barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
-                    analisisbajista.append((barraentradapuntoLT, (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+                    analisisbajista.append((barraentradapuntoLT, (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming,indicadores))
                     entradapuntoLT = False
 
 
@@ -1291,10 +1325,10 @@ def analisisBajistaAccion(naccion, **config):
 
             i2 = 0
             while i2 < len(analisisbajista):
-                soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisbajista[i2]
+                soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisbajista[i2]
                 #salidaOperacionAnalisis=analisisalcista[i2][5]
                 if salidaOperacionAnalisis == False:
-                    analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                    analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                     #analisisalcista[i2][5]=datoshistoricos[i]
                 i2 += 1
             entradapuntoLT = False
@@ -1470,7 +1504,7 @@ def analisisBajistaAccion(naccion, **config):
             else: #el maximo de la resistencia se encuetra entre la apertura y el maximo
                 precionentrada = minimosoporte
 
-            analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming))
+            analisisbajista.append((datoshistoricos[s], (datoshistoricos[r], stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming,indicadores))
 
             if conEntradaLT:
                 entradapuntoLT = True
@@ -1485,10 +1519,10 @@ def analisisBajistaAccion(naccion, **config):
 
                 i2 = 0
                 while i2 < len(analisisbajista):
-                    soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis = analisisbajista[i2]
+                    soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaOperacionAnalisis, timmingAnalisis, indicesAnalisis = analisisbajista[i2]
                     #salidaOperacionAnalisis=analisisalcista[i2][5]
                     if salidaOperacionAnalisis == False:
-                        analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis
+                        analisisbajista[i2] = soporteAnalisis, resistenciaAnalisis, rupturaAnalisis, LTInicioAnalisis, LTFinAnalisis, salidaoperaciones, timmingAnalisis, indicesAnalisis
                         #analisisalcista[i2][5]=datoshistoricos[i]
                     i2 += 1
             s = i #como la ultima barra que ha roto la resistencia es mas alta que la resistencia, la considero como nueva resistencia
@@ -1507,7 +1541,7 @@ def analisisBajistaAccion(naccion, **config):
     if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisbajista):
-            soporte, resistencia, ruptura, LTi, LTf, salida, timming = analisisbajista[i]
+            soporte, resistencia, ruptura, LTi, LTf, salida, timming, indicadores = analisisbajista[i]
             fecha, _apertura, _maximo, _minimo, _cierre, _volumen = soporte
             if fecha >= desdefecha:
                 analisisbajista = analisisbajista[i:]
@@ -1533,7 +1567,7 @@ def analisisBajistaAccion(naccion, **config):
         j.write(str(config) + '\n')
         for n in analisisbajista:
             #~ j.write(str(n)+'\n')
-            soporte, resistencia, ruptura, LTi, LTf, salida, timming = n
+            soporte, resistencia, ruptura, LTi, LTf, salida, timming, indicadores = n
             j.write("Soporte     " + str(soporte) + '\n')
             j.write("Resistencia " + str(resistencia) + '\n')
             j.write("Ruptura     " + str(ruptura) + '\n')
@@ -1541,6 +1575,7 @@ def analisisBajistaAccion(naccion, **config):
             j.write("LT Final    " + str(LTf) + '\n')
             j.write("Salida      " + str(salida) + '\n')
             j.write("Timming     " + str(timming) + '\n')
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
         for n in xrange (5):
@@ -1875,6 +1910,219 @@ def cotizacionesTicket(nombreticket):
         db.commit()
         actualizadoTicket(nombreticket)
 
+def historicoTicket(nombreticket, **config):
+    """
+    """
+    borranoactualizados = config.get('borranoactualizados', False)
+    if not ExistenDatos(nombreticket):
+        print('Ticket %s nuevo, descarga completa del historico de la accion' % nombreticket)
+
+        for timmingdescargado in 'dwm':
+
+            accioninvalida = descargaHistoricoAccion (nombreticket, timming = timmingdescargado, txt = False)
+            duerme()
+            if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
+                break
+
+    else:
+        print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % nombreticket)
+        for timmingdescargado in 'dwm':
+
+            fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(nombreticket, timming = timmingdescargado)
+
+            if actualizaractualizar:# and (desdefechamodificacionarchivo(datosaccion)):
+
+                accioninvalida = descargaHistoricoAccion(nombreticket, fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar, txt = False)
+                duerme()
+
+                if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
+                    break
+                # despues de haber actualizado, volvemos a comprobarlo, si se da que si, la accion dejo de cotizar hace mucho.
+                # existe un caso especifico que es cuando comprobamos la actualizacion de datos de una accion y esta tiene menos de 3 periodos en el timming en que estemos trabajando, la funcion actualizacionDatosHisAccion la trata de forma especial, devolviendo (None, timming, True), para que con estos parametros la funcion descargaHistoricosAccion descarge todo el historico otra vez
+                # por esta razon en el siguiente if comprobamos con fechaactualizar2!=None que no sea este caso.
+                # FIXME : al hacer la comprobacion en mensual, casi siempre me da que no ha actualizado correctamente, ejemplo EGL.SW
+                fechaactualizar2, _timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(nombreticket, timming = timmingdescargado)
+                if fechaactualizar2 != None and actualizaractualizar == actualizaractualizar2 and fechaactualizar == fechaactualizar2:
+                    fechahoy = ((date.today().timetuple()))
+                    fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
+                    desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
+
+                    if borranoactualizados and desdeultimaactualizacion > difregactualizar['noActualizados']:
+                        accioninvalida = 'URL invalida'
+                        break
+                    else:
+                        print ('No se ha actualizado correctamente. Funcion de borrado para estos casos deshabilitada')
+                        errorenTicket(nombreticket)
+                        break
+
+            else:
+                accioninvalida = None
+
+    if accioninvalida == 'Pago Dividendos':
+        borraTicket (nombreticket, BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
+
+        print('Reintento de la descarga, el error puede venir de un pago de Dividendos')
+        # errorenTicket(nombreticket)
+        for timmingdescargado in 'dwm':
+
+            accioninvalida = descargaHistoricoAccion (nombreticket, timming = timmingdescargado, txt = False)
+            duerme()
+
+    if accioninvalida == 'URL invalida':
+        borraTicket (nombreticket)# Borramos completamente, de que nos sirve si no tenemos historico o despues de haber actualizado, aun no lo esta porque dejo de cotizar hace mucho
+
+
+def analisisTicket(nombreticket):
+    """
+    """
+
+    nombreticket=(nombreticket.upper(),)
+    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?",nombreticket)
+    registro = cursor.fetchall()
+    #resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
+    codigo, _nombre, ticket, _mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
+    proximidadalcista, proximidadbajista = 0, 0
+    if ExistenDatos(ticket):
+
+        #al final si utilizamos indicador.MME, el indicador.MME sera la decision de si es alcista o bajista
+        for timminganalisis in 'mwd':
+            print('Timming del analisis alcista: %s' % timminganalisis)
+            analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
+            if analisisalcista != None:
+                alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
+                resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indicadores = alcista
+                soporte, stoploss = soporte
+                ruptura, entrada = ruptura
+                if maxDia == None or maxDia == 0.0:
+                    maxDia = ruptura[4]
+                if valorActual == None or valorActual == 0.0:
+                    valorActual = ruptura[4]
+                proximidadalcista = (abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
+#                            for precio in (ruptura[4], maxDia, valorActual):
+#                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
+#                            proximidadalcista = min(proximidadalcista)
+                break
+
+        for timminganalisis in 'mwd':
+            print('Timming del analisis bajista: %s' % timminganalisis)
+            analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
+            if analisisbajista != None:
+                bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
+                soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indicadores = bajista
+                resistencia, stoploss = resistencia
+                ruptura, entrada = ruptura
+                if minDia == None or minDia == 0.0:
+                    minDia = ruptura[4]
+                if valorActual == None or valorActual == 0.0:
+                    valorActual = ruptura[4]
+                proximidadbajista = (abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
+#                            for precio in (ruptura[4], minDia, valorActual):
+#                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
+#                            proximidadbajista = min(proximidadbajista)
+                break
+
+        # TODO: falla logica, puede ser que en mensual el analisis sea bajista, pero en semanal alcista. Hay que dar preferencia al alcista semanal, la resistencia o fecha de entrada seria posterior al soporte o entrada en bajista mensual
+
+        #Existen ambos analisis, comparamos proximidada a ruptura
+        #la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
+        if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
+            resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
+            soporte, stoploss = soporte
+            ruptura, entrada = ruptura
+            soporteanterior = soporteanterioralcista
+        #la minima proximidadbajista es menor a la proximidadalcista, bajista
+        elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
+            soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
+            resistencia, stoploss = resistencia
+            ruptura, entrada = ruptura
+            soporteanterior = soporteanteriorbajista
+        # Uno de los analisis no existe, asignamos el contrario
+        elif analisisalcista == None and analisisbajista != None:
+            soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
+            resistencia, stoploss = resistencia
+            ruptura, entrada = ruptura
+            soporteanterior = soporteanteriorbajista
+        elif analisisbajista == None and analisisalcista != None:
+            resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
+            soporte, stoploss = soporte
+            ruptura, entrada = ruptura
+            soporteanterior = soporteanterioralcista
+        elif analisisbajista == None and analisisalcista == None:#No existe analisis posible
+            errorenTicket(ticket)
+            return
+
+        else:# Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
+            resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
+            soporte, stoploss = soporte
+            ruptura, entrada = ruptura
+            soporteanterior = soporteanterioralcista
+
+        sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
+        cursor.execute(sql)
+        numeroResultado = len(cursor.fetchall())
+
+        if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
+            rentabilidad = 0.00
+        else:
+            fechainicial, precioinicial = LTi
+            fechafinal, preciofinal = LTf
+            fechainicial = map(int, (fechainicial.split('-')))
+            fechafinal = map(int, (fechafinal.split('-')))
+            diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
+
+#                        if entrada > stoploss:#Alcista
+            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+#                        elif entrada < stoploss:#Bajista
+                #TODO: la rentabilidad en bajista tiene que ser negativa, pero el equivalente en positiva
+#                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+
+        # no nos interesan los datos almacenados de analisis anteriores
+        #comprobamos que el analisis obtenido y que vamos a almacenar en la BBDD es o
+        #alcista o bajista
+        #comprobamos se es actual o esta obsoleto
+
+        #Alcista obsoleto
+        # Alcista, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
+
+        #Bajista obsoleto
+        # Bajista, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
+
+        if ((entrada > stoploss) and \
+        \
+        ((max52 != 'NULL' and max52 > resistencia[2]) or \
+        (maxDia != 'NULL' and maxDia > resistencia[2]) or \
+        (valorActual != 'NULL' and valorActual > resistencia[2]) or \
+        (entrada > resistencia[2])))\
+        \
+        or\
+        \
+        ((entrada < stoploss) and \
+        \
+        ((min52 != 'NULL' and min52 < soporte[3]) or \
+        (minDia != 'NULL' and minDia < soporte[3]) or \
+        (valorActual != 'NULL' and valorActual < soporte[3]) or \
+        (entrada < soporte[3]))):
+
+            # si true, analisis ya cumplido, obsoleto y lo actualizamos
+            if numeroResultado == 1:
+                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
+            elif numeroResultado == 0:
+                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
+
+        #Alcista/Bajista Validos
+        else:#anali
+            #si false, analisis valido, sin cumplir
+            if numeroResultado == 1:
+                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
+            elif numeroResultado == 0:
+                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
+
+        cursor.execute(sql)
+
+    db.commit()
+
+
+
 def cotizacionesMoneda(nombreticket):
     """
 
@@ -2203,43 +2451,22 @@ def main():
             naccion = (naccion,)
             cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
             numeroResultado = len(cursor.fetchall())
+
+            # Lo incorporamos a la base de datos
             if numeroResultado == 0:
                 cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                 db.commit()
                 print(naccion[0] + ' anadido a la base de datos')
 
-            if not ExistenDatos(naccion[0]):
-                print('Ticket %s nuevo, descarga completa del historico de la accion' % naccion[0])
-                cotizacionesTicket(naccion[0])
+            # Actualizamos las cotizaciones
+            cotizacionesTicket(naccion[0])
 
-                for timmingdescargado in 'dwm':
+            # Descargamos/Actualizamos el historico
+            historicoTicket(naccion[0])
 
-                    accioninvalida = descargaHistoricoAccion (naccion[0], timming = timmingdescargado)
-                    duerme()
+            #Analizamos la accion
+            analisisTicket(naccion[0])
 
-            else:
-                print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % naccion[0])
-                for timmingdescargado in 'dwm':
-
-                    fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(naccion[0], timming = timmingdescargado)
-
-                    if actualizaractualizar:# and (desdefechamodificacionarchivo(datosaccion)):
-
-                        accioninvalida = descargaHistoricoAccion(naccion[0], fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar)
-                        duerme()
-                    else:
-                        accioninvalida = None
-
-                    if accioninvalida == 'Pago Dividendos':
-                        borraTicket (naccion[0], BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
-                        print('Reintento de la descarga, el error viene de un pago de Dividendos')
-                        for timmingdescargado in 'dwm':
-
-                            accioninvalida = descargaHistoricoAccion (naccion[0], timming = timmingdescargado)
-                            duerme()
-
-                    if accioninvalida == 'URL invalida':
-                        borraTicket (naccion[0])
 
 #        'B) Corregir Datos de 1 Ticket',
         elif opcion == 'b':
@@ -2559,7 +2786,7 @@ def main():
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
         elif opcion == 'o':
             print(seleccion)
-            ticketsborrados = []
+
             sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
@@ -2582,72 +2809,9 @@ def main():
 
                 #if naccion in tickets:
 
-                if not ExistenDatos(ticket):
-                    print('Ticket %s nuevo, descarga completa del historico de la accion' % ticket)
-
-                    for timmingdescargado in 'dwm':
-
-                        accioninvalida = descargaHistoricoAccion (ticket, timming = timmingdescargado, txt = False)
-                        duerme()
-                        if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
-                            break
-
-                else:
-                    print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % ticket)
-                    for timmingdescargado in 'dwm':
-
-                        fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(ticket, timming = timmingdescargado)
-
-                        if actualizaractualizar:# and (desdefechamodificacionarchivo(datosaccion)):
-
-                            accioninvalida = descargaHistoricoAccion(ticket, fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar, txt = False)
-                            duerme()
-
-                            if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
-                                break
-                            # despues de haber actualizado, volvemos a comprobarlo, si se da que si, la accion dejo de cotizar hace mucho.
-                            # existe un caso especifico que es cuando comprobamos la actualizacion de datos de una accion y esta tiene menos de 3 periodos en el timming en que estemos trabajando, la funcion actualizacionDatosHisAccion la trata de forma especial, devolviendo (None, timming, True), para que con estos parametros la funcion descargaHistoricosAccion descarge todo el historico otra vez
-                            # por esta razon en el siguiente if comprobamos con fechaactualizar2!=None que no sea este caso.
-                            # FIXME : al hacer la comprobacion en mensual, casi siempre me da que no ha actualizado correctamente, ejemplo EGL.SW
-                            fechaactualizar2, _timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(ticket, timming = timmingdescargado)
-                            if fechaactualizar2 != None and actualizaractualizar == actualizaractualizar2 and fechaactualizar == fechaactualizar2:
-                                fechahoy = ((date.today().timetuple()))
-                                fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
-                                desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
-
-                                if borranoactualizados and desdeultimaactualizacion > difregactualizar['noActualizados']:
-                                    accioninvalida = 'URL invalida'
-                                    break
-                                else:
-                                    print ('No se ha actualizado correctamente. Funcion de borrado para estos casos deshabilitada')
-                                    errorenTicket(ticket)
-                                    break
-
-                        else:
-                            accioninvalida = None
-
-                if accioninvalida == 'Pago Dividendos':
-                    borraTicket (ticket, BBDD = False)# no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
-
-                    print('Reintento de la descarga, el error puede venir de un pago de Dividendos')
-                    # errorenTicket(ticket)
-                    for timmingdescargado in 'dwm':
-
-                        accioninvalida = descargaHistoricoAccion (ticket, timming = timmingdescargado, txt = False)
-                        duerme()
-
-                if accioninvalida == 'URL invalida':
-                    borraTicket (ticket)# Borramos completamente, de que nos sirve si no tenemos historico o despues de haber actualizado, aun no lo esta porque dejo de cotizar hace mucho
-                    ticketsborrados.append(ticket)
+                historicoTicket(ticket, borranoactualizados=borranoactualizados)
 
                 #cuentaatras -= 1
-
-            print('Lista de tickets borrados por no contener historicos')
-            for ticketborrado in ticketsborrados:
-                print(ticketborrado)
-            print('Un total de : ', len (ticketsborrados))
-
-            del ticketsborrados
 
 
         elif opcion == 'p':
@@ -2710,156 +2874,25 @@ def main():
                 print(ticket)
             print('Un total de : ', len (ticketsnodescargados))
 
+
         elif opcion == 'q':
             #Q) Analizar Datos de todos los Tickets',
             print(seleccion)
-            sql = "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
 
+            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
-            listadetickets = cursor.fetchall()
-            cuentaatras = len(listadetickets)
-            for registro in listadetickets:
-                #resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
+            listatickets = cursor.fetchall()
+            listatickets = ((ticket[0]) for ticket in listatickets)
+            listatickets = deque(list(listatickets))
+            #for ticket in listatickets:
+            while len(listatickets) > 0:
+
                 print('')
-                print('Quedan por analizar un total de %d' % cuentaatras)
+                print('Quedan por analizar un total de %d' % len(listatickets))
+                ticket = listatickets.popleft()
                 print('Analizando ticket %s' % ticket)
-                proximidadalcista, proximidadbajista = 0, 0
-                if ExistenDatos(ticket):
 
-                    #al final si utilizamos indicador.MME, el indicador.MME sera la decision de si es alcista o bajista
-                    for timminganalisis in 'mwd':
-                        print('Timming del analisis alcista: %s' % timminganalisis)
-                        analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
-                        if analisisalcista != None:
-                            alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
-                            resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
-                            soporte, stoploss = soporte
-                            ruptura, entrada = ruptura
-                            if maxDia == None or maxDia == 0.0:
-                                maxDia = ruptura[4]
-                            if valorActual == None or valorActual == 0.0:
-                                valorActual = ruptura[4]
-                            proximidadalcista = (abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
-#                            for precio in (ruptura[4], maxDia, valorActual):
-#                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
-#                            proximidadalcista = min(proximidadalcista)
-                            break
-
-                    for timminganalisis in 'mwd':
-                        print('Timming del analisis bajista: %s' % timminganalisis)
-                        analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
-                        if analisisbajista != None:
-                            bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
-                            soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
-                            resistencia, stoploss = resistencia
-                            ruptura, entrada = ruptura
-                            if minDia == None or minDia == 0.0:
-                                minDia = ruptura[4]
-                            if valorActual == None or valorActual == 0.0:
-                                valorActual = ruptura[4]
-                            proximidadbajista = (abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
-#                            for precio in (ruptura[4], minDia, valorActual):
-#                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
-#                            proximidadbajista = min(proximidadbajista)
-                            break
-
-                    # TODO: falla logica, puede ser que en mensual el analisis sea bajista, pero en semanal alcista. Hay que dar preferencia al alcista semanal, la resistencia o fecha de entrada seria posterior al soporte o entrada en bajista mensual
-
-                    #Existen ambos analisis, comparamos proximidada a ruptura
-                    #la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
-                    if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
-                        soporte, stoploss = soporte
-                        ruptura, entrada = ruptura
-                        soporteanterior = soporteanterioralcista
-                    #la minima proximidadbajista es menor a la proximidadalcista, bajista
-                    elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
-                        soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
-                        resistencia, stoploss = resistencia
-                        ruptura, entrada = ruptura
-                        soporteanterior = soporteanteriorbajista
-                    # Uno de los analisis no existe, asignamos el contrario
-                    elif analisisalcista == None and analisisbajista != None:
-                        soporte, resistencia, ruptura, LTi, LTf, salida, timming = bajista
-                        resistencia, stoploss = resistencia
-                        ruptura, entrada = ruptura
-                        soporteanterior = soporteanteriorbajista
-                    elif analisisbajista == None and analisisalcista != None:
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
-                        soporte, stoploss = soporte
-                        ruptura, entrada = ruptura
-                        soporteanterior = soporteanterioralcista
-                    else:# Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
-                        resistencia, soporte, ruptura, LTi, LTf, salida, timming = alcista
-                        soporte, stoploss = soporte
-                        ruptura, entrada = ruptura
-                        soporteanterior = soporteanterioralcista
-
-                    sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
-                    cursor.execute(sql)
-                    numeroResultado = len(cursor.fetchall())
-
-                    if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
-                        rentabilidad = 0.00
-                    else:
-                        fechainicial, precioinicial = LTi
-                        fechafinal, preciofinal = LTf
-                        fechainicial = map(int, (fechainicial.split('-')))
-                        fechafinal = map(int, (fechafinal.split('-')))
-                        diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
-
-#                        if entrada > stoploss:#Alcista
-                        rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
-#                        elif entrada < stoploss:#Bajista
-                            #TODO: la rentabilidad en bajista tiene que ser negativa, pero el equivalente en positiva
-#                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
-
-                    # no nos interesan los datos almacenados de analisis anteriores
-                    #comprobamos que el analisis obtenido y que vamos a almacenar en la BBDD es o
-                    #alcista o bajista
-                    #comprobamos se es actual o esta obsoleto
-
-                    #Alcista obsoleto
-                    # Alcista, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
-
-                    #Bajista obsoleto
-                    # Bajista, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
-
-                    if ((entrada > stoploss) and \
-                    \
-                    ((max52 != 'NULL' and max52 > resistencia[2]) or \
-                    (maxDia != 'NULL' and maxDia > resistencia[2]) or \
-                    (valorActual != 'NULL' and valorActual > resistencia[2]) or \
-                    (entrada > resistencia[2])))\
-                    \
-                    or\
-                    \
-                    ((entrada < stoploss) and \
-                    \
-                    ((min52 != 'NULL' and min52 < soporte[3]) or \
-                    (minDia != 'NULL' and minDia < soporte[3]) or \
-                    (valorActual != 'NULL' and valorActual < soporte[3]) or \
-                    (entrada < soporte[3]))):
-
-                        # si true, analisis ya cumplido, obsoleto y lo actualizamos
-                        if numeroResultado == 1:
-                            sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
-                        elif numeroResultado == 0:
-                            sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
-
-                    #Alcista/Bajista Validos
-                    else:#anali
-                        #si false, analisis valido, sin cumplir
-                        if numeroResultado == 1:
-                            sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
-                        elif numeroResultado == 0:
-                            sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
-
-                    cursor.execute(sql)
-
-                cuentaatras -= 1
-                db.commit()
+                analisisTicket(ticket)
 
 
 #        'S) BackTest
@@ -3012,6 +3045,32 @@ def main():
                 else:
                     TARdiario = int(TARdiario)
 
+            ADXobjetivo = raw_input('Average Directional Movement Index, introduce entero, excluir entradas que no lleguen a (deja en blanco pulsando intro para Sin ADX en todos los timmings): ')
+            if ADXobjetivo == '':
+                ADXmensual = False
+                ADXsemanal = False
+                ADXdiario = False
+                ADXobjetivo=False
+            else:
+                ADXobjetivo = float(ADXobjetivo)
+                ADXmensual = raw_input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): ')
+                if ADXmensual == '':
+                    ADXmensual = False
+                else:
+                    ADXmensual = int(ADXmensual)
+                ADXsemanal = raw_input('Average Directional Movement Index Semanal (deja en blanco pulsando intro para Sin ADX): ')
+                if ADXsemanal == '':
+                    ADXsemanal = False
+                else:
+                    ADXsemanal = int(ADXsemanal)
+                ADXdiario = raw_input('Average Directional Movement Index Diario (deja en blanco pulsando intro para Sin ADX): ')
+                if ADXdiario == '':
+                    ADXdiario = False
+                else:
+                    ADXdiario = int(ADXdiario)
+
+
+
             EntradaLT = raw_input('Entradas en Linea de Tendencia (Sin Entradas): ')
             if EntradaLT == '':
                 EntradaLT = False
@@ -3058,7 +3117,7 @@ def main():
             cuentaatras = len(resultado)
             for registro in resultado:
                 #resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-                codigo, nombre, ticket, mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
+                codigo, nombre, ticket, mercado, _max52, _maxDia, _min52, _minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
 
@@ -3070,18 +3129,18 @@ def main():
                     backtestaccion = []
                     if estrategia == 'Alcista':
                         if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
-                            diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                            diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario,ADX = ADXdiario, txt = True)
                         if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
-                            semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                            semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal,ADX=ADXsemanal, txt = True)
                         if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
-                            mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                            mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual,ADX=ADXmensual, txt = True)
                     elif estrategia == 'Bajista':
                         if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
-                            diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, txt = True)
+                            diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario,ADX = ADXdiario, txt = True)
                         if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
-                            semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, txt = True)
+                            semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal,ADX=ADXsemanal, txt = True)
                         if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
-                            mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, txt = True)
+                            mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual,ADX=ADXmensual, txt = True)
 
                     #fecharesistenciadiario = 0
                     #fecharesistenciasemanal = 0
@@ -3153,14 +3212,16 @@ def main():
                     #for operacion in backtestaccion:
 
                         if estrategia == 'Alcista':
-                            resistencia, soporte, ruptura, LTi, LTf, salida, timming = backtestaccion[p]
+                            resistencia, soporte, ruptura, LTi, LTf, salida, timming,indicadores = backtestaccion[p]
                             soporte, stoploss = soporte
                             ruptura, precionentrada = ruptura
                         elif estrategia == 'Bajista':
-                            soporte, resistencia, ruptura, LTi, LTf, salida, timming = backtestaccion[p]
+                            soporte, resistencia, ruptura, LTi, LTf, salida, timming,indicadores = backtestaccion[p]
                             resistencia, stoploss = resistencia
                             ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
+
+                        puntoADX, puntoDIplus, puntoDIminus = indicadores
 
                         if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
                             if rentabilidad0:
@@ -3218,7 +3279,16 @@ def main():
                                 numeroacciones = (int(inversionmaxima / soporte[3])) * (-1)
                                 inversion = numeroacciones * soporte[3]
 
-                        if invertido == False and rentabilidad >= rentabilidadminima and volumenoperacion >= volumenminimo and abs(inversion) >= inversionminima:
+                        if invertido == False and \
+                        rentabilidad >= rentabilidadminima and \
+                        volumenoperacion >= volumenminimo and \
+                        abs(inversion) >= inversionminima and \
+                        (puntoADX == False or puntoADX == 0.0 or puntoADX >= ADXobjetivo) and \
+                        (
+                         (puntoDIplus == False and puntoDIminus == False) or
+                         (estrategia == 'Alcista' and puntoDIplus >= puntoDIminus) or
+                         (estrategia == 'Bajista' and puntoDIminus >= puntoDIplus)
+                        ):
 
                             if salida == False:#analisis de que no hay salida, le asignamos la fecha y cotizacion actual
                                 fechasalida = str(fechaRegistro)
@@ -3241,6 +3311,7 @@ def main():
                             _resistenciaentrada = resistencia[2]
                             fechaentrada = ruptura[0]
                             precionentrada2 = precionentrada
+                            indicadoresentrada=indicadores
                             if (estrategia == 'Alcista' and resistencia[2] <= ruptura[2])\
                                or (estrategia == 'Bajista' and soporte[3] >= ruptura[3]):# La ultima comprobacion es para el caso de que en el ultimo analisis en el que la ruptura es la ultima barra que aun no rompiendo la resistencia la consideramos que si, en el caso de que no estemos comprados esta ultima condicion no nos consideraria como tal
                                 invertido = True
@@ -3290,7 +3361,7 @@ def main():
                                 if fechasalida != fecharuptura:#Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                                     p -= 1#Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
-                                backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
+                                backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance,indicadoresentrada))
                                 invertido = False
 
                         p += 1
@@ -3312,7 +3383,7 @@ def main():
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-                            backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance))
+                            backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance,indicadoresentrada))
                             invertido = False
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta cuentraatras incluido
@@ -3328,13 +3399,49 @@ def main():
 
                 archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'] , ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
-                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado\n')
+                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
                 #writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
 
 
                 for n in backtest:
-                    ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance = n
-                    texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f\n") % (ticket, mercado, fechaentrada.replace('-', ';'), precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida.replace('-', ';'), preciosalida, timming, inversion, inversionrecuperada, balance)).replace('.', ',')
+                    ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance,indicadores = n
+                    # si los indicadores son False, esto no funcionara
+                    if ADXobjetivo==False:# la otra opcion era asignarle a los indicacores valor Falso o 0 , pero no me parecio bien y es lioso imprimir columnas inecesarias
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f\n") \
+                                 % (
+                                    ticket,
+                                    mercado,
+                                    fechaentrada.replace('-', ';'),
+                                    precionentrada,
+                                    timmingentrada,
+                                    numeroaccionesoperacion,
+                                    fechasalida.replace('-', ';'),
+                                    preciosalida,
+                                    timming,
+                                    inversion,
+                                    inversionrecuperada,
+                                    balance
+                                    )).replace('.', ',')
+                    else:
+
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n") \
+                                 % (
+                                    ticket,
+                                    mercado,
+                                    fechaentrada.replace('-', ';'),
+                                    precionentrada,
+                                    timmingentrada,
+                                    numeroaccionesoperacion,
+                                    fechasalida.replace('-', ';'),
+                                    preciosalida,
+                                    timming,
+                                    inversion,
+                                    inversionrecuperada,
+                                    balance,
+                                    indicadores[0],
+                                    indicadores[1],
+                                    indicadores[2]
+                                    )).replace('.', ',')
                     j.write(texto)
 
                     #writercsv.writerow(n)
@@ -3372,6 +3479,10 @@ def main():
                 j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
                 j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
                 j.write(('True Averange xrange Diario : %s\n' % TARdiario))
+                j.write(('Average Directional Movement Index Objetivo: %s\n' % ADXobjetivo))
+                j.write(('Average Directional Movement Index Mensual: %s\n' % ADXmensual))
+                j.write(('Average Directional Movement Index Samanal: %s\n' % ADXsemanal))
+                j.write(('Average Directional Movement Index Diario: %s\n' % ADXdiario))
                 j.write(('Con entradas en Linea de tendencia : %s\n' % EntradaLT))
                 j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
                 j.write('Moneda del Backtest : %s\n' % moneda)
