@@ -14,6 +14,7 @@
 # modulos estandar importados
 
 #import urllib
+from setuptools.command.easy_install import main as install
 from collections import deque
 from datetime import date, datetime, timedelta
 from random import randint
@@ -29,6 +30,7 @@ try:
 except ImportError:
     print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
     import sqlite3
+    install(['-v','pysqlite'])
 #from adodbapi.adodbapi import type
 try:
     import cPickle as pickle
@@ -1891,8 +1893,15 @@ def cotizacionesTicket(nombreticket):
 
                 if salida == None or salida == '':
                     salida = 0.0
+                elif type(salida) == unicode:
+                    #Corregimos un posible fallo. Cuando en un analisis introducimos datos manualmente, posteriormente cuando recuperamos esa informacion
+                    # lo que recuperamos es un valor unicode con con coma y no punto u'48,760'
+                    salida = float(salida.replace(',','.'))
+
                 if entrada == None or salida == '':
                     entrada = 0.0
+                elif type(entrada) == unicode:
+                    entrada = float(entrada.replace(',','.'))
 
                 if precio_ini <= precio_fin:# datos de una accion alcista
                     if (datomax52 != 'NULL' and datomax52 > entrada) or (datomaxDia != 'NULL' and datomaxDia > entrada) or (datoValorActual != 'NULL' and datoValorActual > entrada):# si true, analisis ya cumplido, obsoleto y lo actualizamos
