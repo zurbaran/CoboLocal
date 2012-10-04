@@ -975,7 +975,7 @@ def analisisAlcistaAccion(naccion, **config):
                             break
 
                 LTf = r
-
+                #LTfrepetido = False
                 while localizaLTf:
 
     #                print "LTf, i =", LTf, i
@@ -1000,12 +1000,28 @@ def analisisAlcistaAccion(naccion, **config):
                         puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         #puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
 
+                        # Aveces por falta de precision en el calculo del puntoLT creamos un bucle infinito que siempre impacta en la misma barra una y otra vez
+                        # Esto sirve para evitar eso no comprobando una y otra vez un LTf que siempre es la misma
                         if puntoLT > minimoj:
-                            LTf = j
+                            if (LTf == j or (puntoLT == 0.0 and LTf < i)) and not (j + 1 > i):
+                                #Si la linea de tendencia llega a 0 y LTf no ha llegado a ser i, deberia comprobar hasta llegar a ser la i
+                                #la primera comprobacion es porque por una falta de precision en el calculo de PuntoLT, aveces da menor que el maximo del que es precisamente el ultimo punto donde toco, es decir, ya tomamos este ultimo punto como LTf pero cuando volvemos a comprobarlo por segunda vez, vuelve a dar que es menor por un fallo de precision
+                                localizaLTf = False
+                                localizaLTi = False
+                            else:
+                                LTf = j
+##                            if LTfrepetido or LTfrepetido == LTf:
+##                                LTfrepetido = False
+##                                localizaLTf = False
+##                                localizaLTi = False
+##                                break
+##                            elif LTf == j and LTfrepetido == False:
+##                                LTfrepetido = LTf
+##                            LTf = j
                             break
                             #.....
 
-                        if j == i:
+                        if j >= i:
                             localizaLTf = False
                             localizaLTi = False
                             break
@@ -1999,7 +2015,7 @@ def analisisTicket(nombreticket):
             analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
             if analisisalcista != None:
                 alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
-                resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indicadores = alcista
+                resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
                 soporte, stoploss = soporte
                 ruptura, entrada = ruptura
                 if maxDia == None or maxDia == 0.0:
@@ -2017,7 +2033,7 @@ def analisisTicket(nombreticket):
             analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
             if analisisbajista != None:
                 bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
-                soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indicadores = bajista
+                soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
                 resistencia, stoploss = resistencia
                 ruptura, entrada = ruptura
                 if minDia == None or minDia == 0.0:
@@ -2090,27 +2106,20 @@ def analisisTicket(nombreticket):
         #alcista o bajista
         #comprobamos se es actual o esta obsoleto
 
-        #Alcista obsoleto
-        # Alcista, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
 
-        #Bajista obsoleto
-        # Bajista, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
-
-        if ((entrada > stoploss) and \
-        \
-        ((max52 != 'NULL' and max52 > resistencia[2]) or \
-        (maxDia != 'NULL' and maxDia > resistencia[2]) or \
-        (valorActual != 'NULL' and valorActual > resistencia[2]) or \
-        (entrada > resistencia[2])))\
-        \
-        or\
-        \
-        ((entrada < stoploss) and \
-        \
-        ((min52 != 'NULL' and min52 < soporte[3]) or \
-        (minDia != 'NULL' and minDia < soporte[3]) or \
-        (valorActual != 'NULL' and valorActual < soporte[3]) or \
-        (entrada < soporte[3]))):
+        if ((entrada > stoploss) and\
+            # Alcista obsoleto, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
+            ((max52 != 'NULL' and max52 > resistencia[2]) or\
+             (maxDia != 'NULL' and maxDia > resistencia[2]) or\
+             (valorActual != 'NULL' and valorActual > resistencia[2]) or\
+             (entrada > resistencia[2])))\
+             or\
+             ((entrada < stoploss) and\
+              # Bajista obsoleto, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
+              ((min52 != 'NULL' and min52 < soporte[3]) or\
+               (minDia != 'NULL' and minDia < soporte[3]) or\
+               (valorActual != 'NULL' and valorActual < soporte[3]) or\
+               (entrada < soporte[3]))):
 
             # si true, analisis ya cumplido, obsoleto y lo actualizamos
             if numeroResultado == 1:
@@ -2410,7 +2419,7 @@ def main():
             opciones = creaMenu(')', (
             'Acciones para un solo ticket',
             '------------------------------',
-            'A) Alta/Actualizar/Descargar Datos de 1 Ticket',
+            'A) Alta/Actualizar/Descargar/Analizar Datos de 1 Ticket',
             'B) Corregir Datos de 1 Ticket',
             'C) Analizar Datos de 1 Ticket',
             'D) Eliminar 1 Ticket',
@@ -2452,12 +2461,15 @@ def main():
         iopciones += 1
 
 
-#'A) Alta/Actualizar/Descargar Datos de 1 Ticket'
+#'A) Alta/Actualizar/Descargar/Analizar Datos de 1 Ticket'
         if opcion == 'a':
             print(seleccion)
 
             naccion = raw_input('Introduce ticket de la accion : ').upper()
             naccion = (naccion,)
+            # Primero lo borramos
+            borraTicket(naccion[0])
+
             cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
             numeroResultado = len(cursor.fetchall())
 
