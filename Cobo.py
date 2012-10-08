@@ -2444,10 +2444,12 @@ def main():
             'P) Actualizar Max/Min Historicos de todos los Tickets',
             'Q) Analizar Datos de todos los Tickets',
             '------------------------------',
-            '',
             'S) BackTest',
             '',
+            'Cambiar sistema de analisis',
             '------------------------------',
+            'T) Cooper',
+            '',
             'Acciones Masivas',
             '------------------------------',
             'V) Exportar datos a arhivos csv',
@@ -3242,7 +3244,10 @@ def main():
                             ruptura, precionentrada = ruptura
                         #Calculamos rentabilidad
 
-                        puntoADX, puntoDIplus, puntoDIminus = indicadores
+                        if len(indicadores) == 3:
+                            puntoADX, puntoDIplus, puntoDIminus = indicadores
+                        else:
+                            puntoADX, puntoDIplus, puntoDIminus, puntoTAR, puntoMME, puntoMME2, puntoHL = indicadores
 
                         if LTi == ('0-0-0', 0.0) and LTf == ('0-0-0', 0.0):
                             if rentabilidad0:
@@ -3539,6 +3544,15 @@ def main():
                 print('')
             else:
                 raw_input('Backtest no realizado')
+
+
+#            'Cambiar sistema de analisis',
+#            '------------------------------',
+#            'T) Cooper',
+        elif opcion == 't':
+            print(seleccion)
+            from Cooper import analisisAlcistaAccion, analisisBajistaAccion
+            print('Cambiado todos los sistemas de analisis al sistema de Cooper')
 
 
 #        'V) Exportar datos a arhivos csv',
