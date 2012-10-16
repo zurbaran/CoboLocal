@@ -7,3 +7,8 @@ Base de Datos contenida en Cobo.dat en sqlite3, no incluida.
 Probar las librerias http://code.google.com/p/ultra-finance/
 					TA-Lib
 					numpys
+					
+					
+TODO:
+	Graficar usando la libreria matplotlib
+	barajar la posibilidad de en vez de utilizar archivos pickle para guardar los historicos, hacerlo en una BBDD sqlite, ver archivo de la documentacion "YahooSqlite.py"

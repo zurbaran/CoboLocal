@@ -8,8 +8,8 @@ def _test():
     doctest.testmod()
     # pruebas doctest
     # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
-    #Externalizar los test
-    #doctest.testfile('example2.txt')
+    # Externalizar los test
+    # doctest.testfile('example2.txt')
 
 
 def MME(datos, **config):
@@ -35,7 +35,7 @@ def MME(datos, **config):
         fechaMME = datos[iMME][0]
         cierreMME = datos[iMME][indicedatos]
         if iMME == 0:
-            puntoMME = datos[iMME][indicedatos]# Este es el pirmer cierre de los datos historicos
+            puntoMME = datos[iMME][indicedatos]  # Este es el pirmer cierre de los datos historicos
         else:
             puntoMME = (cierreMME * k) + (puntoMME * (1 - k))
 
@@ -65,7 +65,7 @@ def TR(datos, **config):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
         if i == 0:
-            valorTR = 0.0 #round(max((abs(maximo - minimo), abs(maximo - cierre), abs(minimo - cierre))), 3)
+            valorTR = 0.0  # round(max((abs(maximo - minimo), abs(maximo - cierre), abs(minimo - cierre))), 3)
         else:
             ant = i - 1
             _fechaanterior, _aperturaanterior, _maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datos[ant]
@@ -98,7 +98,7 @@ def TAR(datos, **config):
     listaTAR = []
 
     for i in xrange (0, len(listaTR)):
-        assert datos[i][0] == listaTR[i][0]#Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaTR[i][0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
         if inicio < 0:
@@ -176,11 +176,11 @@ def ADM(datos, **config):
 
     listaDM = DM(datos, numberound = False)
 
-    assert len(datos) == len(listaDM)#Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(listaDM)  # Comprobamos que tienen la misma cantidad de datos
 
     listaADM = []
-    #valorADMas=0.0
-    #valorADMenos=0.0
+    # valorADMas=0.0
+    # valorADMenos=0.0
 
     valoresDMas = []
     valoresDMenso = []
@@ -188,7 +188,7 @@ def ADM(datos, **config):
     valorADMenos = 0.0
 
     for i in xrange(0, len(listaDM)):
-        assert datos[i][0] == listaDM[i][0]#Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaDM[i][0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
         if inicio < 0:
@@ -205,22 +205,22 @@ def ADM(datos, **config):
             valorADMas = valorADMas - (valorADMas / n) + valorDMas
             valorADMenos = valorADMenos - (valorADMenos / n) + valorDMenos
 
-##        valorADMas = (sum(valoresDMas[inicio:])) / (len(valoresDMas[inicio:]))
-##        valorADMenos = (sum(valoresDMenso[inicio:])) / (len(valoresDMenso[inicio:]))
+# #        valorADMas = (sum(valoresDMas[inicio:])) / (len(valoresDMas[inicio:]))
+# #        valorADMenos = (sum(valoresDMenso[inicio:])) / (len(valoresDMenso[inicio:]))
 
         if numberound == True:
             listaADM.append((fecha, round(valorADMas, 3), round(valorADMenos, 3)))
         else:
             listaADM.append((fecha, valorADMas, valorADMenos))
-##        if i <= n:
-##            listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
-##        else:
-##            listaADMultimo=listaADM[-1]
-##            listaADM.append((fecha,
-##                             (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
-##                             (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
+# #        if i <= n:
+# #            listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
+# #        else:
+# #            listaADMultimo=listaADM[-1]
+# #            listaADM.append((fecha,
+# #                             (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
+# #                             (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
 
-    assert len(datos) == len(listaADM)#Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(listaADM)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaADM)
 
 
@@ -240,11 +240,11 @@ def DI(datos, **config):
 
     listaDI = []
 
-    assert len(datos) == len(listaADM) and len(datos) == len(listaTAR)#Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(listaADM) and len(datos) == len(listaTAR)  # Comprobamos que tienen la misma cantidad de datos
 
     for i in xrange(0, len(datos)):
 
-        assert datos[i][0] == listaADM[i][0] and datos[i][0] == listaTAR[i][0]#Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaADM[i][0] and datos[i][0] == listaTAR[i][0]  # Comprobamos que cohinciden las fechas
 
         fecha = datos[i][0]
 
@@ -262,7 +262,7 @@ def DI(datos, **config):
         else:
             listaDI.append((fecha, DImas, Dimenos))
 
-    assert len(datos) == len(listaDI)#Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(listaDI)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaDI)
 
 
@@ -279,12 +279,12 @@ def DX(datos, **config):
     listaDI = DI(datos, DI = n, numberound = False)
     listaDX = []
 
-    assert len(datos) == len(listaDI)#Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(listaDI)  # Comprobamos que tienen la misma cantidad de datos
 
 
     for i in xrange(0, len(datos)):
 
-        assert datos[i][0] == listaDI[i][0]#Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaDI[i][0]  # Comprobamos que cohinciden las fechas
 
         fecha = datos[i][0]
         try:
@@ -296,7 +296,7 @@ def DX(datos, **config):
         else:
             listaDX.append((fecha, DX))
 
-    assert len(datos) == len(listaDX)#Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(listaDX)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaDX)
 
 
@@ -443,7 +443,7 @@ def Averange(datos, **config):
     valores = []
 
     for i in xrange (0, len(lista)):
-        assert datos[i][0] == lista[i][0]#Comprobamos que cohinciden las fechas
+        assert datos[i][0] == lista[i][0]  # Comprobamos que cohinciden las fechas
 
         valores.append(list(lista[i]))
 
@@ -479,8 +479,8 @@ def Averange(datos, **config):
                 else:
                     valorA = (valor * k) + (valorA * (1 - k))
 
-            #Apartir de aqui la relacion de nombres para los tipos de Averanges detallados mas arriba no esta claro
-            elif tipo == 'suavizada' or tipo == 'SMMA':# en el calculo del adx emplamos esta
+            # Apartir de aqui la relacion de nombres para los tipos de Averanges detallados mas arriba no esta claro
+            elif tipo == 'suavizada' or tipo == 'SMMA':  # en el calculo del adx emplamos esta
                 if i < (n * 2) - 1:
                     valorA = 0.0
                 elif i == ((n * 2) - 1):
@@ -523,7 +523,7 @@ def sesionesHL(datos, **config):
 	Parametros:
 	HL = 'high'/'low'
 	periodos = int
-	
+
 
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     >>> sesionesHL(datos)
@@ -532,7 +532,7 @@ def sesionesHL(datos, **config):
     [('2010-01-25', '2010-01-25', 19.5), ('2010-02-01', '2010-01-25', 19.5), ('2010-03-01', '2010-02-01', 16.35), ('2010-04-01', '2010-02-01', 16.35), ('2010-05-03', '2010-02-01', 16.35), ('2010-06-01', '2010-02-01', 16.35), ('2010-07-01', '2010-02-01', 16.35), ('2010-08-02', '2010-02-01', 16.35), ('2010-09-01', '2010-02-01', 16.35), ('2010-10-01', '2010-02-01', 16.35), ('2010-11-01', '2010-02-01', 16.35), ('2010-12-01', '2010-02-01', 16.35), ('2011-01-03', '2010-07-01', 18.39), ('2011-02-01', '2010-07-01', 18.39), ('2011-03-01', '2010-07-01', 18.39), ('2011-04-01', '2010-07-01', 18.39), ('2011-05-02', '2010-07-01', 18.39), ('2011-06-01', '2010-08-02', 18.7), ('2011-07-01', '2010-09-01', 19.27), ('2011-08-01', '2010-11-01', 20.28), ('2011-09-01', '2010-11-01', 20.28), ('2011-10-03', '2011-08-01', 21.7), ('2011-11-01', '2011-10-03', 21.12), ('2011-12-01', '2011-10-03', 21.12), ('2012-01-03', '2011-10-03', 21.12), ('2012-02-01', '2011-10-03', 21.12), ('2012-03-01', '2011-10-03', 21.12), ('2012-04-02', '2011-10-03', 21.12), ('2012-05-01', '2011-10-03', 21.12), ('2012-06-01', '2011-10-03', 21.12), ('2012-07-02', '2011-10-03', 21.12)]
     """
     HL = config.get('HL', 'high')
-    periodos = config.get('periodos',10)
+    periodos = config.get('periodos', 10)
     listaHL = []
     listamaximos = ([n[2] for n in datos])
     listaminimos = ([n[3] for n in datos])
@@ -541,27 +541,27 @@ def sesionesHL(datos, **config):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
 
-        inicio = i-periodos
+        inicio = i - periodos
         if inicio < 0:
             inicio = 0
-        
+
         if HL == 'high':
             if i == 0:
                 valorHL = maximo
                 fechaHL = fecha
             else:
                 valorHL = max(listamaximos[inicio:i])
-                fechaHL = datos[listamaximos.index(valorHL,inicio,i)][0]
-                
+                fechaHL = datos[listamaximos.index(valorHL, inicio, i)][0]
+
         if HL == 'low':
             if i == 0:
                 valorHL = minimo
                 fechaHL = fecha
             else:
                 valorHL = min(listaminimos[inicio:i])
-                fechaHL = datos[listaminimos.index(valorHL,inicio,i)][0]
+                fechaHL = datos[listaminimos.index(valorHL, inicio, i)][0]
 
-        listaHL.append((fecha, fechaHL ,valorHL))
+        listaHL.append((fecha, fechaHL , valorHL))
     assert len(listaHL) == len(datos)
     return (listaHL)
 
