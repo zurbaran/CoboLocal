@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-############################################################
+####################################################
 # Name:        Cobo.py
 # Purpose:
 #
@@ -8,10 +8,10 @@
 # Created:     23/07/2012
 # Copyright:   (c) Antonio 2012
 # Licence:     <your licence>
-############################################################
+####################################################
 
 
-############################################################
+####################################################
 # modulos estandar importados
 
 # import urllib
@@ -30,15 +30,16 @@ try:
     from pysqlite2 import dbapi2 as sqlite3
 except ImportError:
     print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
-    import sqlite3
+    import sqlite3  # lint:ok
     install(['-v', 'pysqlite'])
 # from adodbapi.adodbapi import type
 try:
     import cPickle as pickle
 except ImportError:
     print ('Modulo cPickle deshabilitado')
-    import pickle  # TODO: buscar la manera de comprimir los datos para que ocupen menos en el HD.
-    # una posiblidad es utilizar el modulo zlib zlib.compress(datos) zlib.descompress(datos)
+    import pickle  # lint:ok
+    # TODO: comprimir los datos para que ocupen menos en el HD.
+# una posiblidad es utilizar el modulo zlib.compress() zlib.descompress()
 # import wx
 
 # import traceback
@@ -54,15 +55,19 @@ setdefaultencoding = ('UTF-8')
 
 #################################################
 # Constantes locales
-sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME', '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS', '.MA',
-                    '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
-webheaders = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0' }
-carpetas = {'Analisis':'Analisis', 'Backtest':'Backtest', 'Datos':'Datos', 'Historicos':'Historicos', 'Log':'Log', 'Graficos': 'amstock'}
-difregactualizar = {'d':10, 'w':15, 'm':33, 'noActualizados':120}  # Expresa la diferencia entre los registros para hacer una actualizacion
+sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
+    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS',
+    '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG',
+    '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
+webheaders = {'User-Agent':
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'}
+carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
+    'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
+# Expresa la diferencia entre los registros para hacer una actualizacion
+difregactualizar = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
+
 pausareconexion = 20
 backtestoperacionessospechosas = 1.50
-
-
 
 # import logging.config
 ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
@@ -70,7 +75,9 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
 # logging.basicConfig(filename = ARCHIVO_LOG)
 # logging.captureWarnings(True)
 # basic setup with ISO 8601 time format
-logging.basicConfig(filename = ARCHIVO_LOG, format = '%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s', level = logging.DEBUG)
+logging.basicConfig(filename=ARCHIVO_LOG,
+    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+    level=logging.DEBUG)
 logging.debug('\n')
 logging.debug('Inicio de Aplicacion')
 
@@ -81,7 +88,9 @@ logging.debug('Inicio de Aplicacion')
 # assert
 
 # Buscar tickets duplicados en la BBDD
-# SELECT `tiket`, count(*) FROM `Cobo_componentes` GROUP BY `tiket` HAVING count(*) > 1
+# SELECT `tiket`, count(*)
+# FROM `Cobo_componentes`
+# GROUP BY `tiket` HAVING count(*) > 1
 
 # Lista de los distintos mercados a los que pertenecen los tickets y cantidad de tickets para cada uno de ellos
 # SELECT `mercado`, count(*) FROM `Cobo_componentes` GROUP BY `mercado` HAVING count(*) > 0
@@ -102,6 +111,7 @@ logging.debug('Inicio de Aplicacion')
 ############################################################
 # definicion de funciones
 
+
 def _test():
     import doctest
     doctest.testmod()
@@ -109,6 +119,7 @@ def _test():
     # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
     # Externalizar los test
     # doctest.testfile('example2.txt')
+
 
 def ExistenDatos(naccion):
     """
@@ -123,12 +134,14 @@ def ExistenDatos(naccion):
         if os.path.exists(archivo):
             return True
         else:
-            print('No existe historico descargado')
-            # errorenTicket( naccion )# no nos interesa guardar el error cuando la razon es que no existe el historico
+            print ('No existe historico descargado')
+# no nos interesa guardar el error cuando la razon es que no existe el historico
+            # errorenTicket(naccion)
             return False
     else:
         print ('No existe informacion de cotizaciones en BBDD')
-        # borraTicket (ticket, BBDD=False) # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
+        # borraTicket (ticket, BBDD=False)
+        # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
         errorenTicket(naccion)
         return False
 
@@ -159,7 +172,7 @@ def LeeDatos(naccion):
                 # datos = pickle.loads(codificado)
             except (KeyError, EOFError, pickle.UnpicklingError) as e:  # no entiendo porque, pero hay archivos de historicos que estan completamente en blanco, aunque ocupan como si no, la cosa es que cuando descodifico los datos con pickle me da un KeyError: '\x00', esta excepcion sirve para controlar esto
                 archivo.close()
-                borraTicket (naccion, BBDD = False, codigo = False)  # Borramos solo los archivos
+                borraTicket(naccion, BBDD=False, codigo=False)  # Borramos solo los archivos
                 errorenTicket(naccion)
                 # sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
                 logging.debug('Error: %s; Accion: %s; Funcion LeeDatos al utilizar pickle, Archivo: %s' % (e, naccion.encode('UTF-8'), archivo))
@@ -202,10 +215,10 @@ def grabaDatos(naccion,
 
     """
     naccion = naccion.upper()
-    datos = {'historicoMensual':historicoMensual,
-             'historicoSemanal':historicoSemanal,
-             'historicoDiario':historicoDiario,
-             'correcciones':correcciones}
+    datos = {'historicoMensual': historicoMensual,
+             'historicoSemanal': historicoSemanal,
+             'historicoDiario': historicoDiario,
+             'correcciones': correcciones}
 
     # los nombres de los archivos hay que tratarlos asi, porque si no se corre el riesgo de utilizar nombres "protegidos" de archivos como son el caso de CON.DE, AUX.V
     tickets = obtenTicketsBBDD(naccion)
@@ -220,13 +233,14 @@ def grabaDatos(naccion,
     # f.write(codificado)
     # f.close()
 
-def duerme(tiempo = 1500):
+
+def duerme(tiempo=1500):
     """
 
     """
     x = (randint(0, tiempo)) / 1000.0
     print('Pausa de %.3f segundos' % x)
-    sleep (x)
+    sleep(x)
     print('')
 
 
@@ -251,7 +265,7 @@ def ticketsdeMercado(mercado):
         web = None
         while web == None:
             try:
-                r = urllib2.Request(url, headers = webheaders)
+                r = urllib2.Request(url, headers=webheaders)
                 f = urllib2.urlopen(r)
                 web = (f.read()).decode('UTF-8')
                 f.close()
@@ -270,7 +284,7 @@ def ticketsdeMercado(mercado):
                 web = None
                 logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url.encode('UTF-8')))
                 print ('Pausa de %d segundos' % pausareconexion)
-                sleep (pausareconexion)
+                sleep(pausareconexion)
 
         if ultimapagina == 0:
             busqueda = 'Next</a> | <a href="/q/cp?s=' + (mercado.upper().replace('^', '%5E')) + '&amp;c='
@@ -307,7 +321,7 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
-def descargaHistoricoAccion (naccion, **config):
+def descargaHistoricoAccion(naccion, **config):
     # global webheaders
     """ Funcion para la descarga de las cotizaciones historicas de una accion.
     Parametros : naccion - nombre de la accion
@@ -343,7 +357,6 @@ def descargaHistoricoAccion (naccion, **config):
 #    else:
 #        timming ='m'
 
-
     if fechafin == None:
         fechafin = ((date.today().timetuple()))
         anofin = str(fechafin[0])
@@ -370,7 +383,7 @@ def descargaHistoricoAccion (naccion, **config):
         actualizar = True
         url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
     f = None
-    r = urllib2.Request(url, headers = webheaders)
+    r = urllib2.Request(url, headers=webheaders)
     while f == None:
         try:
             f = urllib2.urlopen(r)
@@ -388,7 +401,7 @@ def descargaHistoricoAccion (naccion, **config):
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, naccion.encode('UTF-8'), url.encode('UTF-8')))
             f = None
             print ('Pausa de %d segundos' % pausareconexion)
-            sleep (pausareconexion)
+            sleep(pausareconexion)
 
             # cuando la conexion se pierde, pasa por aqui, dando como error
             # [Errno 11004] getaddrinfo failed
@@ -494,14 +507,13 @@ def descargaHistoricoAccion (naccion, **config):
     elif timming == 'm':
         historicoMensual = datosaccion
 
-
     grabaDatos(naccion, historicoMensual, historicoSemanal, historicoDiario, correcciones)
     if txt:
         tickets = obtenTicketsBBDD(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
         archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
-        writercsv = csv.writer(j, delimiter = ';', lineterminator = '\n', doublequote = True)
+        writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
         for n in datosaccion:
 
             fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -526,7 +538,7 @@ def actualizacionDatosHisAccion(naccion, **config):
     # TODO: Podemos intentar integrar la funcion actualizacionDatosHisAccion dentro de la propia funcion descargaHistoricoAccion, nos ahorrariamos una funcion y seguramente procesos duplicados
 
     historicoMensual, historicoSemanal, historicoDiario, _correcciones = LeeDatos(naccion)
-    registro = {'d':'Diario', 'w':'Semanal', 'm':'Mensual'}
+    registro = {'d': 'Diario', 'w': 'Semanal', 'm': 'Mensual'}
 
     timming = config.get('timming', "m")
 
@@ -586,7 +598,7 @@ def corregirDatosHistoricosAccion(naccion):
     while True:
         x = 0
         while x < len(datoshistoricos):
-            print(x , datoshistoricos[x])
+            print(x, datoshistoricos[x])
             x += 1
 
         print('')
@@ -624,7 +636,6 @@ def corregirDatosHistoricosAccion(naccion):
                         apertura = datoshistoricos[i][1]
                     break
 
-
             while True:
                 try:
                     maximo = float(raw_input(" Introduce Precio Maximo : ").replace(',', '.'))
@@ -635,7 +646,6 @@ def corregirDatosHistoricosAccion(naccion):
                         apertura = datoshistoricos[i][2]
                     break
 
-
             while True:
                 try:
                     minimo = float(raw_input(" Introduce Precio Minimo : ").replace(',', '.'))
@@ -645,7 +655,6 @@ def corregirDatosHistoricosAccion(naccion):
                     if apertura == '':
                         apertura = datoshistoricos[i][3]
                     break
-
 
             while True:
                 try:
@@ -671,8 +680,6 @@ def corregirDatosHistoricosAccion(naccion):
 
             datoshistoricos[i] = (fecha, apertura, maximo, minimo, cierre, volumen)
 
-
-
         pregunta2 = raw_input(" Quieres editar otro registro? S o cualquier tecla : ")
 
         if not (pregunta2 in ('s', 'S')):
@@ -680,14 +687,12 @@ def corregirDatosHistoricosAccion(naccion):
 
     print("Cambios realizados")
 
-
     if timming == 'd':
         historicoDiario = datoshistoricos
     elif timming == 'w':
         historicoSemanal = datoshistoricos
     elif timming == 'm':
         historicoMensual = datoshistoricos
-
 
     grabaDatos(naccion, historicoMensual, historicoSemanal, historicoDiario, correcciones)
 
@@ -738,7 +743,6 @@ def analisisAlcistaAccion(naccion, **config):
     elif desdefecha != False:
         todohistorico, desdefecha = desdefecha
 
-
     if timming == 'd':
         datoshistoricos2 = historicoDiario
         if filtro == 0.0:
@@ -772,7 +776,7 @@ def analisisAlcistaAccion(naccion, **config):
     entradapuntoLT = False
 
     datoshistoricos = []
-    volumenMME = indicador.MME(datoshistoricos2, MME = 5, indicedatos = 'volumen')
+    volumenMME = indicador.MME(datoshistoricos2, MME=5, indicedatos='volumen')
     while i < len(datoshistoricos2):
         assert (datoshistoricos2[i][0] == volumenMME[i][0])
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos2[i]
@@ -795,15 +799,15 @@ def analisisAlcistaAccion(naccion, **config):
     i = 0
 
     if not(MME == False):
-        puntosMME = indicador.MME(datoshistoricos, MME = MME)
+        puntosMME = indicador.MME(datoshistoricos, MME=MME)
         if not(MME2 == False):
-            puntosMME2 = indicador.MME(datoshistoricos, MME = MME2)
+            puntosMME2 = indicador.MME(datoshistoricos, MME=MME2)
     if not (TAR == False):
-        puntosTAR = indicador.TAR(datoshistoricos, TAR = TAR)
+        puntosTAR = indicador.TAR(datoshistoricos, TAR=TAR)
 
     if not (ADX == False):
-        puntosADX = indicador.ADX(datoshistoricos, ADX = ADX)
-        puntosDI = indicador.DI(datoshistoricos, DI = ADX)
+        puntosADX = indicador.ADX(datoshistoricos, ADX=ADX)
+        puntosDI = indicador.DI(datoshistoricos, DI=ADX)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -866,8 +870,8 @@ def analisisAlcistaAccion(naccion, **config):
             LineaTendenciaInicio = analisisalcista[-1][3]
             LineaTendenciaFin = analisisalcista[-1][4]
 
-            _fechaLTi , minimoLTi = LineaTendenciaInicio
-            _fechaLTf , minimoLTf = LineaTendenciaFin
+            _fechaLTi, minimoLTi = LineaTendenciaInicio
+            _fechaLTf, minimoLTf = LineaTendenciaFin
 
             if minimoLTi > 0 and minimoLTf > 0:
 
@@ -947,14 +951,13 @@ def analisisAlcistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in xrange (LTi, -1, -1):
+                    for j in xrange(LTi, -1, -1):
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         # if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                         if minimoLTi > minimoLTf and LTi > 0:  # Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                             LTi -= 1
                             break
-
 
                         puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
@@ -990,10 +993,9 @@ def analisisAlcistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in xrange (LTf, i + 1):
+                    for j in xrange(LTf, i + 1):
 
                         _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
-
 
                         # esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
@@ -1036,7 +1038,6 @@ def analisisAlcistaAccion(naccion, **config):
 
                 LineaTendenciaInicio = (datoshistoricos[LTi][0], datoshistoricos[LTi][3])
                 LineaTendenciaFin = (datoshistoricos[LTf][0], datoshistoricos[LTf][3])
-
 
                 if not (datoshistoricos[LTi][3] < datoshistoricos[LTf][3]):  # comprobamos que no nos de rentabilidad negativa
                     LineaTendenciaInicio = ('0-0-0', 0.0)
@@ -1092,8 +1093,6 @@ def analisisAlcistaAccion(naccion, **config):
 
         i += 1
 
-
-
     if desdefecha != False and todohistorico == True:
         i = 0
         while i < len(analisisalcista):
@@ -1128,7 +1127,7 @@ def analisisAlcistaAccion(naccion, **config):
             j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
-        for n in xrange (5):
+        for n in xrange(5):
             j.write('\n')
 
         for n in listastoploss:
@@ -1139,12 +1138,13 @@ def analisisAlcistaAccion(naccion, **config):
     # formato de salida, ultimo analisis alcista, soporte anterior, todo el analisis alcista
     # hay que anadir cuando el len de analisisalcista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
     if len(analisisalcista) == 1:  # esto esta porque puede que en el analisisalcista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
-        return (analisisalcista[-1] , 0, analisisalcista)
-    elif len (analisisalcista) > 1:
-        return (analisisalcista[-1] , (analisisalcista[-2][1][1]), analisisalcista)  # [-2][1][1]=penultimo analisis, Soporte, stoploss
+        return (analisisalcista[-1], 0, analisisalcista)
+    elif len(analisisalcista) > 1:
+        return (analisisalcista[-1], (analisisalcista[-2][1][1]), analisisalcista)  # [-2][1][1]=penultimo analisis, Soporte, stoploss
     else:
         # habria que comprobar un timming inferirior al obtener como resultado 0
         return None
+
 
 def analisisBajistaAccion(naccion, **config):
     """ Analisis bajista
@@ -1212,7 +1212,6 @@ def analisisBajistaAccion(naccion, **config):
     analisisbajista = []
     listastoploss = []
 
-
     i, r, s, LTi, LTf = 0, 0, 0, 0, 0
     resistencia = False
     soporte = True
@@ -1221,7 +1220,7 @@ def analisisBajistaAccion(naccion, **config):
     entradapuntoLT = False
 
     datoshistoricos = []
-    volumenMME = indicador.MME(datoshistoricos2, MME = 5, indicedatos = 'volumen')
+    volumenMME = indicador.MME(datoshistoricos2, MME=5, indicedatos='volumen')
     while i < len(datoshistoricos2):
         assert (datoshistoricos2[i][0] == volumenMME[i][0])
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos2[i]
@@ -1244,15 +1243,15 @@ def analisisBajistaAccion(naccion, **config):
     i = 0
 
     if not(MME == False):
-        puntosMME = indicador.MME(datoshistoricos, MME = MME)
+        puntosMME = indicador.MME(datoshistoricos, MME=MME)
         if not(MME2 == False):
-            puntosMME2 = indicador.MME(datoshistoricos, MME = MME2)
+            puntosMME2 = indicador.MME(datoshistoricos, MME=MME2)
     if not (TAR == False):
-        puntosTAR = indicador.TAR(datoshistoricos, TAR = TAR)
+        puntosTAR = indicador.TAR(datoshistoricos, TAR=TAR)
 
     if not (ADX == False):
-        puntosADX = indicador.ADX(datoshistoricos, ADX = ADX)
-        puntosDI = indicador.DI(datoshistoricos, DI = ADX)
+        puntosADX = indicador.ADX(datoshistoricos, ADX=ADX)
+        puntosDI = indicador.DI(datoshistoricos, DI=ADX)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -1313,8 +1312,8 @@ def analisisBajistaAccion(naccion, **config):
             LineaTendenciaInicio = analisisbajista[-1][3]
             LineaTendenciaFin = analisisbajista[-1][4]
 
-            _fechaLTi , maximoLTi = LineaTendenciaInicio
-            _fechaLTf , maximoLTf = LineaTendenciaFin
+            _fechaLTi, maximoLTi = LineaTendenciaInicio
+            _fechaLTf, maximoLTf = LineaTendenciaFin
 
             if maximoLTi > 0 and maximoLTf > 0:
                 # try:
@@ -1333,7 +1332,6 @@ def analisisBajistaAccion(naccion, **config):
                     barraentradapuntoLT = (fecha, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, precioentradapuntoLT, volumen)
                     analisisbajista.append((barraentradapuntoLT, (resistenciaanterior, stoploss), (datoshistoricos[i], precionentrada), LineaTendenciaInicio, LineaTendenciaFin, salidaOperacion, timming, indicadores))
                     entradapuntoLT = False
-
 
         # TODO: hay un stoploss que se calcula en funcion al precio de entrada, precio objetivo, recogemos beneficios cuando el precio toque una venta limite.
         # cambia en la lista analisialcista los valores del precio de salida para cada operacion, cuando se rompe un stoploss, por la barra en la que se produce
@@ -1381,8 +1379,6 @@ def analisisBajistaAccion(naccion, **config):
 
         if resistencia and ((minimo < minimosoporte)or i == ((len(datoshistoricos)) - 1)) and not((datoshistoricos[s] or datoshistoricos[r])  in analisisbajista):
 
-
-
 #            if LT: # esto es porque hasta que no se produce un segundo soporte, no podemos calcular la linea de tendencia
             if s > 0:  # No podremos calcular LT si no hay barras fuerra del ciclo soporte y resistencia, por eso el soporte e inicio del ciclo tiene que ser mayor que 0
                 localizaLTi = True
@@ -1402,7 +1398,7 @@ def analisisBajistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in xrange (LTi, -1, -1):
+                    for j in xrange(LTi, -1, -1):
                         fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         if (maximoLTi < maximoLTf or maximoLTi == 0.0) and LTi > 0:  # como estoy en bajista, si el maximoLTi es menor que el maximoLTf es porque esta por debajo, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por encima del LTf
@@ -1461,10 +1457,9 @@ def analisisBajistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in xrange (LTf, i + 1):
+                    for j in xrange(LTf, i + 1):
 
                         _fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
-
 
                         # esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
@@ -1509,7 +1504,6 @@ def analisisBajistaAccion(naccion, **config):
             else:
                 LineaTendenciaInicio = ('0-0-0', 0.0)
                 LineaTendenciaFin = ('0-0-0', 0.0)
-
 
             if TAR == False:
                 stoploss = round((datoshistoricos[r][2] * (1 + filtro)), 3)
@@ -1574,7 +1568,6 @@ def analisisBajistaAccion(naccion, **config):
             i += 1
     # grabaDatos(naccion,datoshistoricos,correcciones,cotizaciones,analisis,analisisbajista,analisisbajista)
 
-
 # #    codificado = pickle.dumps(analisisbajista)
 # #
 # #    f = open(archivo+".analisisbajista.pck", "w")
@@ -1600,12 +1593,11 @@ def analisisBajistaAccion(naccion, **config):
             j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
-        for n in xrange (5):
+        for n in xrange(5):
             j.write('\n')
 
         for n in listastoploss:
             j.write(str(n) + '\n')
-
 
         j.close()
 
@@ -1613,14 +1605,14 @@ def analisisBajistaAccion(naccion, **config):
     # hay que anadir cuando el len de analisisbajista sea mayor que 2, para cada analisis alcista hay un soporte que es el precio de salida en Lt para este.
     if len(analisisbajista) == 1:  # esto esta porque puede que en el analisisbajista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return ((analisisbajista[-1]), 0, analisisbajista)
-    elif len (analisisbajista) > 1:
+    elif len(analisisbajista) > 1:
         return ((analisisbajista[-1]), (analisisbajista[-2][1][1]), analisisbajista)  # [-2][1][1]=penultimo analisis, resistencia, stoploss
     else:
         # habria que comprobar un timming inferirior al obtener como resultado 0
         return None
 
 
-def creaMenu(sep, lmenu, cola = True):
+def creaMenu(sep, lmenu, cola=True):
     """Le damos el separador de la opcion y una lista con las opciones del menu,
     nos devuelve una lista de tuplas con la cola de opciones y descripciones elegidas,
     anade al final de la lista una tupla mas que contiene (None,None)
@@ -1655,7 +1647,7 @@ def creaMenu(sep, lmenu, cola = True):
     return (respdescp)
 
 
-def borraTicket (ticket, **config):
+def borraTicket(ticket, **config):
     """
 
     """
@@ -1718,7 +1710,8 @@ def borraTicket (ticket, **config):
     else:
         return False
 
-def cambiaTicket (ticketviejo, ticketnuevo):
+
+def cambiaTicket(ticketviejo, ticketnuevo):
     """
 
     """
@@ -1756,7 +1749,6 @@ def cambiaTicket (ticketviejo, ticketnuevo):
             sql = "DELETE FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket`='" + ticketviejo + "'"
             cursor.execute(sql)
 
-
     sql = "SELECT * FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre`='" + ticketnuevo + "') "
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
@@ -1777,7 +1769,6 @@ def cambiaTicket (ticketviejo, ticketnuevo):
             sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticketviejo + "' "
             cursor.execute(sql)
 
-
     sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticketviejo + "'"
     cursor.execute(sql)
     db.commit()
@@ -1788,7 +1779,8 @@ def cambiaTicket (ticketviejo, ticketnuevo):
     borraTicket(ticketviejo)
     # borraTicket(ticketviejo, BBDD=False)# Se supone que esta funcion ya lo ha borrado, solo queremos borrar los archivos
 
-def errorenTicket (ticket):
+
+def errorenTicket(ticket):
     """
 
     """
@@ -1805,6 +1797,7 @@ def errorenTicket (ticket):
         cursor.execute(sql)
         db.commit()
 
+
 def actualizadoTicket(ticket):
     """
 
@@ -1814,6 +1807,7 @@ def actualizadoTicket(ticket):
     sql = "UPDATE `Cobo_nombreticket` SET `fechaActualizacion`='" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + "', `fechaError` = NULL  WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
     cursor.execute(sql)
     db.commit()
+
 
 def cotizacionesTicket(nombreticket):
     """
@@ -1827,7 +1821,7 @@ def cotizacionesTicket(nombreticket):
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
     urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=nsxkhjgl1a2ve1&e=.csv"
-    r = urllib2.Request(urldatos, headers = webheaders)
+    r = urllib2.Request(urldatos, headers=webheaders)
     datosurl = None
     while datosurl == None:
         try:
@@ -1849,7 +1843,7 @@ def cotizacionesTicket(nombreticket):
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             print ('Pausa de %d segundos' % pausareconexion)
-            sleep (pausareconexion)
+            sleep(pausareconexion)
             # raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 #        except IOError as e:
 #            print('Conexion Erronea')
@@ -1860,7 +1854,7 @@ def cotizacionesTicket(nombreticket):
 #            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 
     datosurl2 = datosurl.rsplit(',', 10)
-    datonombre , datoticket , datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror = datosurl2
+    datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl2
     datoticket = datoticket.strip('"')
 
     # comillas = datosurl[1:].find('"')#Esto es porque en ocasiones el nombre lleva una coma
@@ -1879,13 +1873,13 @@ def cotizacionesTicket(nombreticket):
 
     elif ('Ticker symbol has changed to: <a href="/q?s=' in datosurl):
         print (datosurl)
-        ticketinicio = datosurl.find('<a href="/q?s=') + len ('<a href="/q?s=')
+        ticketinicio = datosurl.find('<a href="/q?s=') + len('<a href="/q?s=')
         ticketfin = datosurl.find('">', ticketinicio)
         ticketnuevo = (datosurl[ticketinicio:ticketfin]).strip('"')
         cambiaTicket(nombreticket, ticketnuevo)
 
     # hay casos en los que nos descargamos la informacion de nombreticket pero en la informacion descargada el ticket ha cambiado
-    elif datoticket != nombreticket :
+    elif datoticket != nombreticket:
         print (datosurl)
         # ticketnuevo = ( datosurl2[-10].strip( '"' ) )
         cambiaTicket(nombreticket, datoticket)
@@ -1901,7 +1895,7 @@ def cotizacionesTicket(nombreticket):
 
         elif numeroResultado == 1:
             codigo = datosBBDDcomponentes[0][0]
-            sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datomercado , datomax52, datomaxDia, datomin52, datominDia, datoValorActual , datovolumenMedio , datovolumen , datoerror, date.today(), nombreticket)
+            sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror, date.today(), nombreticket)
             # sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
             cursor.execute(sql)
             sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
@@ -1935,9 +1929,10 @@ def cotizacionesTicket(nombreticket):
             # en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
 
         print('Actualizando cotizaciones de : %s' % nombreticket)
-        print('Actualizando %s con datos %s' % (nombreticket , datosurl))
+        print('Actualizando %s con datos %s' % (nombreticket, datosurl))
         db.commit()
         actualizadoTicket(nombreticket)
+
 
 def historicoTicket(nombreticket, **config):
     """
@@ -1948,7 +1943,7 @@ def historicoTicket(nombreticket, **config):
 
         for timmingdescargado in 'dwm':
 
-            accioninvalida = descargaHistoricoAccion (nombreticket, timming = timmingdescargado, txt = False)
+            accioninvalida = descargaHistoricoAccion(nombreticket, timming=timmingdescargado, txt=False)
             duerme()
             if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
                 break
@@ -1957,11 +1952,11 @@ def historicoTicket(nombreticket, **config):
         print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % nombreticket)
         for timmingdescargado in 'dwm':
 
-            fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(nombreticket, timming = timmingdescargado)
+            fechaactualizar, timmingactualizar, actualizaractualizar = actualizacionDatosHisAccion(nombreticket, timming=timmingdescargado)
 
             if actualizaractualizar:  # and (desdefechamodificacionarchivo(datosaccion)):
 
-                accioninvalida = descargaHistoricoAccion(nombreticket, fechaini = fechaactualizar, timming = timmingactualizar, actualizar = actualizaractualizar, txt = False)
+                accioninvalida = descargaHistoricoAccion(nombreticket, fechaini=fechaactualizar, timming=timmingactualizar, actualizar=actualizaractualizar, txt=False)
                 duerme()
 
                 if accioninvalida == 'Pago Dividendos' or accioninvalida == 'URL invalida':
@@ -1970,7 +1965,7 @@ def historicoTicket(nombreticket, **config):
                 # existe un caso especifico que es cuando comprobamos la actualizacion de datos de una accion y esta tiene menos de 3 periodos en el timming en que estemos trabajando, la funcion actualizacionDatosHisAccion la trata de forma especial, devolviendo (None, timming, True), para que con estos parametros la funcion descargaHistoricosAccion descarge todo el historico otra vez
                 # por esta razon en el siguiente if comprobamos con fechaactualizar2!=None que no sea este caso.
                 # FIXME : al hacer la comprobacion en mensual, casi siempre me da que no ha actualizado correctamente, ejemplo EGL.SW
-                fechaactualizar2, _timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(nombreticket, timming = timmingdescargado)
+                fechaactualizar2, _timmingactualizar2, actualizaractualizar2 = actualizacionDatosHisAccion(nombreticket, timming=timmingdescargado)
                 if fechaactualizar2 != None and actualizaractualizar == actualizaractualizar2 and fechaactualizar == fechaactualizar2:
                     fechahoy = ((date.today().timetuple()))
                     fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
@@ -1988,17 +1983,17 @@ def historicoTicket(nombreticket, **config):
                 accioninvalida = None
 
     if accioninvalida == 'Pago Dividendos':
-        borraTicket (nombreticket, BBDD = False)  # no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
+        borraTicket(nombreticket, BBDD=False)  # no los borramos de la BBDD porque cuando tienen muy poco historico a veces no se puede descargar
 
         print('Reintento de la descarga, el error puede venir de un pago de Dividendos')
         # errorenTicket(nombreticket)
         for timmingdescargado in 'dwm':
 
-            accioninvalida = descargaHistoricoAccion (nombreticket, timming = timmingdescargado, txt = False)
+            accioninvalida = descargaHistoricoAccion(nombreticket, timming=timmingdescargado, txt=False)
             duerme()
 
     if accioninvalida == 'URL invalida':
-        borraTicket (nombreticket)  # Borramos completamente, de que nos sirve si no tenemos historico o despues de haber actualizado, aun no lo esta porque dejo de cotizar hace mucho
+        borraTicket(nombreticket)  # Borramos completamente, de que nos sirve si no tenemos historico o despues de haber actualizado, aun no lo esta porque dejo de cotizar hace mucho
 
 
 def analisisTicket(nombreticket):
@@ -2016,7 +2011,7 @@ def analisisTicket(nombreticket):
         # al final si utilizamos indicador.MME, el indicador.MME sera la decision de si es alcista o bajista
         for timminganalisis in 'mwd':
             print('Timming del analisis alcista: %s' % timminganalisis)
-            analisisalcista = analisisAlcistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
+            analisisalcista = analisisAlcistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
             if analisisalcista != None:
                 alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
                 resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
@@ -2034,7 +2029,7 @@ def analisisTicket(nombreticket):
 
         for timminganalisis in 'mwd':
             print('Timming del analisis bajista: %s' % timminganalisis)
-            analisisbajista = analisisBajistaAccion(ticket, timming = timminganalisis, conEntradaLT = False, txt = False)
+            analisisbajista = analisisBajistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
             if analisisbajista != None:
                 bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
                 soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
@@ -2110,7 +2105,6 @@ def analisisTicket(nombreticket):
         # alcista o bajista
         # comprobamos se es actual o esta obsoleto
 
-
         if ((entrada > stoploss) and\
             # Alcista obsoleto, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
             ((max52 != 'NULL' and max52 > resistencia[2]) or\
@@ -2144,7 +2138,6 @@ def analisisTicket(nombreticket):
     db.commit()
 
 
-
 def cotizacionesMoneda(nombreticket):
     """
 
@@ -2159,7 +2152,7 @@ def cotizacionesMoneda(nombreticket):
     datosurl = None
     while datosurl == None:
         try:
-            r = urllib2.Request(urldatos, headers = webheaders)
+            r = urllib2.Request(urldatos, headers=webheaders)
             f = urllib2.urlopen(r)
             # f= urllib.urlopen (urldatos)
             datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le
@@ -2176,7 +2169,7 @@ def cotizacionesMoneda(nombreticket):
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             print ('Pausa de %d segundos' % pausareconexion)
-            sleep (pausareconexion)
+            sleep(pausareconexion)
             # raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 #        except IOError as e:
 #            print('Conexion Erronea')
@@ -2207,13 +2200,12 @@ def cotizacionesMoneda(nombreticket):
         datosBBDDcomponentes = cursor.fetchall()
         codigo = datosBBDDcomponentes[0][0]
         # sql = "UPDATE `lomiologes_cobodb`.`Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
-        sql = "UPDATE `Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
+        sql = "UPDATE `Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio, (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"), codigo)
         cursor.execute(sql)
         db.commit()
 
         print('Actualizando cotizaciones de : %s' % nombreticket)
-        print('Actualizando %s con datos %s' % (nombreticket , datosurl))
-
+        print('Actualizando %s con datos %s' % (nombreticket, datosurl))
 
 
 def pidedato(texto, tipodato):
@@ -2266,7 +2258,8 @@ def pidefecha():
 
         print('Formato de fecha mal introducido. Vuelve a intentarlo')
 
-def obtenTicketsBBDD(ticket = None):
+
+def obtenTicketsBBDD(ticket=None):
     """
 
     """
@@ -2281,7 +2274,6 @@ def obtenTicketsBBDD(ticket = None):
     resultado = cursor.fetchall()
     if resultado != None:
 
-
         for registro in resultado:
             # if not tickets.has_key(registro[0]):
     #                if registro[0][0]=='.':
@@ -2293,6 +2285,7 @@ def obtenTicketsBBDD(ticket = None):
         return tickets
     else:
         return False
+
 
 def obtenMercadosBBDD():
     """
@@ -2318,6 +2311,7 @@ def obtenMercadosBBDD():
 
     return mercados
 
+
 def conexionBBDD():
     """
 
@@ -2329,7 +2323,7 @@ def conexionBBDD():
     # TODO: Crear excepcion especifica para cuando no se encuentra el archivo
     # Crear el archivo Cobo.dat, y ejecutar Cobo.sql para "rellenar" la Base de datos desde "cero"
     except:
-        raw_input ('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
+        raw_input('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
         quit()
     else:
         return cursor, db
@@ -2352,6 +2346,7 @@ def ticketsexcluidos(sufijosexcluidos):
                 ticket = listatickets.popleft()
                 print ('Quedan por borrar %d tickets' % len(listatickets))
                 borraTicket(ticket)
+
 
 def comprobacionesBBDD():
     """
@@ -2379,8 +2374,8 @@ def comprobacionesBBDD():
     numeroResultado = len(cursor.fetchall())
     print('Tickets con errores : %d' % numeroResultado)
     # Tickets pendientes de realiar una actualizacion
-    diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
-    diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(days=difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
+    diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
@@ -2391,6 +2386,7 @@ def comprobacionesBBDD():
     numeroResultado = len(cursor.fetchall())
     print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
 
+
 def main():
 
     for carpeta in carpetas.keys():
@@ -2398,9 +2394,6 @@ def main():
         if not os.path.exists(nombrecarpeta):
             os.mkdir(nombrecarpeta)
             # os.path.dirname
-
-
-
 
     opcion = None
     while True:
@@ -2417,7 +2410,6 @@ def main():
 
             print('Total de mercados : %d' % (len(mercados)))
             print('Total de tickets : %d' % (len(tickets.keys())))
-
 
             iopciones = 0
             opciones = creaMenu(')', (
@@ -2466,7 +2458,6 @@ def main():
         opcion, seleccion = opciones[iopciones]
         iopciones += 1
 
-
 # 'A) Alta/Actualizar/Descargar/Analizar Datos de 1 Ticket'
         if opcion == 'a':
             print(seleccion)
@@ -2474,7 +2465,7 @@ def main():
             naccion = raw_input('Introduce ticket de la accion : ').upper()
             naccion = (naccion,)
             # Primero lo borramos
-            borraTicket(naccion[0])
+            borraTicket(naccion[0], BBDD=False)
 
             cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
             numeroResultado = len(cursor.fetchall())
@@ -2494,7 +2485,6 @@ def main():
             # Analizamos la accion
             analisisTicket(naccion[0])
 
-
 #        'B) Corregir Datos de 1 Ticket',
         elif opcion == 'b':
             print(seleccion)
@@ -2504,7 +2494,6 @@ def main():
                 corregirDatosHistoricosAccion(naccion)
             else:
                 print('Ticket no descargado, hay que hacer la descarga previa de los datos historicos del ticket')
-
 
 #        'C) Analizar Datos de 1 Ticket',
         elif opcion == 'c':
@@ -2556,9 +2545,8 @@ def main():
                     else:
                         filtrosalida = 0.0
 
-                    analisisAlcistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)  # ,txt=False)
-                    analisisBajistaAccion(naccion, timming = timminganalisis, desdefecha = analizardesde, MME = MMe, conEntradaLT = EntradaLT, filtro = filtrosalida)  # ,txt=False)
-
+                    analisisAlcistaAccion(naccion, timming=timminganalisis, desdefecha=analizardesde, MME=MMe, conEntradaLT=EntradaLT, filtro=filtrosalida)  # ,txt=False)
+                    analisisBajistaAccion(naccion, timming=timminganalisis, desdefecha=analizardesde, MME=MMe, conEntradaLT=EntradaLT, filtro=filtrosalida)  # ,txt=False)
 
 #        'D) Eliminar 1 Ticket',
         elif opcion == 'd':
@@ -2566,7 +2554,6 @@ def main():
             naccion = raw_input('Introduce nombre de la accion : ').upper()
 
             borraTicket(naccion)
-
 
 #        'E) Generar Archivos Grafico'
         elif opcion == 'e':
@@ -2598,7 +2585,7 @@ def main():
 
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "data.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter = ';', lineterminator = '\n', doublequote = True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datos:
                 writercsv.writerow(n)
                 # j.write(str(n)+'\n')
@@ -2606,7 +2593,7 @@ def main():
 
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "metatrader.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter = ',', lineterminator = '\n', doublequote = True)
+            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
             j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n')
             for n in datos:
                 fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -2619,13 +2606,13 @@ def main():
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], 'metastock.csv')
             j = open(archivo, 'w')
             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
-            writercsv = csv.writer(j, delimiter = ',', lineterminator = '\n', doublequote = True)
+            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
             for n in datos:
 
                 fecha, apertura, maximo, minimo, cierre, volumen = n
                 fecha = fecha.replace('-', '')
 
-                writercsv.writerow ((ticket, nombre, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0'))
+                writercsv.writerow((ticket, nombre, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0'))
             j.close()
 
             MMEdatos = raw_input('Introduce Catidad de periodos para el indicador.MME (30):')
@@ -2635,11 +2622,11 @@ def main():
             else:
                 MMEdatos = int(MMEdatos)
 
-            datosMME = indicador.MME(datos, MME = MMEdatos)
+            datosMME = indicador.MME(datos, MME=MMEdatos)
 
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "MME.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter = ';', lineterminator = '\n', doublequote = True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosMME:
                 writercsv.writerow(n)
             j.close()
@@ -2651,15 +2638,14 @@ def main():
             else:
                 TARdatos = int(TARdatos)
 
-            datosTAR = indicador.TAR(datos, TAR = TARdatos)
+            datosTAR = indicador.TAR(datos, TAR=TARdatos)
 
             archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "TAR.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter = ';', lineterminator = '\n', doublequote = True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosTAR:
                 writercsv.writerow(n)
             j.close()
-
 
 #        'F) Listar Tickets Mercados',
         elif opcion == 'f':
@@ -2681,7 +2667,7 @@ def main():
                 print(resultadoM)
                 m = None
                 while m in resultadoM:
-                    m = raw_input ('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
+                    m = raw_input('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
                 m = (m,)
                 cursor.execute("SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo`  = ?)", m)
                 mercadosvalidos = cursor.fetchall()
@@ -2730,14 +2716,13 @@ def main():
                 duerme()
                 print('Quedan por actualizar un total de : %d' % len(urlmonedas))
 
-
 #        'L) Listar Tickets',
         elif opcion == 'l':
             listatickets = tickets.keys()
             listatickets.sort()
             ticketsnoBBDD = 0
             for ticket in listatickets:
-                print(ticket , tickets[ticket])
+                print(ticket, tickets[ticket])
                 if tickets[ticket] == '' or tickets[ticket] == 0:
                     ticketsnoBBDD = +1
             print(('Total de tickets %d' % (len(tickets))))
@@ -2790,12 +2775,11 @@ def main():
                 print("Total tickets anadidos %s" % ticketsanadidos)
                 del ticketsanadidos, mercadosvalidos
 
-
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
             print(seleccion)
-            diaspasados = (datetime.now() - timedelta(days = difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
-            diasfuturos = (datetime.now() + timedelta(days = 1)).strftime("%Y-%m-%d %H:%M:%S")
+            diaspasados = (datetime.now() - timedelta(days=difregactualizar['w'])).strftime("%Y-%m-%d %H:%M:%S")
+            diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
             # si en este select hacemos una comparacion de la fecha actual con la fecha de actualizacion, obtendremos directamente la lista a actualizar, comparando las fechas por haber pasado mas de una cantidad de tiempo desde la ultima actualizacion o las que esten supuestamente actualizadas mas alla de la fecha actual
             sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
             cursor.execute(sql)
@@ -2836,10 +2820,9 @@ def main():
 
                 # if naccion in tickets:
 
-                historicoTicket(ticket, borranoactualizados = borranoactualizados)
+                historicoTicket(ticket, borranoactualizados=borranoactualizados)
 
                 # cuentaatras -= 1
-
 
         elif opcion == 'p':
             # P) Actualizar Max/Min Historicos de todos los Tickets',
@@ -2886,7 +2869,7 @@ def main():
                         # print 'Ticket %s con cotizaciones historicas, actualizando max/min historicos'%naccion
                         db.commit()
                     else:  # No existe suficiente historico
-                        borraTicket (ticket, BBDD = False)
+                        borraTicket(ticket, BBDD=False)
                         errorenTicket(ticket)
                         ticketsnodescargados.append(ticket)
                 else:  # no existe el archivo
@@ -2899,8 +2882,7 @@ def main():
             print('Tickets para los que no hay cotizaciones historicas')
             for ticket in ticketsnodescargados:
                 print(ticket)
-            print('Un total de : ', len (ticketsnodescargados))
-
+            print('Un total de : ', len(ticketsnodescargados))
 
         elif opcion == 'q':
             # Q) Analizar Datos de todos los Tickets',
@@ -2921,9 +2903,7 @@ def main():
 
                 analisisTicket(ticket)
 
-
 #        'S) BackTest
-
         elif opcion == 's':
             # ticket='AAPL'
             print(seleccion)
@@ -2949,7 +2929,6 @@ def main():
                 else:
                     todohistorico = False
                 analizardesde = (todohistorico, analizardesde)
-
 
             riesgo = raw_input('Riesgo por operacion (200): ')
             if riesgo == '':
@@ -3050,7 +3029,6 @@ def main():
                     else:
                         MMe2mensual = int(MMe2mensual)
 
-
             if raw_input('True Avenrange xrange (Sin TAR en todos los timmings): ') == '':
                 TARmensual = False
                 TARsemanal = False
@@ -3096,14 +3074,11 @@ def main():
                 else:
                     ADXdiario = int(ADXdiario)
 
-
-
             EntradaLT = raw_input('Entradas en Linea de Tendencia (Sin Entradas): ')
             if EntradaLT == '':
                 EntradaLT = False
             else:
                 EntradaLT = True
-
 
             opcionbacktest, seleccionbacktest = creaMenu(')', (
             'Timmin para el que hacemos el backtest',
@@ -3112,8 +3087,7 @@ def main():
             '3) Todo Semanal',
             '4) Semanal con transicion a Mensual',
             '5) Todo Mensual',
-            '6) Diario con transicion a Semanal y Mensual'), cola = False)
-
+            '6) Diario con transicion a Semanal y Mensual'), cola=False)
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
             # obtenemos la lista de las monedas
@@ -3130,16 +3104,14 @@ def main():
                 moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest : ')
                 if moneda == '' or moneda == None:
                     moneda = ((raw_input('Introduce sufijo de tickets del mercado en la que se hace el backtest : ')).upper(),)
-                    cursor.execute ("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
+                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
                     break
                 if moneda in monedas:
-                    cursor.execute ("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC")
+                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC")
                     break
-
 
             # consulta en la tabla componentes que pertenecen a los mercados de una moneda
             # sql = "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC"
-
             resultado = cursor.fetchall()
             cuentaatras = len(resultado)
             for registro in resultado:
@@ -3156,18 +3128,18 @@ def main():
                     backtestaccion = []
                     if estrategia == 'Alcista':
                         if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
-                            diario = analisisAlcistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, ADX = ADXdiario, txt = True)
+                            diario = analisisAlcistaAccion(ticket, timming='d', desdefecha=analizardesde, MME=MMediario, MME2=MMe2diario, conEntradaLT=EntradaLT, filtro=filtrosalidadiario, TAR=TARdiario, ADX=ADXdiario, txt=True)
                         if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
-                            semanal = analisisAlcistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, ADX = ADXsemanal, txt = True)
+                            semanal = analisisAlcistaAccion(ticket, timming='w', desdefecha=analizardesde, MME=MMesemanal, MME2=MMe2semanal, conEntradaLT=EntradaLT, filtro=filtrosalidasemanal, TAR=TARsemanal, ADX=ADXsemanal, txt=True)
                         if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
-                            mensual = analisisAlcistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, ADX = ADXmensual, txt = True)
+                            mensual = analisisAlcistaAccion(ticket, timming='m', desdefecha=analizardesde, MME=MMemensual, MME2=MMe2mensual, conEntradaLT=EntradaLT, filtro=filtrosalidamensual, TAR=TARmensual, ADX=ADXmensual, txt=True)
                     elif estrategia == 'Bajista':
                         if opcionbacktest == '1' or opcionbacktest == '2' or opcionbacktest == '6':
-                            diario = analisisBajistaAccion(ticket, timming = 'd', desdefecha = analizardesde, MME = MMediario, MME2 = MMe2diario, conEntradaLT = EntradaLT, filtro = filtrosalidadiario, TAR = TARdiario, ADX = ADXdiario, txt = True)
+                            diario = analisisBajistaAccion(ticket, timming='d', desdefecha=analizardesde, MME=MMediario, MME2=MMe2diario, conEntradaLT=EntradaLT, filtro=filtrosalidadiario, TAR=TARdiario, ADX=ADXdiario, txt=True)
                         if opcionbacktest == '2' or opcionbacktest == '3' or opcionbacktest == '4' or opcionbacktest == '6':
-                            semanal = analisisBajistaAccion(ticket, timming = 'w', desdefecha = analizardesde, MME = MMesemanal, MME2 = MMe2semanal, conEntradaLT = EntradaLT, filtro = filtrosalidasemanal, TAR = TARsemanal, ADX = ADXsemanal, txt = True)
+                            semanal = analisisBajistaAccion(ticket, timming='w', desdefecha=analizardesde, MME=MMesemanal, MME2=MMe2semanal, conEntradaLT=EntradaLT, filtro=filtrosalidasemanal, TAR=TARsemanal, ADX=ADXsemanal, txt=True)
                         if opcionbacktest == '4' or opcionbacktest == '5' or opcionbacktest == '6':
-                            mensual = analisisBajistaAccion(ticket, timming = 'm', desdefecha = analizardesde, MME = MMemensual, MME2 = MMe2mensual, conEntradaLT = EntradaLT, filtro = filtrosalidamensual, TAR = TARmensual, ADX = ADXmensual, txt = True)
+                            mensual = analisisBajistaAccion(ticket, timming='m', desdefecha=analizardesde, MME=MMemensual, MME2=MMe2mensual, conEntradaLT=EntradaLT, filtro=filtrosalidamensual, TAR=TARmensual, ADX=ADXmensual, txt=True)
 
                     # fecharesistenciadiario = 0
                     # fecharesistenciasemanal = 0
@@ -3196,7 +3168,6 @@ def main():
                     else:
                         i = 0
                         semanal = []
-
 
                     if not mensual == None:
                         mensual = mensual[2]
@@ -3291,8 +3262,6 @@ def main():
                                 numeroacciones = int(riesgo / (resistencia[2] - stoploss))
                             elif estrategia == 'Bajista':
                                 numeroacciones = int(riesgo / (soporte[3] - stoploss))
-
-
 
                         # inversion moneda
                         if estrategia == 'Alcista':
@@ -3417,8 +3386,6 @@ def main():
                             invertido = False
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta cuentraatras incluido
-
-
                 cuentaatras -= 1
 
             if len(backtest) > 0:
@@ -3427,11 +3394,10 @@ def main():
                 inversionTotal = 0
                 inversionrecuperadaTotal = 0
 
-                archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'] , ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
+                archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
                 j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
                 # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
-
 
                 for n in backtest:
                     ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance, indicadores = n
@@ -3476,7 +3442,6 @@ def main():
 
                     # writercsv.writerow(n)
 
-
                     if balance >= 0:
                         positivas += 1
                     elif balance < 0:
@@ -3517,7 +3482,6 @@ def main():
                 j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
                 j.write('Moneda del Backtest : %s\n' % moneda)
 
-
                 for n in xrange(0, 4):
                     j.write('\n')
 
@@ -3549,7 +3513,6 @@ def main():
             else:
                 raw_input('Backtest no realizado')
 
-
 #            'Cambiar sistema de analisis',
 #            '------------------------------',
 #            'T) Cooper',
@@ -3558,7 +3521,6 @@ def main():
             # del analisisAlcistaAccion, analisisBajistaAccion
             # from Cooper import analisisAlcistaAccion, analisisBajistaAccion
             print('Cambiado todos los sistemas de analisis al sistema de Cooper')
-
 
 #        'V) Exportar datos a arhivos csv',
         elif opcion == 'v':
@@ -3574,7 +3536,7 @@ def main():
                 cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC")
             else:
                 moneda = (moneda,)
-                cursor.execute ("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
 
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
@@ -3607,7 +3569,7 @@ def main():
                             archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
                             j = open(archivo, 'w')
                             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
-                            writercsv = csv.writer(j, delimiter = ',', lineterminator = '\n', doublequote = True)
+                            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
                             for n in datosaccion:
 
                                 fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -3618,7 +3580,6 @@ def main():
                                 writercsv.writerow(n)
                                 # j.write(str(n)+'\n')
                             j.close()
-
 
                         else:  # No existe suficiente historico
                             errorenTicket(ticket)
@@ -3633,8 +3594,7 @@ def main():
             print('Tickets para los que no hay cotizaciones historicas')
             for ticket in ticketsnodescargados:
                 print(ticket)
-            print('Un total de : ', len (ticketsnodescargados))
-
+            print('Un total de : ', len(ticketsnodescargados))
 
 #        'W) Dar de alta acciones desde archivo',
         elif opcion == 'w':
@@ -3642,7 +3602,7 @@ def main():
 
             incluidos = 0
 
-            archivowtickers = os.path.join('C:\\xampp\\htdocs\\jstock' , 'wtickers.dat')
+            archivowtickers = os.path.join('C:\\xampp\\htdocs\\jstock', 'wtickers.dat')
 
             if not os.path.exists(archivowtickers):
                 """
@@ -3670,10 +3630,10 @@ def main():
                 punto = naccion.find('.')
                 if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
                     naccion = (naccion,)
-                    cursor.execute ("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
+                    cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
                     numeroResultado = len(cursor.fetchall())
                     if numeroResultado == 0:
-                        cursor.execute ("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                        cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                         print(naccion[0] + ' anadido a la base de datos')
                         incluidos += 1
 
@@ -3693,9 +3653,6 @@ def main():
                 #        incluidos += 1
             db.commit()
             print ('Tickets Anadidos a la BBDD : %d' % incluidos)
-
-
-
 
         elif opcion == 'x':
             print(seleccion)
