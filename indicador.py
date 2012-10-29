@@ -3,6 +3,7 @@ Ejemplos de datos tomados en la accion ticket MSG
 
 """
 
+
 def _test():
     import doctest
     doctest.testmod()
@@ -31,7 +32,7 @@ def MME(datos, **config):
     resultado = []
 
     k = (2.0 / (1.0 + n))
-    for iMME in xrange (0, len(datos)):
+    for iMME in xrange(0, len(datos)):
         fechaMME = datos[iMME][0]
         cierreMME = datos[iMME][indicedatos]
         if iMME == 0:
@@ -61,7 +62,7 @@ def TR(datos, **config):
     numberound = config.get('numberound', True)
     listaTR = []
 
-    for i in xrange (0, len(datos)):
+    for i in xrange(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
         if i == 0:
@@ -91,13 +92,13 @@ def TAR(datos, **config):
     n = int(config.get('TAR', 14))
     numberound = config.get('numberound', True)
 
-    listaTR = TR(datos, numberound = False)
+    listaTR = TR(datos, numberound=False)
     assert len(datos) == len(listaTR)
 
     valoresTR = []
     listaTAR = []
 
-    for i in xrange (0, len(listaTR)):
+    for i in xrange(0, len(listaTR)):
         assert datos[i][0] == listaTR[i][0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
@@ -130,7 +131,7 @@ def DM(datos, **config):
     listaDM = []
     numberound = config.get('numberound', True)
 
-    for i in xrange (0, len(datos)):
+    for i in xrange(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
         if i == 0:
@@ -145,7 +146,6 @@ def DM(datos, **config):
             else:
                 deltamaximo = max(0, maximo - maximoanterior)
                 deltaminimo = max(0, minimoanterior - minimo)
-
 
             if (deltamaximo == 0 and deltaminimo == 0) or deltamaximo == deltaminimo:
                 deltamaximo = 0
@@ -174,7 +174,7 @@ def ADM(datos, **config):
     n = int(config.get('ADM', 14))
     numberound = config.get('numberound', True)
 
-    listaDM = DM(datos, numberound = False)
+    listaDM = DM(datos, numberound=False)
 
     assert len(datos) == len(listaDM)  # Comprobamos que tienen la misma cantidad de datos
 
@@ -235,8 +235,8 @@ def DI(datos, **config):
     """
     n = int(config.get('DI', 14))
     numberound = config.get('numberound', True)
-    listaADM = ADM(datos, ADM = n, numberound = False)
-    listaTAR = Averange(datos, indicador = 'TR', n = n, tipo = 'averange', numberound = False)
+    listaADM = ADM(datos, ADM=n, numberound=False)
+    listaTAR = Averange(datos, indicador='TR', n=n, tipo='averange', numberound=False)
 
     listaDI = []
 
@@ -276,11 +276,10 @@ def DX(datos, **config):
     """
     n = int(config.get('DX', 14))
     numberound = config.get('numberound', True)
-    listaDI = DI(datos, DI = n, numberound = False)
+    listaDI = DI(datos, DI=n, numberound=False)
     listaDX = []
 
     assert len(datos) == len(listaDI)  # Comprobamos que tienen la misma cantidad de datos
-
 
     for i in xrange(0, len(datos)):
 
@@ -310,7 +309,7 @@ def ADX(datos, **config):
     """
     n = config.get('ADX', 14)
     numberound = config.get('numberound', True)
-    listaDX = DX(datos, DX = n, numberound = False)
+    listaDX = DX(datos, DX=n, numberound=False)
     assert len(datos) == len(listaDX)
     listaADX = []
     valoresDX = []
@@ -328,7 +327,6 @@ def ADX(datos, **config):
             ADX = sum(valoresDX[(i + 1) - n:]) / n
         else:
             ADX = (((ADX * (n - 1)) + listaDX[i][1])) / n
-
 
         if numberound == True:
             listaADX.append((fecha, round(ADX, 3)))
@@ -429,11 +427,11 @@ def Averange(datos, **config):
     # ejemplo: Averange(datos,n=30, indicador=False,tipo='exponencial',indicedatos='cierre'), si en este caso no le especifico el indicedatos, me deberia responder con los calculos para todos los elementos por separado
     # ejemplo: Averante(datos,n=14, indicador=DM,tipo='averange'), mezclara los datos de DM+ y DM-
     if indicador == 'TR':
-        lista = TR(datos, numberound = False)
+        lista = TR(datos, numberound=False)
     elif indicador == 'DM':
-        lista = DM(datos, numberound = False)
+        lista = DM(datos, numberound=False)
     elif indicador == 'DX':
-        lista = DX(datos, DX = n, numberound = False)
+        lista = DX(datos, DX=n, numberound=False)
     else:
         lista = datos
 
@@ -442,7 +440,7 @@ def Averange(datos, **config):
     listaA = []
     valores = []
 
-    for i in xrange (0, len(lista)):
+    for i in xrange(0, len(lista)):
         assert datos[i][0] == lista[i][0]  # Comprobamos que cohinciden las fechas
 
         valores.append(list(lista[i]))
@@ -471,7 +469,6 @@ def Averange(datos, **config):
 
                 valorA = valor / divisor
 
-
             elif tipo == 'exponencial' or tipo == 'EMA':
                 k = (2.0 / (1.0 + n))
                 if i == 0:
@@ -490,13 +487,11 @@ def Averange(datos, **config):
                 else:
                     valorA = (((valorA * (n - 1)) + valor)) / n
 
-
             elif tipo == 'averange':
                 if i <= n:
                     valorA = valorA + valor
                 else:
                     valorA = valorA - (valorA / n) + valor
-
 
             if numberound == True:
                 valores[i][i2] = round(valorA, 3)
@@ -507,22 +502,22 @@ def Averange(datos, **config):
 
     if indicedatos != 0 and indicedatos > 0:
         listaB = []
-        for i in xrange (0, len(listaA)):
+        for i in xrange(0, len(listaA)):
             listaB.append((listaA[i][0], listaA[i][indicedatos]))
         listaA = listaB
         del (listaB)
 
-
     assert len(datos) == len(listaA)
     return (listaA)
+
 
 def sesionesHL(datos, **config):
     """
     Devuelve la barra anteriormente dejada como high o low de un periodo de tiempo. No tiene en cuenta la actual
     configurado con un periodo de 52 semanas y en high, equivaldria al "52 week high"
-	Parametros:
-	HL = 'high'/'low'
-	periodos = int
+    Parametros:
+    HL = 'high'/'low'
+    periodos = int
 
 
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
@@ -537,7 +532,7 @@ def sesionesHL(datos, **config):
     listamaximos = ([n[2] for n in datos])
     listaminimos = ([n[3] for n in datos])
 
-    for i in xrange (0, len(datos)):
+    for i in xrange(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
 
@@ -561,11 +556,9 @@ def sesionesHL(datos, **config):
                 valorHL = min(listaminimos[inicio:i])
                 fechaHL = datos[listaminimos.index(valorHL, inicio, i)][0]
 
-        listaHL.append((fecha, fechaHL , valorHL))
+        listaHL.append((fecha, fechaHL, valorHL))
     assert len(listaHL) == len(datos)
     return (listaHL)
-
-
 
 if __name__ == '__main__':
     datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
