@@ -86,7 +86,7 @@ def comprobaciones(colaResultado=None):
         print('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado)
 
     # Tickets con errores
-    sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` is not null"
+    sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` IS NOT NULL"
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if colaResultado == None:
@@ -106,7 +106,11 @@ def comprobaciones(colaResultado=None):
     # Tickets pendientes de realiar una actualizacion en el historico
     diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechahistorico`<'" + diaspasados + "' or `fechahistorico`>'" + diasfuturos + "' or `fechahistorico` IS NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechahistorico` DESC"
+    # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
+    # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
+    # historico. Paso previo, obtener la informacion de la cotizacion y generar el codigo
+    sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' AND `tiket` IN (SELECT `nombre` FROM `Cobo_nombreticket` WHERE ((`fechahistorico`<'" + diaspasados + "' or `fechahistorico`>'" + diasfuturos + "' or `fechahistorico` IS NULL) and `fechaActualizacion` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechahistorico` ASC) ORDER BY `Cobo_componentes`.`tiket` ASC"
+#    sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE ((`fechahistorico`<'" + diaspasados + "' or `fechahistorico`>'" + diasfuturos + "' or `fechahistorico` IS NULL) and `fechaActualizacion` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechahistorico` ASC"
     cursor.execute(sql)
     listatickets = cursor.fetchall()
     if colaResultado == None:
@@ -536,7 +540,7 @@ def datoshistoricosgraba(naccion, historico):
     cursor2.execute("DELETE FROM Ticket_%s" % tabla)
     for n in historico:
         fecha, apertura, maximo, minimo, cierre, volumen = n
-        sql = ("INSERT INTO Ticket_%s (`fecha`,`apertura`,`maximo`,`minimo`,`cierre`,`volumen`) VALUES ('%s',%d,%d,%d,%d,%d)" % (tabla, fecha, apertura, maximo, minimo, cierre, volumen))
+        sql = ("INSERT INTO Ticket_%s (`fecha`,`apertura`,`maximo`,`minimo`,`cierre`,`volumen`) VALUES ('%s',%f,%f,%f,%f,%d)" % (tabla, fecha, apertura, maximo, minimo, cierre, volumen))
         cursor2.execute(sql)
     db2.commit()
     db2.close()
@@ -570,7 +574,7 @@ def datoshistoricosactualizacion(naccion):
 # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > difregactualizar):  # and (desdeultimaactualizacionarchivo>difregistros):
+    if (desdeultimaactualizacion > difregactualizar['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print('Registro pendiente de una actualizacion desde %s' % (historico[-2][0]))
         return (str(historico[-3][0]), True)
     else:

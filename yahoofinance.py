@@ -12,11 +12,10 @@ import csv
 
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
-# from Cobo import duerme
+# from Cobo import carpetas, duerme
 import Cobo
 
 # TODO: Convertir esto en un parametro en la BBDD
-# from Cobo import carpetas
 carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
 webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'}
@@ -159,6 +158,10 @@ def descargaHistoricoAccion(naccion, **config):
         diafin = (fechafin[2])
 
     mesfin = str(int(mesfin) - 1)
+    # La barra de hoy no puede estar "acabada" por eso no se descarga.
+    # Si la guardamos y efectivamente no esta acabada, cuando vuelva a descargar los datos
+    # y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
+    diafin = str(int(diafin) - 1)
 
     # comprobandodividendo=False
 
@@ -230,53 +233,44 @@ def descargaHistoricoAccion(naccion, **config):
         volumen = int(columnas[5])
         cierreajustado = float(columnas[6])
 
-        if cierre == 0.0 or apertura == 0.0:  # tenemos en cuenta que cierre sea 0 en ese caso no podriamos hacer la division de ajuste
-            aperturaajustado = round(cierreajustado, 3)
-        elif cierreajustado == 0.0:
-            aperturaajustado = round(apertura, 3)
+        if cierre == 0.0 or apertura == 0.0 or cierreajustado == 0.0:# tenemos en cuenta que cierre sea 0 en ese caso no podriamos hacer la division de ajuste
+            aperturaajustado = 0.0
         else:
             aperturaajustado = round(apertura * (cierreajustado / cierre), 3)
 
-        if cierre == 0.0 or maximo == 0.0:
-            maximoajustado = round(cierreajustado, 3)
-        elif cierreajustado == 0.0:
-            maximoajustado = round(maximo, 3)
+        if cierre == 0.0 or maximo == 0.0 or cierreajustado == 0.0:
+            maximoajustado = 0.0
         else:
             maximoajustado = round(maximo * (cierreajustado / cierre), 3)
 
-        if cierre == 0.0 or minimo == 0.0:
-            minimoajustado = round(cierreajustado, 3)
-        elif cierreajustado == 0.0:
-            minimoajustado = round(minimo, 3)
+        if cierre == 0.0 or minimo == 0.0 or cierreajustado == 0.0:
+            minimoajustado = 0.0
         else:
             minimoajustado = round(minimo * (cierreajustado / cierre), 3)
 
-        if cierreajustado == 0.0:
-            cierreajustado = round(cierre, 3)
-        else:
-            cierreajustado = round(cierreajustado, 3)
+        cierreajustado = round(cierreajustado, 3)
 
         # hacemos esto para que no hayan datos a cero, eliminando en el caso de que algun dato llege a cero todo la lista de datos anterior al dato donde es cero
-        if aperturaajustado == 0.0 or maximoajustado == 0.0 or minimoajustado == 0.0 or cierreajustado == 0.0:
-            datosaccion = []
-        else:
+# #        if aperturaajustado == 0.0 or maximoajustado == 0.0 or minimoajustado == 0.0 or cierreajustado == 0.0:
+# #            datosaccion = []
+# #        else:
 
-            if actualizar:
-                registrodescargadoprimero = (fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado)
-                if len(datosaccion) > 1:
-                    registroalmacenadoultimo = datosaccion[-1][0:5]  # no queremos comparar el volumen
-                else:
-                    registroalmacenadoultimo = ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
-
-                actualizar = False
-                if (registroalmacenadoultimo != registrodescargadoprimero):
-                    print('El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
-                    # print 'Borrando todos los datos almacenados'
-                    # borraTicket(naccion, BBDD=False)
-                    return 'Pago Dividendos'
-
+        if actualizar:
+            registrodescargadoprimero = (fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado)
+            if len(datosaccion) > 1:
+                registroalmacenadoultimo = datosaccion[-1][0:5]  # no queremos comparar el volumen
             else:
-                datosaccion.append((fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado, volumen))
+                registroalmacenadoultimo = ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
+
+            actualizar = False
+            if (registroalmacenadoultimo != registrodescargadoprimero):
+                print('El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
+                # print 'Borrando todos los datos almacenados'
+                # borraTicket(naccion, BBDD=False)
+                return 'Pago Dividendos'
+
+        else:
+            datosaccion.append((fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado, volumen))
 
         i -= 1
 
@@ -421,7 +415,8 @@ def subirtimming(datos, **config):
 
                 maximo = max([(n[maximodatos]) for n in datos][inicio:i])
                 minimo = min([(n[minimodatos]) for n in datos][inicio:i])
-                volumen = sum([(n[volumendatos]) for n in datos][inicio:i])
+                # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
+                volumen = sum([(n[volumendatos]) for n in datos][inicio:]) / len([(n[volumendatos]) for n in datos][inicio:])
 
                 datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[i - 1][cierredatos], volumen))
                 inicio = i
@@ -429,7 +424,8 @@ def subirtimming(datos, **config):
 
         maximo = max([(n[maximodatos]) for n in datos][inicio:])
         minimo = min([(n[minimodatos]) for n in datos][inicio:])
-        volumen = sum([(n[volumendatos]) for n in datos][inicio:])
+        # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
+        volumen = sum([(n[volumendatos]) for n in datos][inicio:]) / len([(n[volumendatos]) for n in datos][inicio:])
         datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[-1][cierredatos], volumen))
 
     return datostimming
