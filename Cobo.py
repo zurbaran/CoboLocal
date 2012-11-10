@@ -55,7 +55,6 @@ carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
 # Expresa la diferencia entre los registros para hacer una actualizacion
 difregactualizar = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
 
-pausareconexion = 20
 backtestoperacionessospechosas = 1.50
 
 # import logging.config
@@ -367,7 +366,7 @@ def analisisAlcistaAccion(naccion, **config):
                 while localizaLTi:
 
                     if LTi >= 0:
-                        _fechaLTi, _aperturaLTi, _maximoLTi, minimoLTi, _cierreLTi, _volumenLTi = datoshistoricos[LTi]
+                        fechaLTi, _aperturaLTi, _maximoLTi, minimoLTi, _cierreLTi, _volumenLTi = datoshistoricos[LTi]
                     else:
                         localizaLTf = True
                         localizaLTi = False
@@ -375,19 +374,24 @@ def analisisAlcistaAccion(naccion, **config):
 
     #                    print LTi
                     for j in xrange(LTi, -1, -1):
-                        _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
+                        fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         # if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                         if minimoLTi > minimoLTf and LTi > 0:  # Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                             LTi -= 1
                             break
-
-                        puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
-                        # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
-    #                        elif timming=='semanal':
-                        # else:
-                            # he deshabilitado la comprobacion del timming en esta formula porque habria que anadir la de diario, ademos sospecho que limpiando la formula, esta seria la misma independientemente el timming que utilicemos
-                            #   puntoLT=round((minimoLTi*((1+(((1.0+(((minimoLTf-minimoLTi)/minimoLTi)))**(52.0/(LTf-LTi)))-1.0))**((j-LTi)/(52.0)))),3)#365/7.0
+                        try:
+                            puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
+                        except (OverflowError, ZeroDivisionError) as e:
+                            logging.debug('Error: %s buscando LTi en analisisAlcistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de minimoLTi: %s' \
+                                          % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, minimoLTi))
+#                            LineaTendenciaInicio = ('0-0-0', 0.0)
+#                            LineaTendenciaFin = ('0-0-0', 0.0)
+#                            localizaLTi = False
+#                            localizaLTf = False
+#                            break
+                            puntoLT = minimoj
+                            j = 0
 
                         if puntoLT > minimoj:
                             LTi = j
@@ -409,7 +413,7 @@ def analisisAlcistaAccion(naccion, **config):
 
     #                print "LTf, i =", LTf, i
                     if LTf <= i:
-                        _fechaLTf, _aperturaLTf, _maximoLTf, minimoLTf, _cierreLTf, _volumenLTf = datoshistoricos[LTf]
+                        fechaLTf, _aperturaLTf, _maximoLTf, minimoLTf, _cierreLTf, _volumenLTf = datoshistoricos[LTf]
                     else:
                         localizaLTf = False
                         localizaLTi = False
@@ -418,14 +422,23 @@ def analisisAlcistaAccion(naccion, **config):
     #                while j<=i:
                     for j in xrange(LTf, i + 1):
 
-                        _fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
+                        fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         # esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
                             LTf += 1
                             break
-
-                        puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
+                        try:
+                            puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
+                        except (OverflowError, ZeroDivisionError) as e:
+                            logging.debug('Error: %s buscando LTf en analisisAlcistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de minimoLTi: %s' \
+                                          % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, minimoLTi))
+#                            LineaTendenciaInicio = ('0-0-0', 0.0)
+#                            LineaTendenciaFin = ('0-0-0', 0.0)
+#                            localizaLTi = False
+#                            localizaLTf = False
+#                            break
+                            puntoLT = minimoj
                         # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
 
                         # Aveces por falta de precision en el calculo del puntoLT creamos un bucle infinito que siempre impacta en la misma barra una y otra vez
@@ -828,29 +841,17 @@ def analisisBajistaAccion(naccion, **config):
                             LTi -= 1
                             break
                         try:
-                            # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
-                        except (OverflowError, ZeroDivisionError) as e:  # en el calculo de la linea de tendencia bajista hacia atras, aveces, la linea llega al infinito
-    #                            puntoLTanterior=round((maximoLTi*((1+(((1.0+(((maximoLTf-maximoLTi)/maximoLTi)))**(12.0/(LTf-LTi)))-1.0))**((j-LTi-1)/12.0))),3)
-    #                            maximohistorico=max([maxi[2] for maxi in datoshistoricos[0:j]])
-    #                            if puntoLTanterior>maximohistorico:
-                            j = 0  # El error lo da en
-                            # sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaLTf, fechaj))
-                            # log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaj))
-                                    # ABL(4 analisis j=2954 timming='d')
-                                    # ACOM.ST (22 analisis j=357 timming='d')
-                                    # ADI.L (4 analisis j=567 timming='d')
-                                    # ADLS.OB(36 analisis j=148 timming='d')
-                                    # AEG.L (18 analisis j=572 timming='d')
-                                    # AiG (5 analisis j=1069 timming='d')aig
-                                    # AIG(3 analisis j=283 timming='w')
-#                        except ZeroDivisionError:
-#                            j = 0
-#                            #sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-#                            logging.debug( Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (__name__, ZeroDivisionError, naccion, timming, fechaLTi, fechaLTf, fechaj))
-#                            #log(nombrelog = 'analisisBajistaAccion', error = ZeroDivisionError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTi', naccion, timming, fechaLTi, fechaLTf, fechaLTf))
-#                        #print j,puntoLT,'localizaLTi',i
+                        except (OverflowError, ZeroDivisionError) as e:
+                            logging.debug('Error: %s buscando LTi en analisisBajistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de maximoLTi: %s' \
+                                          % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, maximoLTi))
+#                            LineaTendenciaInicio = ('0-0-0', 0.0)
+#                            LineaTendenciaFin = ('0-0-0', 0.0)
+#                            localizaLTi = False
+#                            localizaLTf = False
+#                            break
+                            puntoLT = maximoj
+                            j = 0
 
                         if puntoLT < maximoj:
                             LTi = j
@@ -891,15 +892,16 @@ def analisisBajistaAccion(naccion, **config):
                         try:
                             # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
-                        except OverflowError:
-                            # sys.excepthook = lambda exc_type, exc_value, exc_traceback: logging.debug('UNCAUGHT EXCEPTION %r: %s' % (exc_type, traceback.format_tb(exc_traceback)))
-                            logging.debug('Error: %s; Accion: %s; timming: %s; FechaLTi: %s; FechaLTf: %s; Fecha de la barra donde se produce el Error: %s' % (OverflowError, naccion.encode('UTF-8'), timming, fechaLTi, fechaLTf, fechaj))
-                            # log(nombrelog = 'analisisBajistaAccion', error = OverflowError, explicacion = 'Accion; timming; FechaLTi; FechaLTf; Fecha de la barra donde se produce el Error', variables = ('Funcion analisisBajistaAccion en localizaLTf', naccion, timming, fechaLTi, fechaLTf, fechaj))
+                        except (OverflowError, ZeroDivisionError) as e:
+                            logging.debug('Error: %s buscando LTf en analisisBajistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de maximoLTi: %s' \
+                                          % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, maximoLTi))
+#                            LineaTendenciaInicio = ('0-0-0', 0.0)
+#                            LineaTendenciaFin = ('0-0-0', 0.0)
+#                            localizaLTi = False
+#                            localizaLTf = False
+#                            break
                             puntoLT = maximoj  # asi no altero el LTf
-    #                        elif timming=='semanal':
-                        # else:
-                        #    puntoLT=round((minimoLTi*((1+(((1.0+(((minimoLTf-minimoLTi)/minimoLTi)))**(52.0/(LTf-LTi)))-1.0))**((j-LTi)/(52.0)))),3)#365/7.0
-                        #                        print j,puntoLT,'localizaLTf',i
+
                         if puntoLT < maximoj:
                             if (LTf == j or (puntoLT == 0.0 and LTf < i)) and not (j + 1 > i):
                                 # Si la linea de tendencia llega a 0 y LTf no ha llegado a ser i, deberia comprobar hasta llegar a ser la i
@@ -1140,11 +1142,17 @@ def analisisTicket(nombreticket):
                 resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
                 soporte, stoploss = soporte
                 ruptura, entrada = ruptura
+                # evitando que la division de mas abajo sea por 0
+                if ruptura[4] == 0.0:
+                    cierreruptura = 0.0001
+                else:
+                    cierreruptura = ruptura[4]
                 if maxDia == None or maxDia == 0.0:
-                    maxDia = ruptura[4]
+                    maxDia = cierreruptura
                 if valorActual == None or valorActual == 0.0:
-                    valorActual = ruptura[4]
-                proximidadalcista = (abs((resistencia[2] / max(ruptura[4], maxDia, valorActual)) - 1))
+                    valorActual = cierreruptura
+                # except ZeroDivisionError:
+                proximidadalcista = (abs((resistencia[2] / max(cierreruptura, maxDia, valorActual)) - 1))
 #                            for precio in (ruptura[4], maxDia, valorActual):
 #                                proximidadalcista.append(abs((resistencia[2] / precio) - 1))
 #                            proximidadalcista = min(proximidadalcista)
@@ -1158,11 +1166,17 @@ def analisisTicket(nombreticket):
                 soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
                 resistencia, stoploss = resistencia
                 ruptura, entrada = ruptura
+                #evitando que la division de mas abajo sea por 0
+                if ruptura[4] == 0.0:
+                    cierreruptura = 0.0001
+                else:
+                    cierreruptura = ruptura[4]
                 if minDia == None or minDia == 0.0:
-                    minDia = ruptura[4]
+                    minDia = cierreruptura
                 if valorActual == None or valorActual == 0.0:
-                    valorActual = ruptura[4]
-                proximidadbajista = (abs(1 - (soporte[3] / min(ruptura[4], minDia, valorActual))))
+                    valorActual = cierreruptura
+                # except ZeroDivisionError:
+                proximidadbajista = (abs(1 - (soporte[3] / min(cierreruptura, minDia, valorActual))))
 #                            for precio in (ruptura[4], minDia, valorActual):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
@@ -1216,7 +1230,9 @@ def analisisTicket(nombreticket):
             fechainicial = map(int, (fechainicial.split('-')))
             fechafinal = map(int, (fechafinal.split('-')))
             diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
-
+            # evitando que la division de mas abajo sea por 0
+            if precioinicial == 0.0:
+                precioinicial = 0.001
 #                        if entrada > stoploss:#Alcista
             rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
 #                        elif entrada < stoploss:#Bajista
@@ -1701,18 +1717,14 @@ def main():
             print(seleccion)
             # TODO : como ahora tenemos una columna en `Cobo_nombreticket` que contiene la fecha del historico descargado
 #            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
-#            cursor.execute(sql)
-#            listatickets = cursor.fetchall()
-#            listatickets = ((ticket[0]) for ticket in listatickets)
             listatickets = BBDD.comprobaciones(colaResultado='Historico')
             listatickets = deque(list(listatickets))
 
-            # cuentaatras = len ( listatickets )
-            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
-            if borranoactualizados == '':
-                borranoactualizados = False
-            else:
-                borranoactualizados = True
+##            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
+##            if borranoactualizados == '':
+##                borranoactualizados = False
+##            else:
+            borranoactualizados = True
 
             # for ticket in listatickets:
             while len(listatickets) > 0:
@@ -2094,7 +2106,7 @@ def main():
 #                        volumenoperacion = int (volumenoperacion / 3)
                         # Como utilizamos la MME (5) sobre el volumen, solo comprobamos el volumen de la barra de ruptura
                         fecha, apertura, maximo, minimo, cierre, volumen = ruptura
-                        # FIXME: al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
+
                         volumenoperacion = int((cierre * volumen * 22))
 
                         if (resistencia[2] == stoploss) or (soporte[3] == stoploss):  # comprobamos que no dividomos entre 0
