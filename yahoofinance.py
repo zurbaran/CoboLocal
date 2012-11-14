@@ -4,7 +4,7 @@ Created on 30/10/2012
 @author: Antonio
 '''
 from time import sleep, strftime, strptime
-from datetime import date
+from datetime import date, timedelta
 import logging
 import os
 import urllib2
@@ -12,17 +12,15 @@ import csv
 
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
-# from Cobo import carpetas, duerme
-import Cobo
+from Cobo import duerme
 
-# TODO: Convertir esto en un parametro en la BBDD
-carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
-    'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
+from Cobo import __carpetas__, __ARCHIVO_LOG__
+
 webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'}
 pausareconexion = 20
 
-ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
-logging.basicConfig(filename=ARCHIVO_LOG,
+
+logging.basicConfig(filename=__ARCHIVO_LOG__,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
 
@@ -100,7 +98,7 @@ def ticketsdeMercado(mercado):
             if (ticket not in ticketsanadidos) and ('%20' not in ticket):
                 ticketsanadidos.append(ticket)
 
-        Cobo.duerme()
+        duerme()
         pagina += 1
     print('')
     print(("%8d Tickets componen el mercado %s" % (len(ticketsanadidos), mercado)))
@@ -233,7 +231,7 @@ def descargaHistoricoAccion(naccion, **config):
         volumen = int(columnas[5])
         cierreajustado = float(columnas[6])
 
-        if cierre == 0.0 or apertura == 0.0 or cierreajustado == 0.0:# tenemos en cuenta que cierre sea 0 en ese caso no podriamos hacer la division de ajuste
+        if cierre == 0.0 or apertura == 0.0 or cierreajustado == 0.0:  # tenemos en cuenta que cierre sea 0 en ese caso no podriamos hacer la division de ajuste
             aperturaajustado = 0.0
         else:
             aperturaajustado = round(apertura * (cierreajustado / cierre), 3)
@@ -278,7 +276,7 @@ def descargaHistoricoAccion(naccion, **config):
 
     if txt:
         nombre = (str(naccion)).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
+        archivo = os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
         writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
         for n in datosaccion:
@@ -389,7 +387,7 @@ def subirtimming(datos, **config):
     >>> historicoMensual==historicoMensual2
     True
     '''
-    timming = config.get('timming', 'm')
+    timming = (config.get('timming', 'm')).lower()
     datostimming = []
 
     fechadatos = 0
@@ -399,33 +397,45 @@ def subirtimming(datos, **config):
     cierredatos = 4
     volumendatos = 5
 
-    timmingformat = {'m': '%Y, %m', 'w': '%Y, %W'}
     inicio = 0
     if len(datos) > 0:
-
-        fechaagr = strftime(timmingformat[timming], strptime(datos[0][fechadatos], '%Y-%m-%d'))
+        if timming == 'm':
+            # %Y     Year with century as a decimal number.
+            # %m     Month as a decimal number [01,12].
+            fechaagr = strftime('%Y, %m', strptime(datos[0][fechadatos], '%Y-%m-%d'))
+        elif timming == 'w':
+            # %w     Weekday as a decimal number [0(Sunday),6].
+            # el siguiente domigo a la fecha de inico
+            fechaagr = map(int, (((datos[0][fechadatos]).split('-'))))
+            fechaagr = (date(fechaagr[0], fechaagr[1], fechaagr[2]))
+            fechaagr += timedelta(days=6 - fechaagr.weekday())
 
         i = 0
         while i < len(datos):
             fecha = datos[i][fechadatos]
             fecha = strptime(fecha, '%Y-%m-%d')
-
-            if fechaagr != strftime(timmingformat[timming], fecha):
-                fechaagr = strftime(timmingformat[timming], fecha)
+# FIXME : en mensual es correcto, cuando cambia de ANO y MES, pero en semanal hay que acumular de domingo a domingo, siendo el corte el domingo siguiente
+            if (timming == 'm' and fechaagr != strftime('%Y, %m', fecha)) or (timming == 'w' and datos[i][fechadatos] >= str(fechaagr)):
+                if timming == 'm':
+                    fechaagr = strftime('%Y, %m', fecha)
+                elif timming == 'w':
+                    fechaagr = map(int, (((datos[i][fechadatos]).split('-'))))
+                    fechaagr = (date(fechaagr[0], fechaagr[1], fechaagr[2]))
+                    fechaagr += timedelta(days=6 - fechaagr.weekday())
 
                 maximo = max([(n[maximodatos]) for n in datos][inicio:i])
                 minimo = min([(n[minimodatos]) for n in datos][inicio:i])
                 # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
-                volumen = sum([(n[volumendatos]) for n in datos][inicio:]) / len([(n[volumendatos]) for n in datos][inicio:])
+                volumen = sum([(n[volumendatos]) for n in datos][inicio:i]) / len([(n[volumendatos]) for n in datos][inicio:i])
 
                 datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[i - 1][cierredatos], volumen))
                 inicio = i
             i += 1
 
-        maximo = max([(n[maximodatos]) for n in datos][inicio:])
-        minimo = min([(n[minimodatos]) for n in datos][inicio:])
+        maximo = max([(n[maximodatos]) for n in datos][inicio:i])
+        minimo = min([(n[minimodatos]) for n in datos][inicio:i])
         # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
-        volumen = sum([(n[volumendatos]) for n in datos][inicio:]) / len([(n[volumendatos]) for n in datos][inicio:])
+        volumen = sum([(n[volumendatos]) for n in datos][inicio:i]) / len([(n[volumendatos]) for n in datos][inicio:i])
         datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[-1][cierredatos], volumen))
 
     return datostimming

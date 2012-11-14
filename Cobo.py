@@ -29,6 +29,9 @@ import indicador
 import BBDD
 import yahoofinance
 
+import HTML
+# TODO: implementar la libreria HTML para generar archivos en formato html de las consultas/resultados de la BBDD
+
 # from adodbapi.adodbapi import type
 # import traceback
 # from decimal import Decimal
@@ -44,26 +47,23 @@ setdefaultencoding = ('UTF-8')
 #################################################
 # Constantes locales
 
-# TODO: Convertir esto en un parametro en la BBDD
 sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
     '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS',
     '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG',
     '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
-
-carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
+__carpetas__ = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
 # Expresa la diferencia entre los registros para hacer una actualizacion
-difregactualizar = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
-
+__difregactualizar__ = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
 backtestoperacionessospechosas = 1.50
 
 # import logging.config
-ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
+__ARCHIVO_LOG__ = os.path.join(os.getcwd(), __carpetas__['Log'], "general.log")
 # logging.config.fileConfig(ARCHIVO_LOG)
 # logging.basicConfig(filename = ARCHIVO_LOG)
 # logging.captureWarnings(True)
 # basic setup with ISO 8601 time format
-logging.basicConfig(filename=ARCHIVO_LOG,
+logging.basicConfig(filename=__ARCHIVO_LOG__,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
 logging.debug('\n')
@@ -547,7 +547,7 @@ def analisisAlcistaAccion(naccion, **config):
     if len(analisisalcista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
+        archivo = os.path.join(os.getcwd(), __carpetas__["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisalcista:
@@ -1002,7 +1002,7 @@ def analisisBajistaAccion(naccion, **config):
     if len(analisisbajista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
+        archivo = os.path.join(os.getcwd(), __carpetas__["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisbajista:
@@ -1110,7 +1110,7 @@ def historicoTicket(nombreticket, **config):
                     fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
                     desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
 
-                    if borranoactualizados and desdeultimaactualizacion > difregactualizar['noActualizados']:
+                    if borranoactualizados and desdeultimaactualizacion > __difregactualizar__['noActualizados']:
                         accioninvalida = 'URL invalida'
                         BBDD.ticketborra(nombreticket)
                     else:
@@ -1166,7 +1166,7 @@ def analisisTicket(nombreticket):
                 soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
                 resistencia, stoploss = resistencia
                 ruptura, entrada = ruptura
-                #evitando que la division de mas abajo sea por 0
+                # evitando que la division de mas abajo sea por 0
                 if ruptura[4] == 0.0:
                     cierreruptura = 0.0001
                 else:
@@ -1349,8 +1349,8 @@ def ticketsexcluidos(sufijosexcluidos):
 
 def main():
 
-    for carpeta in carpetas.keys():
-        nombrecarpeta = os.path.join(os.getcwd(), carpetas[carpeta])
+    for carpeta in __carpetas__.keys():
+        nombrecarpeta = os.path.join(os.getcwd(), __carpetas__[carpeta])
         if not os.path.exists(nombrecarpeta):
             os.mkdir(nombrecarpeta)
             # os.path.dirname
@@ -1530,7 +1530,7 @@ def main():
             elif timming == '3' or timming == '' or timming == ' ':
                 datos = yahoofinance.subirtimming(datos, timming='m')
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "data.csv")
+            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "data.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datos:
@@ -1538,7 +1538,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "metatrader.csv")
+            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "metatrader.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
             j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n')
@@ -1550,7 +1550,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], 'metastock.csv')
+            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], 'metastock.csv')
             j = open(archivo, 'w')
             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
@@ -1571,7 +1571,7 @@ def main():
 
             datosMME = indicador.MME(datos, MME=MMEdatos)
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "MME.csv")
+            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "MME.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosMME:
@@ -1587,7 +1587,7 @@ def main():
 
             datosTAR = indicador.TAR(datos, TAR=TARdatos)
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "TAR.csv")
+            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "TAR.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosTAR:
@@ -1720,10 +1720,10 @@ def main():
             listatickets = BBDD.comprobaciones(colaResultado='Historico')
             listatickets = deque(list(listatickets))
 
-##            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
-##            if borranoactualizados == '':
-##                borranoactualizados = False
-##            else:
+# #            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
+# #            if borranoactualizados == '':
+# #                borranoactualizados = False
+# #            else:
             borranoactualizados = True
 
             # for ticket in listatickets:
@@ -1962,7 +1962,7 @@ def main():
                     cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
                     break
                 if moneda in monedas:
-                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC")
+                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE ?) ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
                     break
 
             # consulta en la tabla componentes que pertenecen a los mercados de una moneda
@@ -1971,7 +1971,7 @@ def main():
             cuentaatras = len(resultado)
             for registro in resultado:
                 # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-                codigo, nombre, ticket, mercado, _max52, _maxDia, _min52, _minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
+                _codigo, nombre, ticket, mercado, _max52, _maxDia, _min52, _minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
                 print('Quedan por analizar un total de %d' % cuentaatras)
                 print('Analizando ticket %s' % ticket)
 
@@ -2092,8 +2092,12 @@ def main():
                             diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
 
                             if estrategia == 'Alcista':
+                                if precioinicial == 0.0:
+                                    precioinicial = 0.000001
                                 rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
                             elif estrategia == 'Bajista':
+                                if preciofinal == 0.0:
+                                    preciofinal = 0.000001
                                 rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
 
                         # calculamos el volumen
@@ -2250,7 +2254,7 @@ def main():
                 inversionTotal = 0
                 inversionrecuperadaTotal = 0
 
-                archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
+                archivobacktest = os.path.join(os.getcwd(), __carpetas__['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
                 j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
                 # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
@@ -2382,25 +2386,24 @@ def main():
         elif opcion == 'v':
             print (seleccion)
             print ('Limpiando Directorio')
-            os.remove(glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*")))
-            # archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*"))
-            # for archivo in archivosticket:
-            #    os.remove(archivo)
-
+            # os.remove(glob.glob(os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + "*.*")))
+            archivosticket = glob.glob(os.path.join(os.getcwd(), __carpetas__['Historicos'], "*.*"))
+            for archivo in archivosticket:
+                os.remove(archivo)
+            del archivosticket
             moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
             if moneda == '' or moneda == None:
-                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC")
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC")
             else:
                 moneda = (moneda,)
-                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
-
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' AND `Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE ?) ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
             ticketsnodescargados = []
             # for ticket in listatickets:
             while len(listatickets) > 0:
-                ticket, codigo, naccion = listatickets.popleft()
+                ticket, _codigo, naccion = listatickets.popleft()
                 naccion = (naccion.strip('"')).replace(',', '')
 
                 print('')
@@ -2420,9 +2423,9 @@ def main():
                             datosaccion = yahoofinance.subirtimming(datos, timming='m')
 
                         if len(datosaccion) > 0:
-
-                            nombre = (str(ticket) + str(codigo)).replace('.', '_')
-                            archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
+                            nombre = (str(ticket)).replace('.', '_')
+                            # nombre = (str(ticket) + str(codigo)).replace('.', '_')
+                            archivo = os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + '.' + timming + '.csv')
                             j = open(archivo, 'w')
                             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
                             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
