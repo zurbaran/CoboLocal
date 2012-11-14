@@ -8,6 +8,12 @@ import os
 import glob
 from datetime import date, datetime, timedelta
 
+from sql import *
+from sql.aggregate import *
+from sql.conditionals import *
+from enable import null
+# TODO: implementar la libreria python-sql para generar el codigo sql
+
 try:
     from pysqlite2 import dbapi2 as sqlite3
 except ImportError:
@@ -15,9 +21,7 @@ except ImportError:
     import sqlite3  # lint:ok
     install(['-v', 'pysqlite'])
 
-# TODO: Convertir esto en un parametro en la BBDD
-from Cobo import carpetas
-from Cobo import difregactualizar
+from Cobo import __carpetas__, __difregactualizar__
 
 
 def conexion(archivo=None):
@@ -33,7 +37,7 @@ def conexion(archivo=None):
         ticket = ticket.upper()
         tickets = ticketlistacodigo(ticket)
         nombre = ('%s%s' % (ticket, tickets[ticket])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
+        archivo = os.path.join(os.getcwd(), __carpetas__['Datos'], nombre + ".dat")
 
     try:
         db = sqlite3.connect(os.path.join(archivo))
@@ -86,6 +90,9 @@ def comprobaciones(colaResultado=None):
         print('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado)
 
     # Tickets con errores
+#    Cobo_nombreticket = Table('Cobo_nombreticket')
+#    select = Cobo_nombreticket.select(Cobo_nombreticket.nombre)
+#    select.where = Cobo_nombreticket.fechaError != 'NULL'
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` IS NOT NULL"
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
@@ -93,7 +100,7 @@ def comprobaciones(colaResultado=None):
         print('Tickets con errores : %d' % numeroResultado)
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
-    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(days=__difregactualizar__['d'])).strftime("%Y-%m-%d %H:%M:%S")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     cursor.execute(sql)
@@ -104,7 +111,7 @@ def comprobaciones(colaResultado=None):
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
     # Tickets pendientes de realiar una actualizacion en el historico
-    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d")
+    diaspasados = (datetime.now() - timedelta(days=__difregactualizar__['d'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
     # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
@@ -201,8 +208,8 @@ def ticketborra(ticket, **config):
             tickets = ticketlistacodigo(ticket)
             if ticket in tickets:
                 nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
-                for carpeta in carpetas.keys():
-                    archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas[carpeta], nombre + ".*"))
+                for carpeta in __carpetas__.keys():
+                    archivosticket = glob.glob(os.path.join(os.getcwd(), __carpetas__[carpeta], nombre + ".*"))
                     for archivo in archivosticket:
                         os.remove(archivo)
         db.commit()
@@ -454,7 +461,7 @@ def datoshistoricosexisten(naccion):
     existe = False
     if naccion in tickets:
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
+        archivo = os.path.join(os.getcwd(), __carpetas__['Datos'], nombre + ".dat")
 
         if os.path.exists(archivo):
             # el archivo que contiene la BBDD de la cotizacion historica existe
@@ -574,7 +581,7 @@ def datoshistoricosactualizacion(naccion):
 # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > difregactualizar['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
+    if (desdeultimaactualizacion > __difregactualizar__['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print('Registro pendiente de una actualizacion desde %s' % (historico[-2][0]))
         return (str(historico[-3][0]), True)
     else:
