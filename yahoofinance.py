@@ -1,26 +1,102 @@
-'''
-Created on 30/10/2012
+# -*- coding: UTF-8 -*-
+####################################################
+# Name:        Cobo.py
+# Purpose:
+#
+# Author:      Antonio
+#
+# Created:     23/07/2012
+# Copyright:   (c) Antonio 2012
+# Licence:     <your licence>
+####################################################
+# paginas de interes
+# http://finance.yahoo.com/international
 
-@author: Antonio
-'''
+
+#################################################
+# Constantes locales
+
+webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0'}
+pausareconexion = 20
+prefijo = {'': '',
+           '.BA': 'ar.',
+           '.AX': 'au.',
+           '.VA': 'at.',
+           '.SA': 'br.',
+           '.TO': 'ca.',
+           '.V': 'ca.',
+           '.SN': 'cl.',
+           '.SS': '',
+           '.SZ': '',
+           '.CO': 'dk.',
+           '.NX': 'fr.',
+           '.PA': 'fr.',
+           '.BE': 'de.',
+           '.BM': 'de.',
+           '.DE': 'de.',
+           '.DU': 'de.',
+           '.F': 'de.',
+           '.HA': 'de.',
+           '.HM': 'de.',
+           '.MU': 'de.',
+           '.SG': 'de.',
+           '.AT': 'gr.',
+           '.HK': 'hk.',
+           '.BO': 'in.',
+           '.NS': 'in.',
+           '.JK': 'id.',
+           '.TA': 'ta.',
+           '.MI': 'it.',
+           '.JP': 'kr.',
+           '.MX': 'mx.',
+           '.AS': 'nl.',
+           '.NZ': 'nz.',
+           '.OL': 'no.',
+           '.ME': 'ru.',
+           '.SI': 'sg.',
+           '.KQ': 'kr.',
+           '.KS': 'kr.',
+           '.BC': 'es.',
+           '.BI': 'es.',
+           '.MA': 'es.',
+           '.MC': 'es.',
+           '.MF': 'es.',
+           '.ST': 'se.',
+           '.SW': 'ch.',
+           '.TW': 'tw.',
+           '.TWO': 'tw.',
+           '.IL': 'uk.',
+           '.L': 'uk.',
+           '.CBT': '',
+           '.CME': '',
+           '.CMX': '',
+           '.NYB': '',
+           '.NYM': '',
+           '.OB': '',
+           '.PK': '',
+           '.BR': 'fr.',
+           }
+
+####################################################
+# modulos estandar importados
+
 from time import sleep, strftime, strptime
 from datetime import date, timedelta
+from random import randint
 import logging
 import os
 import urllib2
 import csv
 
+
+####################################################
+# modulos no estandar o propios
+from Cobo import carpetas, ARCHIVO_LOG
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
-from Cobo import duerme
-
-from Cobo import __carpetas__, __ARCHIVO_LOG__
-
-webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20100101 Firefox/11.0'}
-pausareconexion = 20
 
 
-logging.basicConfig(filename=__ARCHIVO_LOG__,
+logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
 
@@ -28,6 +104,15 @@ logging.basicConfig(filename=__ARCHIVO_LOG__,
 def _test():
     import doctest
     doctest.testmod()
+
+
+def duerme(tiempo=1500):
+    """
+
+    """
+    x = (randint(0, tiempo)) / 1000.0
+    print('Pausa de %.3f segundos' % x)
+    sleep(x)
 
 
 def ticketsdeMercado(mercado):
@@ -160,9 +245,7 @@ def descargaHistoricoAccion(naccion, **config):
     # Si la guardamos y efectivamente no esta acabada, cuando vuelva a descargar los datos
     # y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
     diafin = str(int(diafin) - 1)
-
     # comprobandodividendo=False
-
     if fechaini == None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
         actualizar = False
         url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
@@ -174,6 +257,31 @@ def descargaHistoricoAccion(naccion, **config):
         url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
     f = None
     r = urllib2.Request(url, headers=webheaders)
+
+    punto = naccion.find('.')
+    if punto == -1:
+        sufijo = ''
+    else:
+        sufijo = naccion[punto:]
+
+    if prefijo.has_key(sufijo):
+        preurl = "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + naccion
+    else:
+        preurl = "http://finance.yahoo.com/q/hp?s=" + naccion
+        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)         
+    
+    r.add_header('Referer', preurl)
+
+    # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
+    # la abrimos para hacerle creer que venimos de aqui
+    # hemos observado casos donde hasta que no entrabamos en esta pagina no actualizaba correctamente la informacion en el archivo que nos descargamos posteriormente
+    r1 = urllib2.Request(preurl, headers=webheaders)
+    try:
+        urllib2.urlopen(r1)
+    except:
+        pass
+    duerme()
+
     while f == None:
         try:
             f = urllib2.urlopen(r)
@@ -276,7 +384,7 @@ def descargaHistoricoAccion(naccion, **config):
 
     if txt:
         nombre = (str(naccion)).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + '.' + timming + '.csv')
+        archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
         writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
         for n in datosaccion:
@@ -305,8 +413,19 @@ def cotizacionesTicket(nombreticket):
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
     urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=nsxkhjgl1a2ve1&e=.csv"
-    r = urllib2.Request(urldatos, headers=webheaders)
     datosurl = None
+    r = urllib2.Request(urldatos, headers=webheaders)
+
+    punto = nombreticket.find('.')
+    if punto == -1:
+        sufijo = ''
+    else:
+        sufijo = nombreticket[punto:]
+    if prefijo.has_key(sufijo):
+        r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
+    else:
+        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)         
+
     while datosurl == None:
         try:
             f = urllib2.urlopen(r)
@@ -344,9 +463,17 @@ def cotizacionesMoneda(nombreticket):
     nombreticket = nombreticket.upper()
     urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=sl1e1&e=.csv"
     datosurl = None
+    r = urllib2.Request(urldatos, headers=webheaders)
+
+##    punto = nombreticket.find('.')
+##    if punto == -1:
+##        sufijo = ''
+##    else:
+##        sufijo = nombreticket[punto:]
+##    r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
+
     while datosurl == None:
         try:
-            r = urllib2.Request(urldatos, headers=webheaders)
             f = urllib2.urlopen(r)
             # f= urllib.urlopen (urldatos)
             datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le

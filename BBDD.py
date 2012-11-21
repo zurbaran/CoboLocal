@@ -1,17 +1,32 @@
-'''
-Created on 30/10/2012
+# -*- coding: UTF-8 -*-
+####################################################
+# Name:        Cobo.py
+# Purpose:
+#
+# Author:      Antonio
+#
+# Created:     23/07/2012
+# Copyright:   (c) Antonio 2012
+# Licence:     <your licence>
+####################################################
 
-@author: Antonio
-'''
+
+#################################################
+# Constantes locales
+
+#################################################
+
+####################################################
+# modulos estandar importados
+
 from setuptools.command.easy_install import main as install
 import os
 import glob
 from datetime import date, datetime, timedelta
 
-from sql import *
-from sql.aggregate import *
-from sql.conditionals import *
-from enable import null
+# from sql import *
+# from sql.aggregate import *
+# from sql.conditionals import *
 # TODO: implementar la libreria python-sql para generar el codigo sql
 
 try:
@@ -21,7 +36,9 @@ except ImportError:
     import sqlite3  # lint:ok
     install(['-v', 'pysqlite'])
 
-from Cobo import __carpetas__, __difregactualizar__
+####################################################
+# modulos no estandar o propios
+from Cobo import carpetas, difregactualizar
 
 
 def conexion(archivo=None):
@@ -35,9 +52,10 @@ def conexion(archivo=None):
     else:
         ticket = archivo
         ticket = ticket.upper()
-        tickets = ticketlistacodigo(ticket)
-        nombre = ('%s%s' % (ticket, tickets[ticket])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), __carpetas__['Datos'], nombre + ".dat")
+        # tickets = ticketlistacodigo(ticket)
+        # nombre = ('%s%s' % (ticket, tickets[ticket])).replace('.', '_')
+        nombre = ('%s' % ticket).replace('.', '_')
+        archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
 
     try:
         db = sqlite3.connect(os.path.join(archivo))
@@ -100,7 +118,7 @@ def comprobaciones(colaResultado=None):
         print('Tickets con errores : %d' % numeroResultado)
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
-    diaspasados = (datetime.now() - timedelta(days=__difregactualizar__['d'])).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d %H:%M:%S")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     cursor.execute(sql)
@@ -111,7 +129,7 @@ def comprobaciones(colaResultado=None):
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
     # Tickets pendientes de realiar una actualizacion en el historico
-    diaspasados = (datetime.now() - timedelta(days=__difregactualizar__['d'])).strftime("%Y-%m-%d")
+    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
     # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
@@ -205,13 +223,15 @@ def ticketborra(ticket, **config):
 
         if archivos:
             print('Borrando los Archivos de Registro del ticket %s' % ticket)
-            tickets = ticketlistacodigo(ticket)
-            if ticket in tickets:
-                nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
-                for carpeta in __carpetas__.keys():
-                    archivosticket = glob.glob(os.path.join(os.getcwd(), __carpetas__[carpeta], nombre + ".*"))
-                    for archivo in archivosticket:
-                        os.remove(archivo)
+            # tickets = ticketlistacodigo(ticket)
+            # if ticket in tickets:
+            # nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
+            nombre = ('%s' % ticket).replace('.', '_')
+            for carpeta in carpetas.keys():
+                archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas[carpeta], nombre + ".*"))
+                for archivo in archivosticket:
+                    os.remove(archivo)
+
         db.commit()
         db.close()
         print('')
@@ -457,32 +477,33 @@ def datoshistoricosexisten(naccion):
         # que esxiste el archivo
         # que existe la tabla dentro del archivo
     naccion = naccion.upper()
-    tickets = ticketlistacodigo(naccion)
+#    tickets = ticketlistacodigo(naccion)
     existe = False
-    if naccion in tickets:
-        nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), __carpetas__['Datos'], nombre + ".dat")
+#    if naccion in tickets:
+    nombre = ('%s' % naccion).replace('.', '_')
+#        nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
+    archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
 
-        if os.path.exists(archivo):
-            # el archivo que contiene la BBDD de la cotizacion historica existe
-            cursor2, db2 = conexion(naccion)
-            naccion2 = naccion.replace('.', '_')
-            naccion2 = naccion2.replace('-', '_')
-            naccion2 = naccion2.replace('^', 'Indice')
-            sql = ("SELECT name FROM sqlite_master WHERE type='table' and name = 'Ticket_%s'" % naccion2)
-            cursor2.execute(sql)
-            if len(cursor2.fetchall()) > 0:
-                existe = True
-            else:
-                print ('No existe informacion historico descargado')
-            db2.close()
+    if os.path.exists(archivo):
+        # el archivo que contiene la BBDD de la cotizacion historica existe
+        cursor2, db2 = conexion(naccion)
+        naccion2 = naccion.replace('.', '_')
+        naccion2 = naccion2.replace('-', '_')
+        naccion2 = naccion2.replace('^', 'Indice')
+        sql = ("SELECT name FROM sqlite_master WHERE type='table' and name = 'Ticket_%s'" % naccion2)
+        cursor2.execute(sql)
+        if len(cursor2.fetchall()) > 0:
+            existe = True
         else:
-            print ('No existe archivo historico descargado')
+            print ('No existe informacion historico descargado')
+        db2.close()
     else:
-        print ('No existe informacion de cotizaciones en BBDD')
-        # borraTicket (ticket, BBDD=False)
-        # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
-        ticketerror(naccion)
+        print ('No existe archivo historico descargado')
+#    else:
+#        print ('No existe informacion de cotizaciones en BBDD')
+#        # borraTicket (ticket, BBDD=False)
+#        # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
+#        ticketerror(naccion)
 
     return existe
 
@@ -581,7 +602,7 @@ def datoshistoricosactualizacion(naccion):
 # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > __difregactualizar__['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
+    if (desdeultimaactualizacion > difregactualizar['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print('Registro pendiente de una actualizacion desde %s' % (historico[-2][0]))
         return (str(historico[-3][0]), True)
     else:
@@ -651,6 +672,66 @@ def monedacotizaciones(nombreticket, datosurl):
 
         print('Actualizando cotizaciones de : %s' % nombreticket)
         print('Actualizando %s con datos %s' % (nombreticket, datosurl))
+
+
+def listacciones(**config):
+    """
+    """
+    vol = config.get('volumen', 20000000)
+    rent = config.get('rentabilidad', 0.35)
+    inv = config.get('inversion', 900)
+
+    cursor, db = conexion()
+    sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
+       Cobo_componentes.nombre AS Nombre,\
+       Cobo_componentes.mercado AS Mercado,\
+       Cobo_monedas.descripcion AS Moneda,\
+       Cobo_params_operaciones.timing AS Timing,\
+       round( Cobo_params_operaciones.rentabilidad * 100, 2 ) AS Rentabilidad,\
+       round( (  (  (  ( round( ( Cobo_monedas.valor * 200 ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 )  ) * Cobo_params_operaciones.entrada )  ) / Cobo_monedas.valor ) , 2 ) AS InversionEnEuros,\
+       Cobo_params_operaciones.entrada AS Entrada,\
+       Cobo_params_operaciones.salida AS Salida,\
+       round( ( Cobo_monedas.valor * 200 ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 ) AS NumeroAcciones,\
+       Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
+       Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
+       Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
+       Cobo_params_operaciones.precio_fin AS [LT Precio Fin]\
+  FROM Cobo_componentes,\
+       Cobo_mercado_moneda,\
+       Cobo_monedas,\
+       Cobo_params_operaciones\
+ WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl\
+       AND\
+       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo\
+       AND\
+       Cobo_componentes.codigo = Cobo_params_operaciones.codigo\
+       AND\
+        (  (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )\
+           OR\
+        (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
+       AND\
+        ( Cobo_params_operaciones.rentabilidad >= %f\
+           OR\
+       Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) ) )\
+       AND\
+        ( InversionEnEuros >= %d\
+           OR\
+       InversionEnEuros <= -(%d) )\
+       AND\
+       NOT ( Cobo_componentes.mercado = 'Other OTC'\
+           OR\
+           Cobo_componentes.mercado = 'PCX'\
+           OR\
+           Cobo_componentes.mercado = 'IOB'\
+           OR\
+           Cobo_componentes.mercado = 'PSX'\
+           OR\
+       Cobo_componentes.mercado = 'NGM' )\
+ ORDER BY Moneda DESC, Cobo_params_operaciones.rentabilidad DESC, InversionEnEuros DESC" % (vol, vol, rent, rent, rent, inv, inv))
+    cursor.execute(sql)
+    resultado = cursor.fetchall()
+    db.close()
+    return resultado
 
 
 if __name__ == '__main__':
