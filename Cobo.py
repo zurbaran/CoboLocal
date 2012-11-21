@@ -11,59 +11,57 @@
 ####################################################
 
 
+#################################################
+# Constantes locales
+
+setdefaultencoding = ('UTF-8')
+# sys.setdefaultencoding('UTF-8')
+# locale.setlocale(locale.LC_ALL, "")
+sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
+    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS',
+    '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG',
+    '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
+carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
+    'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
+# Expresa la diferencia entre los registros para hacer una actualizacion
+difregactualizar = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
+backtestoperacionessospechosas = 1.50
+
+
 ####################################################
 # modulos estandar importados
 
 # import urllib
-
 from collections import deque
 from datetime import date, datetime  # , timedelta
-from random import randint
-from time import sleep
 import csv
 import glob
 import logging
 import os
-
-import indicador
-import BBDD
-import yahoofinance
-
-import HTML
-# TODO: implementar la libreria HTML para generar archivos en formato html de las consultas/resultados de la BBDD
-
 # from adodbapi.adodbapi import type
 # import traceback
 # from decimal import Decimal
 # import sys
 # import locale
 
-#################################################
-setdefaultencoding = ('UTF-8')
-# sys.setdefaultencoding('UTF-8')
-# locale.setlocale(locale.LC_ALL, "")
-
-
-#################################################
-# Constantes locales
-
-sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
-    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS',
-    '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG',
-    '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
-__carpetas__ = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
-    'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
-# Expresa la diferencia entre los registros para hacer una actualizacion
-__difregactualizar__ = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
-backtestoperacionessospechosas = 1.50
-
 # import logging.config
-__ARCHIVO_LOG__ = os.path.join(os.getcwd(), __carpetas__['Log'], "general.log")
+ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
 # logging.config.fileConfig(ARCHIVO_LOG)
 # logging.basicConfig(filename = ARCHIVO_LOG)
 # logging.captureWarnings(True)
 # basic setup with ISO 8601 time format
-logging.basicConfig(filename=__ARCHIVO_LOG__,
+
+
+####################################################
+# modulos no estandar o propios
+import indicador
+import BBDD
+import yahoofinance
+import HTML
+# TODO: implementar la libreria HTML para generar archivos en formato html de las consultas/resultados de la BBDD
+
+
+logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
 logging.debug('\n')
@@ -107,16 +105,6 @@ def _test():
     # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
     # Externalizar los test
     # doctest.testfile('example2.txt')
-
-
-def duerme(tiempo=1500):
-    """
-
-    """
-    x = (randint(0, tiempo)) / 1000.0
-    print('Pausa de %.3f segundos' % x)
-    sleep(x)
-    print('')
 
 
 def analisisAlcistaAccion(naccion, **config):
@@ -383,7 +371,7 @@ def analisisAlcistaAccion(naccion, **config):
                         try:
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTi en analisisAlcistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de minimoLTi: %s' \
+                            logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s' \
                                           % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, minimoLTi))
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
@@ -431,7 +419,7 @@ def analisisAlcistaAccion(naccion, **config):
                         try:
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTf en analisisAlcistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de minimoLTi: %s' \
+                            logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s' \
                                           % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, minimoLTi))
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
@@ -547,7 +535,7 @@ def analisisAlcistaAccion(naccion, **config):
     if len(analisisalcista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), __carpetas__["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
+        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisalcista:
@@ -843,7 +831,7 @@ def analisisBajistaAccion(naccion, **config):
                         try:
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTi en analisisBajistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de maximoLTi: %s' \
+                            logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s' \
                                           % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, maximoLTi))
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
@@ -893,7 +881,7 @@ def analisisBajistaAccion(naccion, **config):
                             # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTf en analisisBajistaAccion; Accion: %s; timming: %s; FechaLTi: %s; Fecha de la barra donde se produce el Error: %s; con un valor de maximoLTi: %s' \
+                            logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s' \
                                           % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, maximoLTi))
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
@@ -1002,7 +990,7 @@ def analisisBajistaAccion(naccion, **config):
     if len(analisisbajista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), __carpetas__["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
+        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisbajista:
@@ -1080,7 +1068,7 @@ def historicoTicket(nombreticket, **config):
         print('Ticket %s nuevo, descarga completa del historico de la accion' % nombreticket)
 #        for timmingdescargado in 'dwm':
         accioninvalida = yahoofinance.descargaHistoricoAccion(nombreticket, timming='d', txt=False)
-        duerme()
+        yahoofinance.duerme()
         if accioninvalida == 'URL invalida':
             BBDD.ticketborra(nombreticket)
 
@@ -1093,13 +1081,13 @@ def historicoTicket(nombreticket, **config):
         if actualizaractualizar:  # and (desdefechamodificacionarchivo(datosaccion)):
 
             accioninvalida = yahoofinance.descargaHistoricoAccion(nombreticket, fechaini=fechaactualizar, timming='d', actualizar=actualizaractualizar, txt=False)
-            duerme()
+            yahoofinance.duerme()
 
             if accioninvalida == 'Pago Dividendos':
                 BBDD.ticketborra(nombreticket, BBDD=False)
                 print('Reintento de la descarga, el error puede venir de un pago de Dividendos')
                 accioninvalida = yahoofinance.descargaHistoricoAccion(nombreticket, timming='d', txt=False)
-                duerme()
+                yahoofinance.duerme()
                 # despues de haber actualizado, volvemos a comprobarlo, si se da que si, la accion dejo de cotizar hace mucho.
                 # existe un caso especifico que es cuando comprobamos la actualizacion de datos de una accion y esta tiene menos de 3 periodos en el timming en que estemos trabajando, la funcion actualizacionDatosHisAccion la trata de forma especial, devolviendo (None, timming, True), para que con estos parametros la funcion descargaHistoricosAccion descarge todo el historico otra vez
                 # por esta razon en el siguiente if comprobamos con fechaactualizar2!=None que no sea este caso.
@@ -1110,7 +1098,7 @@ def historicoTicket(nombreticket, **config):
                     fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
                     desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
 
-                    if borranoactualizados and desdeultimaactualizacion > __difregactualizar__['noActualizados']:
+                    if borranoactualizados and desdeultimaactualizacion > difregactualizar['noActualizados']:
                         accioninvalida = 'URL invalida'
                         BBDD.ticketborra(nombreticket)
                     else:
@@ -1124,7 +1112,7 @@ def historicoTicket(nombreticket, **config):
 def analisisTicket(nombreticket):
     """
     """
-
+    cursor, db = BBDD.conexion()
     nombreticket = (nombreticket.upper(),)
     cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
     registro = cursor.fetchall()
@@ -1275,6 +1263,7 @@ def analisisTicket(nombreticket):
         cursor.execute(sql)
 
     db.commit()
+    db.close()
 
 
 def pidedato(texto, tipodato):
@@ -1332,6 +1321,7 @@ def ticketsexcluidos(sufijosexcluidos):
     """
     Elimina los Tickets de los mercados que no nos interesan
     """
+    cursor, db = BBDD.conexion()
     for n in sufijosexcluidos:
         sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `nombre` LIKE '%" + n + "'"
         cursor.execute(sql)
@@ -1345,12 +1335,13 @@ def ticketsexcluidos(sufijosexcluidos):
                 ticket = listatickets.popleft()
                 print ('Quedan por borrar %d tickets' % len(listatickets))
                 BBDD.ticketborra(ticket)
+    db.close()
 
 
 def main():
 
-    for carpeta in __carpetas__.keys():
-        nombrecarpeta = os.path.join(os.getcwd(), __carpetas__[carpeta])
+    for carpeta in carpetas.keys():
+        nombrecarpeta = os.path.join(os.getcwd(), carpetas[carpeta])
         if not os.path.exists(nombrecarpeta):
             os.mkdir(nombrecarpeta)
             # os.path.dirname
@@ -1358,12 +1349,13 @@ def main():
     opcion = None
     while True:
 
-        cursor, db = BBDD.conexion()
+        #cursor, db = BBDD.conexion()
         tickets = BBDD.ticketlistacodigo()
         mercados = BBDD.mercadoslista()
 
         ticketsexcluidos(sufijosexcluidos)
         BBDD.comprobaciones()
+        #db.close()
 
         print('')
         if opcion == None:
@@ -1408,9 +1400,9 @@ def main():
             '------------------------------',
             'V) Exportar datos a arhivos csv',
             'W) Dar de alta acciones desde archivo',
+            'X) Generar Lista de acciones',
             '------------------------------',
             '',
-            'X) Guardar Datos',
             'Z) Salir'))
             print('')
         opcion, seleccion = opciones[iopciones]
@@ -1419,7 +1411,7 @@ def main():
 # 'A) Alta/Actualizar/Descargar/Analizar Datos de 1 Ticket'
         if opcion == 'a':
             print(seleccion)
-
+            cursor, db = BBDD.conexion()
             naccion = raw_input('Introduce ticket de la accion : ').upper()
             naccion = (naccion,)
             # Primero lo borramos
@@ -1442,6 +1434,7 @@ def main():
 
             # Analizamos la accion
             analisisTicket(naccion[0])
+            db.close()
 
 #        'C) Analizar Datos de 1 Ticket',
         elif opcion == 'c':
@@ -1505,7 +1498,7 @@ def main():
 #        'E) Generar Archivos Grafico'
         elif opcion == 'e':
             print(seleccion)
-
+            cursor, db = BBDD.conexion()
             while True:
                 ticket = raw_input('Introduce ticket de la accion : ').upper()
                 if BBDD.datoshistoricosexisten(ticket):
@@ -1530,7 +1523,7 @@ def main():
             elif timming == '3' or timming == '' or timming == ' ':
                 datos = yahoofinance.subirtimming(datos, timming='m')
 
-            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "data.csv")
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "data.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datos:
@@ -1538,7 +1531,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "metatrader.csv")
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "metatrader.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
             j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n')
@@ -1550,7 +1543,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], 'metastock.csv')
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], 'metastock.csv')
             j = open(archivo, 'w')
             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
@@ -1571,7 +1564,7 @@ def main():
 
             datosMME = indicador.MME(datos, MME=MMEdatos)
 
-            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "MME.csv")
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "MME.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosMME:
@@ -1587,12 +1580,13 @@ def main():
 
             datosTAR = indicador.TAR(datos, TAR=TARdatos)
 
-            archivo = os.path.join(os.getcwd(), __carpetas__['Graficos'], "TAR.csv")
+            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "TAR.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosTAR:
                 writercsv.writerow(n)
             j.close()
+            db.close()
 
 #        'F) Listar Tickets Mercados',
         elif opcion == 'f':
@@ -1653,6 +1647,7 @@ def main():
 #        'I) Actualizar cotizaciones monedas
         elif opcion == 'i':
             print(seleccion)
+            cursor, db = BBDD.conexion()
             sql = "SELECT `url_Inet` FROM `Cobo_monedas`"
             cursor.execute(sql)
             urlmonedas = cursor.fetchall()
@@ -1662,8 +1657,9 @@ def main():
             while len(urlmonedas) > 0:
                 moneda = urlmonedas.popleft()
                 yahoofinance.cotizacionesMoneda(moneda)
-                duerme()
+                yahoofinance.duerme()
                 print('Quedan por actualizar un total de : %d' % len(urlmonedas))
+            db.close()
 
 #        'L) Listar Tickets',
         elif opcion == 'l':
@@ -1710,7 +1706,7 @@ def main():
                 yahoofinance.cotizacionesTicket(ticket)
 
                 print('Quedan por actualizar un total de : %d' % len(listatickets))
-                duerme()
+                yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
         elif opcion == 'o':
@@ -1742,7 +1738,7 @@ def main():
         elif opcion == 'q':
             # Q) Analizar Datos de todos los Tickets',
             print(seleccion)
-
+            cursor, db = BBDD.conexion()
             sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
@@ -1757,6 +1753,7 @@ def main():
                 print('Analizando ticket %s' % ticket)
 
                 analisisTicket(ticket)
+            db.close()
 
 #        'S) BackTest
         elif opcion == 's':
@@ -1946,6 +1943,7 @@ def main():
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
             # obtenemos la lista de las monedas
+            cursor, db = BBDD.conexion()
             sql = "SELECT `codigo` FROM `Cobo_monedas`"
             cursor.execute(sql)
             resultado = cursor.fetchall()
@@ -1969,6 +1967,7 @@ def main():
             # sql = "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE '" + moneda + "') ORDER BY `Cobo_componentes`.`tiket` ASC"
             resultado = cursor.fetchall()
             cuentaatras = len(resultado)
+            db.close()
             for registro in resultado:
                 # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
                 _codigo, nombre, ticket, mercado, _max52, _maxDia, _min52, _minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
@@ -2254,7 +2253,7 @@ def main():
                 inversionTotal = 0
                 inversionrecuperadaTotal = 0
 
-                archivobacktest = os.path.join(os.getcwd(), __carpetas__['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
+                archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
                 j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
                 # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
@@ -2386,8 +2385,9 @@ def main():
         elif opcion == 'v':
             print (seleccion)
             print ('Limpiando Directorio')
-            # os.remove(glob.glob(os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + "*.*")))
-            archivosticket = glob.glob(os.path.join(os.getcwd(), __carpetas__['Historicos'], "*.*"))
+            cursor, db = BBDD.conexion()
+            # os.remove(glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*")))
+            archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], "*.*"))
             for archivo in archivosticket:
                 os.remove(archivo)
             del archivosticket
@@ -2401,6 +2401,7 @@ def main():
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
             ticketsnodescargados = []
+            db.close()
             # for ticket in listatickets:
             while len(listatickets) > 0:
                 ticket, _codigo, naccion = listatickets.popleft()
@@ -2425,7 +2426,7 @@ def main():
                         if len(datosaccion) > 0:
                             nombre = (str(ticket)).replace('.', '_')
                             # nombre = (str(ticket) + str(codigo)).replace('.', '_')
-                            archivo = os.path.join(os.getcwd(), __carpetas__['Historicos'], nombre + '.' + timming + '.csv')
+                            archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
                             j = open(archivo, 'w')
                             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
                             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
@@ -2481,7 +2482,7 @@ def main():
             f = open(archivowtickers, "r")
             lineas = f.readlines()
             f.close()
-
+            cursor, db = BBDD.conexion()
             for naccion in lineas:
                 naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
                 # incluir = True
@@ -2512,16 +2513,58 @@ def main():
                 #        incluidos += 1
             db.commit()
             print ('Tickets Anadidos a la BBDD : %d' % incluidos)
+            db.close()
 
+        # x) Generar lista de acciones
         elif opcion == 'x':
             print(seleccion)
-            print('Funcion desabilitada')
-#            ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
-#            datos = {'tickets':tickets, 'mercados':mercados}
-#            codificado=pickle.dumps(datos)
-#            f=open(ficheroDatos,"w")
-#            f.write(codificado)
-#            f.close()
+
+            ficheroDatos = os.path.join(os.getcwd(), str(date.today()) + '.html')
+            vol = raw_input('Volumen minimo (20000000)?')
+            if vol == '':
+                vol = 20000000
+            else:
+                vol = int(vol)
+            rent = raw_input('rentabilidad minima (0.35)?')
+            if rent == '':
+                rent = 0.35
+            else:
+                rent = float(rent)
+            inv = raw_input('inversion minima (900E)?')
+            if inv == '':
+                inv = 900
+            else:
+                inv = int(inv)
+
+            resultado = BBDD.listacciones(volumen=vol, rentabilidad=rent, inversion=inv)
+
+            f = open(ficheroDatos, "w")
+            htmlcode = HTML.table(resultado, header_row=['Ticket',
+                                           'Nombre',
+                                           'Mercado',
+                                           'Moneda',
+                                           'Timming',
+                                           'Rentabilidad',
+                                           'Inversion en Euros',
+                                           'Entrada',
+                                           'Salida',
+                                           'Numero Acciones',
+                                           'LT Fecha Ini',
+                                           'LT Precio Ini',
+                                           'LT Fecha Fin',
+                                           'LT Precio Fin'])
+#             for n in resultado:
+#                 ticket, nombre, mercado, moneda, timming, rentabilidad, inversion, entrada, salida, numeroacc, LTFIni, LTPIni, LTFFin, LTFPFin = n
+#                 if rentabilidad >= 0.0:
+#                     color = 'Green'
+#                 else:
+#                     color = 'Red'
+#                 colored_n = HTML.TableCell(ticket, nombre, mercado, moneda, timming, rentabilidad, inversion, entrada, salida, numeroacc, LTFIni, LTPIni, LTFFin, LTFPFin, bgcolor=color)
+#                 htmlcode.rows.append(colored_n)
+#                 # table.rows.append(colored_n)
+#             htmlcode = str(htmlcode)
+            f.write(htmlcode)
+            f.close()
 #
 #
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
@@ -2533,12 +2576,12 @@ def main():
     # os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
         elif opcion == 'z':
 
-            cursor.close()
-            db.close()
+            #cursor.close()
+            #db.close()
             break
 
 ############################################################
 # programa principal
 if __name__ == '__main__':
-    cursor, db = BBDD.conexion()
+    #cursor, db = BBDD.conexion()
     main()

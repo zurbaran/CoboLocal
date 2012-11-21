@@ -1,3 +1,15 @@
+# -*- coding: UTF-8 -*-
+####################################################
+# Name:        indicador.py
+# Purpose:
+#
+# Author:      Antonio
+#
+# Created:     23/07/2012
+# Copyright:   (c) Antonio 2012
+# Licence:     <your licence>
+####################################################
+
 """
 Ejemplos de datos tomados en la accion ticket MSG
 
