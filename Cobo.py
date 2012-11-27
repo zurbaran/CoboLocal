@@ -1349,13 +1349,13 @@ def main():
     opcion = None
     while True:
 
-        #cursor, db = BBDD.conexion()
+        # cursor, db = BBDD.conexion()
         tickets = BBDD.ticketlistacodigo()
         mercados = BBDD.mercadoslista()
 
         ticketsexcluidos(sufijosexcluidos)
         BBDD.comprobaciones()
-        #db.close()
+        # db.close()
 
         print('')
         if opcion == None:
@@ -1392,9 +1392,6 @@ def main():
             '------------------------------',
             'S) BackTest',
             '',
-            'Cambiar sistema de analisis',
-            '------------------------------',
-            'T) Cooper',
             '',
             'Acciones Masivas',
             '------------------------------',
@@ -2092,12 +2089,29 @@ def main():
 
                             if estrategia == 'Alcista':
                                 if precioinicial == 0.0:
-                                    precioinicial = 0.000001
-                                rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                                    precioinicial = 0.01
+                                try:
+                                    rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                                except (OverflowError, ZeroDivisionError) as e:
+                                    logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                  % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                    if rentabilidad0:
+                                        rentabilidad = rentabilidadminima
+                                    else:
+                                        rentabilidad = 0.00
+
                             elif estrategia == 'Bajista':
                                 if preciofinal == 0.0:
-                                    preciofinal = 0.000001
-                                rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                                    preciofinal = 0.01
+                                try:
+                                    rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+                                except (OverflowError, ZeroDivisionError) as e:
+                                    logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                  % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                    if rentabilidad0:
+                                        rentabilidad = rentabilidadminima
+                                    else:
+                                        rentabilidad = 0.00
 
                         # calculamos el volumen
                         volumenoperacion = 0
@@ -2248,8 +2262,8 @@ def main():
                 cuentaatras -= 1
 
             if len(backtest) > 0:
-                positivas = 0
-                negativas = 0
+                positivas = []
+                negativas = []
                 inversionTotal = 0
                 inversionrecuperadaTotal = 0
 
@@ -2301,10 +2315,10 @@ def main():
 
                     # writercsv.writerow(n)
 
-                    if balance >= 0:
-                        positivas += 1
-                    elif balance < 0:
-                        negativas += 1
+                    if balance > 0:
+                        positivas.append(balance)
+                    elif balance <= 0:
+                        negativas.append(balance)
 
                     inversionTotal = inversionTotal + inversion
                     inversionrecuperadaTotal = inversionrecuperadaTotal + inversionrecuperada
@@ -2346,28 +2360,36 @@ def main():
 
                 j.write('Resultado: \n')
                 j.write('Numero de operaciones totales: %d\n' % (len(backtest)))
-                j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (positivas, (((positivas * 1.0) / (len(backtest))) * 100))).replace('.', ','))
-                j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (negativas, (((negativas * 1.0) / (len(backtest))) * 100))).replace('.', ','))
+                j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (len(positivas), (((len(positivas) * 1.0) / (len(backtest))) * 100))).replace('.', ','))
+                j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (len(negativas), (((len(negativas) * 1.0) / (len(backtest))) * 100))).replace('.', ','))
+                j.write(('Ganancia Media : %.2f\n' % (sum(positivas) / (len(positivas) * 1.0))).replace('.', ','))
+                j.write(('Perdida Media : %.2f\n' % (sum(negativas) / (len(negativas) * 1.0))).replace('.', ','))
                 j.write(('Inversion Total : %.2f\n' % inversionTotal).replace('.', ','))
                 j.write(('Inversion Recuperada : %.2f\n' % inversionrecuperadaTotal).replace('.', ','))
                 if estrategia == 'Alcista':
                     j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)).replace('.', ','))
                 elif estrategia == 'Bajista':
                     j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)).replace('.', ','))
+                j.write(('Esperanza Matematica : %.2f\n' % ((((len(positivas) * 1.0) / (len(backtest))) * ((sum(positivas) / (len(positivas) * 1.0)))) -
+                                                            ((len(negativas) * 1.0) / (len(backtest))) * ((sum(negativas) / (len(negativas) * 1.0))))).replace('.', ','))
 
                 j.close()
 
                 print('')
                 print('Resultado: ')
                 print(('Numero de operaciones totales: %d' % (len(backtest))))
-                print(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (positivas, (((positivas * 1.0) / (len(backtest))) * 100))))
-                print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (negativas, (((negativas * 1.0) / (len(backtest))) * 100))))
+                print(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (((len(positivas) * 1.0) / (len(backtest))) * 100))))
+                print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (((len(negativas) * 1.0) / (len(backtest))) * 100))))
+                print(('Ganancia Media : %.2f' % (sum(positivas) / (len(positivas) * 1.0))))
+                print(('Perdida Media : %.2f' % (sum(negativas) / (len(negativas) * 1.0))))
                 print(('Inversion Total : %.2f' % inversionTotal))
                 print(('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
                 if estrategia == 'Alcista':
                     print(('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
                 elif estrategia == 'Bajista':
                     print(('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
+                print(('Esperanza Matematica : %.2f' % ((((len(positivas) * 1.0) / (len(backtest))) * ((sum(positivas) / (len(positivas) * 1.0)))) -
+                                                            ((len(negativas) * 1.0) / (len(backtest))) * ((sum(negativas) / (len(negativas) * 1.0))))))
                 print('')
             else:
                 raw_input('Backtest no realizado')
@@ -2375,11 +2397,12 @@ def main():
 #            'Cambiar sistema de analisis',
 #            '------------------------------',
 #            'T) Cooper',
-        elif opcion == 't':
-            print(seleccion)
-            # del analisisAlcistaAccion, analisisBajistaAccion
-            # from Cooper import analisisAlcistaAccion, analisisBajistaAccion
-            print('Cambiado todos los sistemas de analisis al sistema de Cooper')
+#         elif opcion == 't':
+#             print(seleccion)
+#             del analisisAlcistaAccion, analisisBajistaAccion
+#             from Cooper import analisisAlcistaAccion, analisisBajistaAccion
+#             global analisisAlcistaAccion, analisisBajistaAccion
+#             print('Cambiado todos los sistemas de analisis al sistema de Cooper')
 
 #        'V) Exportar datos a arhivos csv',
         elif opcion == 'v':
@@ -2576,12 +2599,12 @@ def main():
     # os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
         elif opcion == 'z':
 
-            #cursor.close()
-            #db.close()
+            # cursor.close()
+            # db.close()
             break
 
 ############################################################
 # programa principal
 if __name__ == '__main__':
-    #cursor, db = BBDD.conexion()
+    # cursor, db = BBDD.conexion()
     main()
