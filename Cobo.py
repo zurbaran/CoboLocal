@@ -18,9 +18,16 @@ setdefaultencoding = ('UTF-8')
 # sys.setdefaultencoding('UTF-8')
 # locale.setlocale(locale.LC_ALL, "")
 sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
-    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL', '.KQ', '.KS',
-    '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB', '.NYM', '.NZ', '.SA', '.SG',
-    '.SI', '.SN', '.SS', '.SZ', '.TA', '.TW', '.TWO', '.VA',)
+                    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
+                    '.KQ', '.KS', '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB',
+                    '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ',
+                    '.TA', '.TW', '.TWO', '.VA', '.VX',)
+mercadosexcluidos = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
+                     'OTC BB', 'IOB', 'CDNX', 'VTX', 'MDD', 'ENX', 'PSX', 'Madrid',
+                     'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
+                     'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
+                     'FSI', 'EUX')
+
 carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
 # Expresa la diferencia entre los registros para hacer una actualizacion
@@ -1757,10 +1764,8 @@ def main():
             # ticket='AAPL'
             print(seleccion)
             backtest = []
-            monedas = []
 
             print('Parametros del backtest, entre parentesis valor por defecto: ')
-
 #            analizardesde=raw_input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
 #            if analizardesde=='':
 #                analizardesde=False
@@ -1941,7 +1946,8 @@ def main():
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
             # obtenemos la lista de las monedas
             cursor, db = BBDD.conexion()
-            sql = "SELECT `codigo` FROM `Cobo_monedas`"
+            monedas = []
+            sql = "SELECT Cobo_monedas.codigo FROM Cobo_monedas"
             cursor.execute(sql)
             resultado = cursor.fetchall()
             # lo mostramos en una lista
@@ -1951,13 +1957,26 @@ def main():
                 monedas.append(mon[0])
 
             while True:
-                moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest : ')
+                moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest, para hacerlo por mercado pulsa intro : ')
                 if moneda == '' or moneda == None:
-                    moneda = ((raw_input('Introduce sufijo de tickets del mercado en la que se hace el backtest : ')).upper(),)
-                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and `Cobo_componentes`.`tiket` LIKE ? ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
+                    monedas = []
+                    sql = "SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda ORDER BY Cobo_mercado_moneda.nombreUrl ASC"
+                    cursor.execute(sql)
+                    resultado = cursor.fetchall()
+                    # lo mostramos en una lista
+                    # nos pide la moneda a buscar y la convertimos en la variable de la siguiente consulta con la que obtenemos la lista de tickes para hacer el backtest
+                    for mon in resultado:
+                        print((mon)[0])
+                        monedas.append(mon[0])
+                    while True:
+                        moneda = raw_input('Introduce nombre del mercado en la que se hace el backtest, recuerda escribirlo exactamente igual : ')
+                        if moneda in monedas:
+                            cursor.execute("SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' AND Cobo_componentes.tiket NOT LIKE '^%' AND Cobo_componentes.mercado LIKE ? ORDER BY Cobo_componentes.tiket ASC", (moneda,))
+                            break
                     break
-                if moneda in monedas:
-                    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' and `Cobo_componentes`.`tiket` NOT LIKE '^%' and`Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE ?) ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
+                elif moneda in monedas:
+                    sql = "SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' and Cobo_componentes.tiket NOT LIKE '^%' and Cobo_componentes.mercado IN (SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?) and Cobo_componentes.mercado not IN " + str(mercadosexcluidos) + " ORDER BY Cobo_componentes.tiket ASC"
+                    cursor.execute(sql, (moneda,))
                     break
 
             # consulta en la tabla componentes que pertenecen a los mercados de una moneda
