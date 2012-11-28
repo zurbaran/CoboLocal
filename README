@@ -11,4 +11,8 @@ Probar las librerias http://code.google.com/p/ultra-finance/
 					
 TODO:
 	Graficar usando la libreria matplotlib
-	barajar la posibilidad de en vez de utilizar archivos pickle para guardar los historicos, hacerlo en una BBDD sqlite, ver archivo de la documentacion "YahooSqlite.py"
+	Utilizar la libreria python-sql para generar el SQL
+	Utilizar la libreria HTML para generar informes en html
+	
+	Crear relacion entre sufijo de ticket con el prefijo de yahoo.finance.com
+	ABE.MC	http://es.finance.yahoo.com
