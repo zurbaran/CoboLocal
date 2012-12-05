@@ -166,21 +166,21 @@ def analisisAlcistaAccion(naccion, **config):
             if TAR == False:
                 filtro = 0.01
             else:
-                filtro = 3.5
+                filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
-                filtro = 2.5
+                filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
             else:
-                filtro = 1.5
+                filtro = 2.5
 
     analisisalcista = []
     listastoploss = []
@@ -624,21 +624,21 @@ def analisisBajistaAccion(naccion, **config):
             if TAR == False:
                 filtro = 0.01
             else:
-                filtro = 3.5
+                filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
-                filtro = 2.5
+                filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
             else:
-                filtro = 1.5
+                filtro = 2.5
 
     analisisbajista = []
     listastoploss = []
