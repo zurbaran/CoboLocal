@@ -712,7 +712,9 @@ def listacciones(**config):
        AND\
         ( Cobo_params_operaciones.rentabilidad >= %f\
            OR\
-       Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) ) )\
+       Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) )\
+           OR\
+       Cobo_params_operaciones.rentabilidad = 0.0 )\
        AND\
         ( InversionEnEuros >= %d\
            OR\
