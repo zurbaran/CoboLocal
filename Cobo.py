@@ -166,21 +166,21 @@ def analisisAlcistaAccion(naccion, **config):
             if TAR == False:
                 filtro = 0.01
             else:
-                filtro = 3.5
+                filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
-                filtro = 2.5
+                filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
             else:
-                filtro = 1.5
+                filtro = 2.5
 
     analisisalcista = []
     listastoploss = []
@@ -624,21 +624,21 @@ def analisisBajistaAccion(naccion, **config):
             if TAR == False:
                 filtro = 0.01
             else:
-                filtro = 3.5
+                filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.02
             else:
-                filtro = 2.5
+                filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
                 filtro = 0.03
             else:
-                filtro = 1.5
+                filtro = 2.5
 
     analisisbajista = []
     listastoploss = []
@@ -2397,18 +2397,19 @@ def main():
                 print('')
                 print('Resultado: ')
                 print(('Numero de operaciones totales: %d' % (len(backtest))))
-                print(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (((len(positivas) * 1.0) / (len(backtest))) * 100))))
-                print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (((len(negativas) * 1.0) / (len(backtest))) * 100))))
-                print(('Ganancia Media : %.2f' % (sum(positivas) / (len(positivas) * 1.0))))
-                print(('Perdida Media : %.2f' % (sum(negativas) / (len(negativas) * 1.0))))
+                print(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0 ) * 100)))
+                print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0 ) * 100)))
+                print(('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0)))
+                print(('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0)))
                 print(('Inversion Total : %.2f' % inversionTotal))
                 print(('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
                 if estrategia == 'Alcista':
                     print(('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
                 elif estrategia == 'Bajista':
                     print(('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
-                print(('Esperanza Matematica : %.2f' % ((((len(positivas) * 1.0) / (len(backtest))) * ((sum(positivas) / (len(positivas) * 1.0)))) -
-                                                            ((len(negativas) * 1.0) / (len(backtest))) * ((sum(negativas) / (len(negativas) * 1.0))))))
+                print('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0 ) * (sum(positivas) / len(positivas) * 1.0)) -
+                                                       ((len(negativas) * 1.0 / len(backtest) * 1.0 ) * (sum(negativas) / len(negativas) * 1.0)))
+                      )
                 print('')
             else:
                 raw_input('Backtest no realizado')
