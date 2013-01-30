@@ -2397,12 +2397,12 @@ def main():
                     j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)
                              ).replace('.', ','))
                 j.write(('Esperanza Matematica : %.2f\n' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
-                                                            ((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))
+                                                            abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))
                          ).replace('.', ','))
-                j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))
+                j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))
                          ).replace('.', ','))
-                j.write(('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / (sum(negativas) / (len(negativas) * 1.0))))
-                                                                                          / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))))
+                j.write(('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+                                                                                          / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
                          ).replace('.', ','))
                 j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
                         ).replace('.', ','))
@@ -2422,9 +2422,10 @@ def main():
                 elif estrategia == 'Bajista':
                     print('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100))
                 print('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
-                                                       ((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0))))
-                print('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0))))
-                print('minimo de % aciertos para no perder con el sistema : %.2f\n' % (1.0 + (comision / (sum(negativas) / (len(negativas) * 1.0)))) / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))))
+                                                       abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0))))
+                print('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))
+                print('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))))
                 print('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0))
                 print('')
             else:
