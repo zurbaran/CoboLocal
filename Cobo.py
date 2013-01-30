@@ -65,8 +65,6 @@ import indicador
 import BBDD
 import yahoofinance
 import HTML
-# TODO: implementar la libreria HTML para generar archivos en formato html de las consultas/resultados de la BBDD
-
 
 logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
@@ -1765,6 +1763,9 @@ def main():
             print(seleccion)
             backtest = []
 
+            # TODO: posiblemente interese convertirlo en una variable, en consecuencia habria que restarle esta cantidad a todas las operaciones
+            comision = 25.0
+
             print('Parametros del backtest, entre parentesis valor por defecto: ')
 #            analizardesde=raw_input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
 #            if analizardesde=='':
@@ -2378,38 +2379,53 @@ def main():
                     j.write('\n')
 
                 j.write('Resultado: \n')
-                j.write('Numero de operaciones totales: %d\n' % (len(backtest)))
-                j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (len(positivas), (((len(positivas) * 1.0) / (len(backtest))) * 100))).replace('.', ','))
-                j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (len(negativas), (((len(negativas) * 1.0) / (len(backtest))) * 100))).replace('.', ','))
-                j.write(('Ganancia Media : %.2f\n' % (sum(positivas) / (len(positivas) * 1.0))).replace('.', ','))
-                j.write(('Perdida Media : %.2f\n' % (sum(negativas) / (len(negativas) * 1.0))).replace('.', ','))
+                j.write('Numero de operaciones totales: %d\n' % len(backtest))
+                j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)
+                         ).replace('.', ','))
+                j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)
+                         ).replace('.', ','))
+                j.write(('Ganancia Media : %.2f\n' % (sum(positivas) / (len(positivas) * 1.0))
+                         ).replace('.', ','))
+                j.write(('Perdida Media : %.2f\n' % (sum(negativas) / (len(negativas) * 1.0))
+                         ).replace('.', ','))
                 j.write(('Inversion Total : %.2f\n' % inversionTotal).replace('.', ','))
                 j.write(('Inversion Recuperada : %.2f\n' % inversionrecuperadaTotal).replace('.', ','))
                 if estrategia == 'Alcista':
-                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)).replace('.', ','))
+                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)
+                             ).replace('.', ','))
                 elif estrategia == 'Bajista':
-                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)).replace('.', ','))
-                j.write(('Esperanza Matematica : %.2f\n' % ((((len(positivas) * 1.0) / (len(backtest))) * ((sum(positivas) / (len(positivas) * 1.0)))) -
-                                                            ((len(negativas) * 1.0) / (len(backtest))) * ((sum(negativas) / (len(negativas) * 1.0))))).replace('.', ','))
-
+                    j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)
+                             ).replace('.', ','))
+                j.write(('Esperanza Matematica : %.2f\n' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
+                                                            ((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))
+                         ).replace('.', ','))
+                j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))
+                         ).replace('.', ','))
+                j.write(('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / (sum(negativas) / (len(negativas) * 1.0))))
+                                                                                          / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))))
+                         ).replace('.', ','))
+                j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
+                        ).replace('.', ','))
                 j.close()
 
                 print('')
                 print('Resultado: ')
-                print(('Numero de operaciones totales: %d' % (len(backtest))))
-                print(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0 ) * 100)))
-                print(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0 ) * 100)))
-                print(('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0)))
-                print(('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0)))
-                print(('Inversion Total : %.2f' % inversionTotal))
-                print(('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
+                print('Numero de operaciones totales: %d' % (len(backtest)))
+                print('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100))
+                print('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100))
+                print('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0))
+                print('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0))
+                print('Inversion Total : %.2f' % inversionTotal)
+                print('Inversion Recuperada : %.2f' % inversionrecuperadaTotal)
                 if estrategia == 'Alcista':
-                    print(('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
+                    print('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100))
                 elif estrategia == 'Bajista':
-                    print(('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
-                print('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0 ) * (sum(positivas) / len(positivas) * 1.0)) -
-                                                       ((len(negativas) * 1.0 / len(backtest) * 1.0 ) * (sum(negativas) / len(negativas) * 1.0)))
-                      )
+                    print('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100))
+                print('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
+                                                       ((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0))))
+                print('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0))))
+                print('minimo de % aciertos para no perder con el sistema : %.2f\n' % (1.0 + (comision / (sum(negativas) / (len(negativas) * 1.0)))) / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / (sum(negativas) / (len(negativas) * 1.0)))))
+                print('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0))
                 print('')
             else:
                 raw_input('Backtest no realizado')
