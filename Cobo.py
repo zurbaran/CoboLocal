@@ -1603,7 +1603,7 @@ def main():
             mercado = raw_input('Introduce ticket del mercado a anadir : ').upper()
             mercado = mercado.replace('@%5E', '^')
             mercado = (mercado,)
-            # TODO : añadir un mercado o dehabilitar y hacerlo directamente en la BBDD
+            # TODO : anadir un mercado o dehabilitar y hacerlo directamente en la BBDD
 #            if not (mercado[0] in mercados):
 #                sql = "SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo` ='MERCADOS_OBTENER_COMPONENTES')"
 #                cursor.execute(sql)
@@ -1639,7 +1639,7 @@ def main():
             print(seleccion)
             mercado = raw_input('Introduce ticket del mercado a borrar : ').upper()
             mercado = mercado.replace('@%5E', '^')
-            # TODO : añadir un mercado o dehabilitar y hacerlo directamente en la BBDD
+            # TODO : anadir un mercado o dehabilitar y hacerlo directamente en la BBDD
 #            if not (mercado in mercados):
 #                print(('El mercado %s no existe en la lista de mercados' % mercado))
 #            else:
@@ -2424,11 +2424,11 @@ def main():
                     j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))
                              ).replace('.', ','))
                     print   ('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))
-                    j.write(('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                                                                                              / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
+                    j.write(('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))*100
                              ).replace('.', ','))
-                    print   ('minimo de % aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                                                                                           / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))))
+                    print   ('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % ((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))*100)
                 j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
                         ).replace('.', ','))
                 print   ('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0))

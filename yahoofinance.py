@@ -275,8 +275,8 @@ def descargaHistoricoAccion(naccion, **config):
         preurl = "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + naccion
     else:
         preurl = "http://finance.yahoo.com/q/hp?s=" + naccion
-        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)         
-    
+        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
+
     r.add_header('Referer', preurl)
 
     # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
@@ -431,7 +431,7 @@ def cotizacionesTicket(nombreticket):
     if prefijo.has_key(sufijo):
         r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
     else:
-        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)         
+        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
 
     while datosurl == None:
         try:
@@ -472,12 +472,12 @@ def cotizacionesMoneda(nombreticket):
     datosurl = None
     r = urllib2.Request(urldatos, headers=webheaders)
 
-##    punto = nombreticket.find('.')
-##    if punto == -1:
-##        sufijo = ''
-##    else:
-##        sufijo = nombreticket[punto:]
-##    r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
+# #    punto = nombreticket.find('.')
+# #    if punto == -1:
+# #        sufijo = ''
+# #    else:
+# #        sufijo = nombreticket[punto:]
+# #    r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
 
     while datosurl == None:
         try:
