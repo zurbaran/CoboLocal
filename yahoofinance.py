@@ -287,7 +287,7 @@ def descargaHistoricoAccion(naccion, **config):
         urllib2.urlopen(r1)
     except:
         pass
-    duerme()
+    duerme(tiempo=1000)
 
     while f == None:
         try:

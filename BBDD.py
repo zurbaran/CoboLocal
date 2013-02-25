@@ -373,7 +373,7 @@ def ticketcotizaciones(nombreticket, datosurl):
 
         # el ticket ha cambiado, comprobar que no existe ya y en tal caso sustuirlo
     if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
-        ticketborra(nombreticket)
+        ticketborra(nombreticket)  # FIXME: los tickets con sufijo .MC estan contestando asi "GRF.MC","GRF.MC","N/A",N/A,N/A,N/A,N/A,0.00,0,N/A,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=GRF.MC">GRF.MC</a>)"
 
     elif ('Ticker symbol has changed to: <a href="/q?s=' in datosurl):
         print (datosurl)

@@ -26,7 +26,7 @@ mercadosexcluidos = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
                      'OTC BB', 'IOB', 'CDNX', 'VTX', 'MDD', 'ENX', 'PSX', 'Madrid',
                      'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
                      'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
-                     'FSI', 'EUX')
+                     'FSI', 'EUX',)
 
 carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
@@ -2253,7 +2253,28 @@ def main():
                                 if fechasalida != fecharuptura:  # Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                                     p -= 1  # Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
-                                backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance, indicadoresentrada))
+
+
+                                fechainicial = map(int, (fechaentrada.split('-')))
+                                fechafinal = map(int, (fechasalida.split('-')))
+                                diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
+                                if estrategia == 'Alcista':
+                                    try:
+                                        rentabilidadoperacion = ((((1 + ((inversionrecuperada - inversionoperacion) / inversionoperacion)) ** (365.0 / diffechas)) - 1.0) * 100.0)
+                                    except (OverflowError, ZeroDivisionError) as e:
+                                        logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                      % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                        rentabilidadoperacion = 0.00
+
+                                elif estrategia == 'Bajista':
+                                    try:
+                                        rentabilidadoperacion = ((((1 + ((inversionoperacion - inversionrecuperada) / inversionrecuperada)) ** (365.0 / diffechas)) - 1.0) * 100.0)
+                                    except (OverflowError, ZeroDivisionError) as e:
+                                        logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                      % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                        rentabilidadoperacion = 0.00
+
+                                backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance, rentabilidadoperacion, indicadoresentrada))
                                 invertido = False
 
                         p += 1
@@ -2275,7 +2296,26 @@ def main():
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-                            backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance, indicadoresentrada))
+                            fechainicial = map(int, (fechaentrada.split('-')))
+                            fechafinal = map(int, (fechasalida.split('-')))
+                            diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
+                            if estrategia == 'Alcista':
+                                try:
+                                    rentabilidadoperacion = ((((1 + ((inversionrecuperada - inversionoperacion) / inversionoperacion)) ** (365.0 / diffechas)) - 1.0) * 100.0)
+                                except (OverflowError, ZeroDivisionError) as e:
+                                    logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                  % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                    rentabilidadoperacion = 0.00
+
+                            elif estrategia == 'Bajista':
+                                try:
+                                    rentabilidadoperacion = ((((1 + ((inversionoperacion - inversionrecuperada) / inversionrecuperada)) ** (365.0 / diffechas)) - 1.0) * 100.0)
+                                except (OverflowError, ZeroDivisionError) as e:
+                                    logging.debug('Error: %s calculando Rentabilidad Backtest; Accion: %s; timming: %s; FechaLTi: %s; PrecioLTi %s; FechaLTf: %s; PrecioLTf %s' \
+                                                  % (e, ticket.encode('UTF-8'), timming, fechainicial, precioinicial, fechafinal, preciofinal))
+                                    rentabilidadoperacion = 0.00
+
+                            backtest.append((ticket, mercado, fechaentrada, precionentrada2, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timmingtransicion, inversionoperacion, inversionrecuperada, balance, rentabilidadoperacion, indicadoresentrada))
                             invertido = False
 
 # En el caso de hacer un solo ticket, comentar desde aqui hasta cuentraatras incluido
@@ -2289,31 +2329,14 @@ def main():
 
                 archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
-                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;ADX;DI+;DI-\n')
+                j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;rentabilidad;ADX;DI+;DI-\n')
                 # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
 
                 for n in backtest:
-                    ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance, indicadores = n
+                    ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance, rentabilidadoperacion, indicadores = n
                     # si los indicadores son False, esto no funcionara
                     if ADXobjetivo == False:  # la otra opcion era asignarle a los indicacores valor Falso o 0 , pero no me parecio bien y es lioso imprimir columnas inecesarias
-                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f\n") \
-                                 % (
-                                    ticket,
-                                    mercado,
-                                    fechaentrada.replace('-', ';'),
-                                    precionentrada,
-                                    timmingentrada,
-                                    numeroaccionesoperacion,
-                                    fechasalida.replace('-', ';'),
-                                    preciosalida,
-                                    timming,
-                                    inversion,
-                                    inversionrecuperada,
-                                    balance
-                                    )).replace('.', ',')
-                    else:
-
-                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n") \
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f\n") \
                                  % (
                                     ticket,
                                     mercado,
@@ -2327,6 +2350,25 @@ def main():
                                     inversion,
                                     inversionrecuperada,
                                     balance,
+                                    rentabilidadoperacion
+                                    )).replace('.', ',')
+                    else:
+
+                        texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n") \
+                                 % (
+                                    ticket,
+                                    mercado,
+                                    fechaentrada.replace('-', ';'),
+                                    precionentrada,
+                                    timmingentrada,
+                                    numeroaccionesoperacion,
+                                    fechasalida.replace('-', ';'),
+                                    preciosalida,
+                                    timming,
+                                    inversion,
+                                    inversionrecuperada,
+                                    balance,
+                                    rentabilidadoperacion,
                                     indicadores[0],
                                     indicadores[1],
                                     indicadores[2]
@@ -2425,10 +2467,10 @@ def main():
                              ).replace('.', ','))
                     print   ('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))
                     j.write(('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))*100)
+                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)
                              ).replace('.', ','))
                     print   ('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))*100))
+                                                                                                       / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100))
                 j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
                         ).replace('.', ','))
                 print   ('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0))
