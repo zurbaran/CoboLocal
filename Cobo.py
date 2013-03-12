@@ -45,6 +45,7 @@ import csv
 import glob
 import logging
 import os
+import winsound
 # from adodbapi.adodbapi import type
 # import traceback
 # from decimal import Decimal
@@ -2478,6 +2479,7 @@ def main():
                 print('')
             else:
                 raw_input('Backtest no realizado')
+            winsound.PlaySound("*", winsound.SND_ALIAS)
 
 #            'Cambiar sistema de analisis',
 #            '------------------------------',
@@ -2567,60 +2569,38 @@ def main():
 #        'W) Dar de alta acciones desde archivo',
         elif opcion == 'w':
             print(seleccion)
-
             incluidos = 0
-
-            archivowtickers = os.path.join('C:\\xampp\\htdocs\\jstock', 'wtickers.dat')
-
-            if not os.path.exists(archivowtickers):
-                """
-                print ('Indica la ruta del archivo wtickers.dat')
-                application = (wx()).wx.PySimpleApp()
-                dialog = (wx()).wx.DirDialog (None, 'Archivo wtickers.dat',
-                                       style = (wx()).wx.DD_CHANGE_DIR ,
-                                       defaultPath = 'C:\\xampp\\htdocs\\jstock')
-                if dialog.ShowModal() == (wx()).wx.ID_OK:
-                    print 'Directory:', dialog.GetPath()
-                    archivowtickers = os.path.join(dialog.GetPath(), 'wtickers.dat')
-                else:
-                    print 'No directory.'
-                dialog.Destroy()
-                application.Destroy()
-                """
-            f = open(archivowtickers, "r")
-            lineas = f.readlines()
-            f.close()
+            jstock = os.path.join(u'C:\Program Files (x86)\JStock\database')
+            paises = os.listdir(jstock)
+            paises.remove('database.zip')
             cursor, db = BBDD.conexion()
-            for naccion in lineas:
-                naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
-                # incluir = True
+            for n in paises:
+                archivowtickers=os.path.join(u'C:\Program Files (x86)\JStock\database',n,u'database\stock-info-database.csv')
+                f = open(archivowtickers, "r")
+                lineas = f.readlines()
+                f.close()
+                i=1
+                if (raw_input ('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) '%(n,len(lineas)-1))).upper()=='Y':
+                    while i<len(lineas):
+                    #for naccion in lineas:
+                        #naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
+                        # incluir = True
+                        linea=lineas[i].split(',',3)
+                        naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
+                        punto = naccion.find('.')
+                        if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
+                            naccion = (naccion,)
+                            cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
+                            numeroResultado = len(cursor.fetchall())
+                            if numeroResultado == 0:
+                                cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                                #print(naccion[0] + ' anadido a la base de datos')
+                                incluidos += 1
+                        i+=1
+                    print ('Anadido pais, %s'% n)
 
-                punto = naccion.find('.')
-                if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-                    naccion = (naccion,)
-                    cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
-                    numeroResultado = len(cursor.fetchall())
-                    if numeroResultado == 0:
-                        cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
-                        print(naccion[0] + ' anadido a la base de datos')
-                        incluidos += 1
-
-                # for suf in sufijosexcluidos:# Todas las comparaciones con los sufijosexcluidos tienen que ser -1(no existe) para que lo anadamos, si hay uno, no se anade
-                #    existe = naccion.find(suf)
-                #    if existe != -1:
-                #        incluir = False
-
-                # if incluir:
-                #    sql = "SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = '" + naccion + "')"
-                #
-
-                #    if len(cursor.execute(sql).fetchall()) == 0:
-                #        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES ('" + naccion + "', '" + str(date.today()) + "', NULL, NULL)"
-                #        cursor.execute(sql)
-                #        print(naccion + ' anadido a la base de datos')
-                #        incluidos += 1
-            db.commit()
-            print ('Tickets Anadidos a la BBDD : %d' % incluidos)
+            if raw_input ('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper()=='Y':
+                db.commit()
             db.close()
 
         # x) Generar lista de acciones

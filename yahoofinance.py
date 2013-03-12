@@ -83,6 +83,8 @@ prefijo = {'': '',
            '.VI': '',
            '.VX': '',
            }
+# # Lista que contiene los mercados que estan fallando al descargar las cotizaciones del csv, leyendo la web para obtener la informacion
+mercadosfail = ('.MC',)
 
 ####################################################
 # modulos estandar importados
@@ -271,7 +273,8 @@ def descargaHistoricoAccion(naccion, **config):
     else:
         sufijo = naccion[punto:]
 
-    if prefijo.has_key(sufijo):
+    if sufijo in prefijo:
+    # if prefijo.has_key(sufijo):
         preurl = "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + naccion
     else:
         preurl = "http://finance.yahoo.com/q/hp?s=" + naccion
@@ -428,7 +431,8 @@ def cotizacionesTicket(nombreticket):
         sufijo = ''
     else:
         sufijo = nombreticket[punto:]
-    if prefijo.has_key(sufijo):
+    if sufijo in prefijo:
+    # if prefijo.has_key(sufijo):
         r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
     else:
         logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
@@ -458,8 +462,124 @@ def cotizacionesTicket(nombreticket):
 #            sleep (pausareconexion)
 #            print ('Pausa de %d segundos' % pausareconexion)
 #            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
+    # FIXME: crear exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
+    # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
+    if sufijo in mercadosfail and \
+       ',"N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=' in datosurl and \
+       __name__ != '__main__':
+        datosurl = cotizacionesTicketWeb(nombreticket)
 
-    BBDD.ticketcotizaciones(nombreticket, datosurl)
+    if __name__ != '__main__':
+        BBDD.ticketcotizaciones(nombreticket, datosurl)
+
+    return datosurl
+
+
+def cotizacionesTicketWeb(nombreticket):
+    """
+    >>> nombreticket='AAPL'
+    >>> len(cotizacionesTicketWeb(nombreticket))==len(cotizacionesTicket(nombreticket))
+    True
+    """
+    nombreticket = nombreticket.upper()
+    # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
+    # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
+
+    web = None
+    error = 'N/A'
+    punto = nombreticket.find('.')
+    if punto == -1:
+        sufijo = ''
+    else:
+        sufijo = nombreticket[punto:]
+    if sufijo in prefijo:
+    # if prefijo.has_key(sufijo):
+        urldatos = "http://" + prefijo[sufijo] + "finance.yahoo.com/q?s=" + nombreticket
+    else:
+        urldatos = "http://finance.yahoo.com/q?s=" + nombreticket
+
+    r = urllib2.Request(urldatos, headers=webheaders)
+
+    while web == None:
+        try:
+            f = urllib2.urlopen(r)
+            web = f.read().decode('UTF-8')
+            f.close()
+        except urllib2.HTTPError as e:
+            print('Conexion Perdida')
+            print(e.code)
+            web = None
+            raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+            print('Conexion Erronea')
+            print(e)
+            web = None
+            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
+            print ('Pausa de %d segundos' % pausareconexion)
+            sleep(pausareconexion)
+    # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
+    # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,"N/A"
+
+    inicio = web.find('<div class="yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>') + len('<div class="yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>')
+    fin = web.find('</h2> <span class="rtq_exch">', inicio) - len(nombreticket) - 2
+    datonombre = web[inicio:fin].strip()
+
+    inicio = web.find('<span class="rtq_dash">-</span>', fin) + len('<span class="rtq_dash">-</span>')
+    fin = web.find(' ', inicio)
+    datomercado = web[inicio:fin].strip()
+
+    inicio = web.find('<span id="yfs_l84_' + nombreticket.lower() + '">') + len('<span id="yfs_l84_' + nombreticket.lower() + '">')
+    fin = web.find('</span></span>', inicio)
+    try:
+        datoValorActual = float(web[inicio:fin].replace(',', '.'))
+    except ValueError:
+        datoValorActual = 'NULL'
+        error = 'No such ticker symbol.'
+
+    # Con el mercado abierto este datos es correcto buscarlo asi
+    # FIXME: Con el mercado cerrado este datos es <td class="yfnc_tabledata1"><span>N/A</span> - <span>N/A</span>
+    inicio = web.find('<span id="yfs_g53_' + nombreticket.lower() + '">') + len('<span id="yfs_g53_' + nombreticket.lower() + '">')
+    fin = web.find('</span></span>', inicio)
+    try:
+        datominDia = round(float(web[inicio:fin].replace(',', '.')),3)  # FIXME: Este dato puede se N/A, no siendo posible la conversion a float
+    except ValueError:
+        datominDia = 'NULL'
+    inicio = web.find('<span id="yfs_h53_' + nombreticket.lower() + '">') + len('<span id="yfs_h53_' + nombreticket.lower() + '">')
+    fin = web.find('</span></span>', inicio)
+    try:
+        datomaxDia = round(float(web[inicio:fin].replace(',', '.')),3)  # FIXME: Este dato puede se N/A, no siendo posible la conversion a float
+    except ValueError:
+        datomaxDia = 'NULL'
+        inicio = web.find('</th><td class="yfnc_tabledata1"><span>')+len('</th><td class="yfnc_tabledata1"><span>')
+    
+    inicio = web.find('<td class="yfnc_tabledata1"><span>', inicio) + len('<td class="yfnc_tabledata1"><span>')
+    fin = web.find('</span> - <span>', inicio)
+    try:
+        datomin52 = round(float(web[inicio:fin].replace(',', '.')),3)
+    except ValueError:
+        datomin52 = 'NULL'
+    inicio = fin + len('</span> - <span>')
+    fin = web.find('</span></td></tr><tr><th scope="row" width="48%">', inicio)
+    try:
+        datomax52 = round(float(web[inicio:fin].replace(',', '.')),3)
+    except ValueError:
+        datomax52 = 'NULL'
+
+    inicio = web.find('<span id="yfs_v53_' + nombreticket.lower() + '">') + len('<span id="yfs_v53_' + nombreticket.lower() + '">')
+    fin = web.find('</span></td></tr><tr><th', inicio)
+    try:
+        datovolumen = int((web[inicio:fin].replace(',', '')).replace('.', ''))
+    except ValueError:
+        datovolumen = 'NULL'
+		
+    inicio = web.find('(3m)</span>:</th><td class="yfnc_tabledata1">') + len('(3m)</span>:</th><td class="yfnc_tabledata1">')
+    fin = web.find('</td></tr><tr><th scope="row" width="48%">', inicio)
+    try:
+        datovolumenMedio = int((web[inicio:fin].replace(',', '')).replace('.', ''))
+    except ValueError:
+        datovolumenMedio = 'NULL'
+
+    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,"%s"'%(datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
     return datosurl
 
 
