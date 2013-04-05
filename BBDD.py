@@ -38,7 +38,7 @@ except ImportError:
 
 ####################################################
 # modulos no estandar o propios
-from Cobo import carpetas, difregactualizar
+from Cobo import CARPETAS, DIFREGACTUALIZAR
 
 
 def conexion(archivo=None):
@@ -55,7 +55,7 @@ def conexion(archivo=None):
         # tickets = ticketlistacodigo(ticket)
         # nombre = ('%s%s' % (ticket, tickets[ticket])).replace('.', '_')
         nombre = ('%s' % ticket).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
+        archivo = os.path.join(os.getcwd(), CARPETAS['Datos'], nombre + ".dat")
 
     try:
         db = sqlite3.connect(os.path.join(archivo))
@@ -118,7 +118,7 @@ def comprobaciones(colaResultado=None):
         print('Tickets con errores : %d' % numeroResultado)
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
-    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['d'])).strftime("%Y-%m-%d %H:%M:%S")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     cursor.execute(sql)
@@ -129,7 +129,7 @@ def comprobaciones(colaResultado=None):
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
     # Tickets pendientes de realiar una actualizacion en el historico
-    diaspasados = (datetime.now() - timedelta(days=difregactualizar['d'])).strftime("%Y-%m-%d")
+    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['d'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
     # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
@@ -227,8 +227,8 @@ def ticketborra(ticket, **config):
             # if ticket in tickets:
             # nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
             nombre = ('%s' % ticket).replace('.', '_')
-            for carpeta in carpetas.keys():
-                archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas[carpeta], nombre + ".*"))
+            for carpeta in CARPETAS.keys():
+                archivosticket = glob.glob(os.path.join(os.getcwd(), CARPETAS[carpeta], nombre + ".*"))
                 for archivo in archivosticket:
                     os.remove(archivo)
 
@@ -372,7 +372,7 @@ def ticketcotizaciones(nombreticket, datosurl):
     # "MI Developments I","MIM","NYSE",33.35,30.75,16.07,30.33,30.45,238848,136519,"N/A"
 
         # el ticket ha cambiado, comprobar que no existe ya y en tal caso sustuirlo
-    if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
+    if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl or 'Missing Format Variable.' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
         ticketborra(nombreticket)  # FIXME: los tickets con sufijo .MC estan contestando asi "GRF.MC","GRF.MC","N/A",N/A,N/A,N/A,N/A,0.00,0,N/A,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=GRF.MC">GRF.MC</a>)"
 
     elif ('Ticker symbol has changed to: <a href="/q?s=' in datosurl):
@@ -482,7 +482,7 @@ def datoshistoricosexisten(naccion):
 #    if naccion in tickets:
     nombre = ('%s' % naccion).replace('.', '_')
 #        nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-    archivo = os.path.join(os.getcwd(), carpetas['Datos'], nombre + ".dat")
+    archivo = os.path.join(os.getcwd(), CARPETAS['Datos'], nombre + ".dat")
 
     if os.path.exists(archivo):
         # el archivo que contiene la BBDD de la cotizacion historica existe
@@ -602,7 +602,7 @@ def datoshistoricosactualizacion(naccion):
 # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > difregactualizar['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
+    if (desdeultimaactualizacion > DIFREGACTUALIZAR['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print('Registro pendiente de una actualizacion desde %s' % (historico[-2][0]))
         return (str(historico[-3][0]), True)
     else:

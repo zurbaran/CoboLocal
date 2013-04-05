@@ -100,7 +100,7 @@ import csv
 
 ####################################################
 # modulos no estandar o propios
-from Cobo import carpetas, ARCHIVO_LOG
+from Cobo import CARPETAS, ARCHIVO_LOG
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
 
@@ -394,7 +394,7 @@ def descargaHistoricoAccion(naccion, **config):
 
     if txt:
         nombre = (str(naccion)).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
+        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
         writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
         for n in datosaccion:
@@ -462,7 +462,7 @@ def cotizacionesTicket(nombreticket):
 #            sleep (pausareconexion)
 #            print ('Pausa de %d segundos' % pausareconexion)
 #            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
-    # FIXME: crear exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
+    # crearda exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
     # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
     if sufijo in mercadosfail and \
        ',"N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=' in datosurl and \
@@ -520,7 +520,7 @@ def cotizacionesTicketWeb(nombreticket):
     # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
     # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,"N/A"
 
-    inicio = web.find('<div class="yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>') + len('<div class="yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>')
+    inicio = web.find('"yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>') + len('"yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>')
     fin = web.find('</h2> <span class="rtq_exch">', inicio) - len(nombreticket) - 2
     datonombre = web[inicio:fin].strip()
 
@@ -541,27 +541,27 @@ def cotizacionesTicketWeb(nombreticket):
     inicio = web.find('<span id="yfs_g53_' + nombreticket.lower() + '">') + len('<span id="yfs_g53_' + nombreticket.lower() + '">')
     fin = web.find('</span></span>', inicio)
     try:
-        datominDia = round(float(web[inicio:fin].replace(',', '.')),3)  # FIXME: Este dato puede se N/A, no siendo posible la conversion a float
+        datominDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
         datominDia = 'NULL'
     inicio = web.find('<span id="yfs_h53_' + nombreticket.lower() + '">') + len('<span id="yfs_h53_' + nombreticket.lower() + '">')
     fin = web.find('</span></span>', inicio)
     try:
-        datomaxDia = round(float(web[inicio:fin].replace(',', '.')),3)  # FIXME: Este dato puede se N/A, no siendo posible la conversion a float
+        datomaxDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
         datomaxDia = 'NULL'
-        inicio = web.find('</th><td class="yfnc_tabledata1"><span>')+len('</th><td class="yfnc_tabledata1"><span>')
-    
+        inicio = web.find('</th><td class="yfnc_tabledata1"><span>') + len('</th><td class="yfnc_tabledata1"><span>')
+
     inicio = web.find('<td class="yfnc_tabledata1"><span>', inicio) + len('<td class="yfnc_tabledata1"><span>')
     fin = web.find('</span> - <span>', inicio)
     try:
-        datomin52 = round(float(web[inicio:fin].replace(',', '.')),3)
+        datomin52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
         datomin52 = 'NULL'
     inicio = fin + len('</span> - <span>')
     fin = web.find('</span></td></tr><tr><th scope="row" width="48%">', inicio)
     try:
-        datomax52 = round(float(web[inicio:fin].replace(',', '.')),3)
+        datomax52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
         datomax52 = 'NULL'
 
@@ -571,7 +571,7 @@ def cotizacionesTicketWeb(nombreticket):
         datovolumen = int((web[inicio:fin].replace(',', '')).replace('.', ''))
     except ValueError:
         datovolumen = 'NULL'
-		
+
     inicio = web.find('(3m)</span>:</th><td class="yfnc_tabledata1">') + len('(3m)</span>:</th><td class="yfnc_tabledata1">')
     fin = web.find('</td></tr><tr><th scope="row" width="48%">', inicio)
     try:
@@ -579,7 +579,7 @@ def cotizacionesTicketWeb(nombreticket):
     except ValueError:
         datovolumenMedio = 'NULL'
 
-    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,"%s"'%(datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
+    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,"%s"' % (datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
     return datosurl
 
 
