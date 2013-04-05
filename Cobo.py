@@ -14,25 +14,25 @@
 #################################################
 # Constantes locales
 
-setdefaultencoding = ('UTF-8')
+# setdefaultencoding = ('UTF-8')
 # sys.setdefaultencoding('UTF-8')
 # locale.setlocale(locale.LC_ALL, "")
-sufijosexcluidos = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
+SUFIJOSEXCLUIDOS = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
                     '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
                     '.KQ', '.KS', '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB',
                     '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ',
                     '.TA', '.TW', '.TWO', '.VA', '.VX',)
-mercadosexcluidos = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
+MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
                      'OTC BB', 'IOB', 'CDNX', 'VTX', 'MDD', 'ENX', 'PSX', 'Madrid',
                      'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
                      'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
                      'FSI', 'EUX',)
 
-carpetas = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
+CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
 # Expresa la diferencia entre los registros para hacer una actualizacion
-difregactualizar = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
-backtestoperacionessospechosas = 1.50
+DIFREGACTUALIZAR = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
+BACKTESTOPERACIONESSOSPECHOSAS = 1.50
 
 
 ####################################################
@@ -53,7 +53,7 @@ import winsound
 # import locale
 
 # import logging.config
-ARCHIVO_LOG = os.path.join(os.getcwd(), carpetas['Log'], "general.log")
+ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
 # logging.config.fileConfig(ARCHIVO_LOG)
 # logging.basicConfig(filename = ARCHIVO_LOG)
 # logging.captureWarnings(True)
@@ -541,7 +541,7 @@ def analisisAlcistaAccion(naccion, **config):
     if len(analisisalcista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
+        archivo = os.path.join(os.getcwd(), CARPETAS["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisalcista:
@@ -996,7 +996,7 @@ def analisisBajistaAccion(naccion, **config):
     if len(analisisbajista) > 0 and txt:
         tickets = BBDD.ticketlistacodigo(naccion)
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), carpetas["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
+        archivo = os.path.join(os.getcwd(), CARPETAS["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
         j = open(archivo, "w")
         j.write(str(config) + '\n')
         for n in analisisbajista:
@@ -1104,7 +1104,7 @@ def historicoTicket(nombreticket, **config):
                     fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
                     desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
 
-                    if borranoactualizados and desdeultimaactualizacion > difregactualizar['noActualizados']:
+                    if borranoactualizados and desdeultimaactualizacion > DIFREGACTUALIZAR['noActualizados']:
                         accioninvalida = 'URL invalida'
                         BBDD.ticketborra(nombreticket)
                     else:
@@ -1323,12 +1323,12 @@ def pidefecha():
         print('Formato de fecha mal introducido. Vuelve a intentarlo')
 
 
-def ticketsexcluidos(sufijosexcluidos):
+def ticketsexcluidos(SUFIJOSEXCLUIDOS):
     """
     Elimina los Tickets de los mercados que no nos interesan
     """
     cursor, db = BBDD.conexion()
-    for n in sufijosexcluidos:
+    for n in SUFIJOSEXCLUIDOS:
         sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `nombre` LIKE '%" + n + "'"
         cursor.execute(sql)
         listatickets = cursor.fetchall()
@@ -1346,8 +1346,8 @@ def ticketsexcluidos(sufijosexcluidos):
 
 def main():
 
-    for carpeta in carpetas.keys():
-        nombrecarpeta = os.path.join(os.getcwd(), carpetas[carpeta])
+    for carpeta in CARPETAS.keys():
+        nombrecarpeta = os.path.join(os.getcwd(), CARPETAS[carpeta])
         if not os.path.exists(nombrecarpeta):
             os.mkdir(nombrecarpeta)
             # os.path.dirname
@@ -1359,7 +1359,7 @@ def main():
         tickets = BBDD.ticketlistacodigo()
         mercados = BBDD.mercadoslista()
 
-        ticketsexcluidos(sufijosexcluidos)
+        ticketsexcluidos(SUFIJOSEXCLUIDOS)
         BBDD.comprobaciones()
         # db.close()
 
@@ -1526,7 +1526,7 @@ def main():
             elif timming == '3' or timming == '' or timming == ' ':
                 datos = yahoofinance.subirtimming(datos, timming='m')
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "data.csv")
+            archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "data.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datos:
@@ -1534,7 +1534,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "metatrader.csv")
+            archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "metatrader.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
             j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n')
@@ -1546,7 +1546,7 @@ def main():
                 # j.write(str(n)+'\n')
             j.close()
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], 'metastock.csv')
+            archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], 'metastock.csv')
             j = open(archivo, 'w')
             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
@@ -1567,7 +1567,7 @@ def main():
 
             datosMME = indicador.MME(datos, MME=MMEdatos)
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "MME.csv")
+            archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "MME.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosMME:
@@ -1583,7 +1583,7 @@ def main():
 
             datosTAR = indicador.TAR(datos, TAR=TARdatos)
 
-            archivo = os.path.join(os.getcwd(), carpetas['Graficos'], "TAR.csv")
+            archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "TAR.csv")
             j = open(archivo, 'w')
             writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
             for n in datosTAR:
@@ -1977,7 +1977,7 @@ def main():
                             break
                     break
                 elif moneda in monedas:
-                    sql = "SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' and Cobo_componentes.tiket NOT LIKE '^%' and Cobo_componentes.mercado IN (SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?) and Cobo_componentes.mercado not IN " + str(mercadosexcluidos) + " ORDER BY Cobo_componentes.tiket ASC"
+                    sql = "SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' and Cobo_componentes.tiket NOT LIKE '^%' and Cobo_componentes.mercado IN (SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?) and Cobo_componentes.mercado not IN " + str(MERCADOSEXCLUIDOS) + " ORDER BY Cobo_componentes.tiket ASC"
                     cursor.execute(sql, (moneda,))
                     break
 
@@ -2240,7 +2240,7 @@ def main():
 
                             elif fechasalida <= fecharuptura:
                             # elif fechasalida <= fecharuptura:
-#                                if -(riesgo) * backtestoperacionessospechosas > balance:
+#                                if -(riesgo) * BACKTESTOPERACIONESSOSPECHOSAS > balance:
 #                                    if estrategia == 'Alcista':
 #                                        print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
 #                                        print(('%6s %13s %15.3f %8.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, soporteentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
@@ -2254,7 +2254,6 @@ def main():
                                 if fechasalida != fecharuptura:  # Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                                     p -= 1  # Puede que el ciclo que me saca, no impida que vuelva a entrar
                                 # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
-
 
                                 fechainicial = map(int, (fechaentrada.split('-')))
                                 fechafinal = map(int, (fechasalida.split('-')))
@@ -2286,7 +2285,7 @@ def main():
                             #  (resistencia[2]> ruptura[2])
                             # realmente no nos hemos salido de la operacion pero como no sabemos si nos sacara o no, valoramos la operacion a lo que valdria en ese momento
                         # fechasalida=ruptura[0]
-#                            if -(riesgo) * backtestoperacionessospechosas > balance:
+#                            if -(riesgo) * BACKTESTOPERACIONESSOSPECHOSAS > balance:
 #                                if estrategia == 'Alcista':
 #                                    print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
 #                                    print(('%6s %13s %15.3f %8.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, soporteentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
@@ -2328,7 +2327,7 @@ def main():
                 inversionTotal = 0
                 inversionrecuperadaTotal = 0
 
-                archivobacktest = os.path.join(os.getcwd(), carpetas['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
+                archivobacktest = os.path.join(os.getcwd(), CARPETAS['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.csv')
                 j = open(archivobacktest, 'w')
                 j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;rentabilidad;ADX;DI+;DI-\n')
                 # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
@@ -2496,8 +2495,8 @@ def main():
             print (seleccion)
             print ('Limpiando Directorio')
             cursor, db = BBDD.conexion()
-            # os.remove(glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], nombre + "*.*")))
-            archivosticket = glob.glob(os.path.join(os.getcwd(), carpetas['Historicos'], "*.*"))
+            # os.remove(glob.glob(os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + "*.*")))
+            archivosticket = glob.glob(os.path.join(os.getcwd(), CARPETAS['Historicos'], "*.*"))
             for archivo in archivosticket:
                 os.remove(archivo)
             del archivosticket
@@ -2536,7 +2535,7 @@ def main():
                         if len(datosaccion) > 0:
                             nombre = (str(ticket)).replace('.', '_')
                             # nombre = (str(ticket) + str(codigo)).replace('.', '_')
-                            archivo = os.path.join(os.getcwd(), carpetas['Historicos'], nombre + '.' + timming + '.csv')
+                            archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + '.' + timming + '.csv')
                             j = open(archivo, 'w')
                             j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
                             writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
@@ -2575,20 +2574,20 @@ def main():
             paises.remove('database.zip')
             cursor, db = BBDD.conexion()
             for n in paises:
-                archivowtickers=os.path.join(u'C:\Program Files (x86)\JStock\database',n,u'database\stock-info-database.csv')
+                archivowtickers = os.path.join(u'C:\Program Files (x86)\JStock\database', n, u'database\stock-info-database.csv')
                 f = open(archivowtickers, "r")
                 lineas = f.readlines()
                 f.close()
-                i=1
-                if (raw_input ('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) '%(n,len(lineas)-1))).upper()=='Y':
-                    while i<len(lineas):
+                i = 1
+                if (raw_input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (n, len(lineas) - 1))).upper() == 'Y':
+                    while i < len(lineas):
                     #for naccion in lineas:
                         #naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
                         # incluir = True
-                        linea=lineas[i].split(',',3)
+                        linea = lineas[i].split(',', 3)
                         naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
                         punto = naccion.find('.')
-                        if punto != -1 and not (naccion[punto:] in str(sufijosexcluidos)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
+                        if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
                             naccion = (naccion,)
                             cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
                             numeroResultado = len(cursor.fetchall())
@@ -2596,10 +2595,10 @@ def main():
                                 cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                                 #print(naccion[0] + ' anadido a la base de datos')
                                 incluidos += 1
-                        i+=1
-                    print ('Anadido pais, %s'% n)
+                        i += 1
+                    print ('Anadido pais, %s' % n)
 
-            if raw_input ('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper()=='Y':
+            if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
                 db.commit()
             db.close()
 
