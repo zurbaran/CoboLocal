@@ -733,8 +733,11 @@ def listacciones(**config):
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
-    return resultado
-
+    resultado2=[]
+    for ticket,nombre,mercado,moneda,timming,rent,inve,entrada,salida,numaccion,ltdateini,ltpriceini,ltdatefin,ltpricefin in resultado:
+        numaccion=int(numaccion)
+        resultado2.append((ticket,nombre,mercado,moneda,timming,rent,inve,entrada,salida,numaccion,ltdateini,ltpriceini,ltdatefin,ltpricefin))
+    return tuple(resultado2)
 
 if __name__ == '__main__':
     pass
