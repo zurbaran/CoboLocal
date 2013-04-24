@@ -371,7 +371,7 @@ def analisisAlcistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in xrange(LTi, -1, -1):
+                    for j in range(LTi, -1, -1):
                         fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         # if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
@@ -418,7 +418,7 @@ def analisisAlcistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in xrange(LTf, i + 1):
+                    for j in range(LTf, i + 1):
 
                         fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
@@ -561,7 +561,7 @@ def analisisAlcistaAccion(naccion, **config):
             j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
-        for n in xrange(5):
+        for n in range(5):
             j.write('\n')
 
         for n in listastoploss:
@@ -832,7 +832,7 @@ def analisisBajistaAccion(naccion, **config):
                         break
 
     #                    print LTi
-                    for j in xrange(LTi, -1, -1):
+                    for j in range(LTi, -1, -1):
                         fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
                         if (maximoLTi < maximoLTf or maximoLTi == 0.0) and LTi > 0:  # como estoy en bajista, si el maximoLTi es menor que el maximoLTf es porque esta por debajo, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por encima del LTf
@@ -879,7 +879,7 @@ def analisisBajistaAccion(naccion, **config):
                         break
     #                print "LTf, i =", LTf, i
     #                while j<=i:
-                    for j in xrange(LTf, i + 1):
+                    for j in range(LTf, i + 1):
 
                         _fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
@@ -1016,7 +1016,7 @@ def analisisBajistaAccion(naccion, **config):
             j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
             j.write('\n')
 
-        for n in xrange(5):
+        for n in range(5):
             j.write('\n')
 
         for n in listastoploss:
@@ -1075,7 +1075,7 @@ def historicoTicket(nombreticket, **config):
     """
     borranoactualizados = config.get('borranoactualizados', False)
     if not BBDD.datoshistoricosexisten(nombreticket):
-        print('Ticket %s nuevo, descarga completa del historico de la accion' % nombreticket)
+        print(('Ticket %s nuevo, descarga completa del historico de la accion' % nombreticket))
 #        for timmingdescargado in 'dwm':
         accioninvalida = yahoofinance.descargaHistoricoAccion(nombreticket, timming='d', txt=False)
         yahoofinance.duerme()
@@ -1083,7 +1083,7 @@ def historicoTicket(nombreticket, **config):
             BBDD.ticketborra(nombreticket)
 
     else:
-        print('Ticket %s ya descargado, comprobando la actualizacion de los datos' % nombreticket)
+        print(('Ticket %s ya descargado, comprobando la actualizacion de los datos' % nombreticket))
         # for timmingdescargado in 'dwm':
 
         fechaactualizar, actualizaractualizar = BBDD.datoshistoricosactualizacion(nombreticket)
@@ -1105,7 +1105,7 @@ def historicoTicket(nombreticket, **config):
                 fechaactualizar2, actualizaractualizar2 = BBDD.datoshistoricosactualizacion(nombreticket)
                 if fechaactualizar2 != None and actualizaractualizar == actualizaractualizar2 and fechaactualizar == fechaactualizar2:
                     fechahoy = ((date.today().timetuple()))
-                    fechaactualizar2 = map(int, ((fechaactualizar2).split('-')))
+                    fechaactualizar2 = list(map(int, ((fechaactualizar2).split('-'))))
                     desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaactualizar2[0], fechaactualizar2[1], fechaactualizar2[2])).days
 
                     if borranoactualizados and desdeultimaactualizacion > DIFREGACTUALIZAR['noActualizados']:
@@ -1133,7 +1133,7 @@ def analisisTicket(nombreticket):
 
         # al final si utilizamos indicador.MME, el indicador.MME sera la decision de si es alcista o bajista
         for timminganalisis in 'mwd':
-            print('Timming del analisis alcista: %s' % timminganalisis)
+            print(('Timming del analisis alcista: %s' % timminganalisis))
             analisisalcista = analisisAlcistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
             if analisisalcista != None:
                 alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
@@ -1157,7 +1157,7 @@ def analisisTicket(nombreticket):
                 break
 
         for timminganalisis in 'mwd':
-            print('Timming del analisis bajista: %s' % timminganalisis)
+            print(('Timming del analisis bajista: %s' % timminganalisis))
             analisisbajista = analisisBajistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
             if analisisbajista != None:
                 bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
@@ -1225,8 +1225,8 @@ def analisisTicket(nombreticket):
         else:
             fechainicial, precioinicial = LTi
             fechafinal, preciofinal = LTf
-            fechainicial = map(int, (fechainicial.split('-')))
-            fechafinal = map(int, (fechafinal.split('-')))
+            fechainicial = list(map(int, (fechainicial.split('-'))))
+            fechafinal = list(map(int, (fechafinal.split('-'))))
             diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
             # evitando que la division de mas abajo sea por 0
             if precioinicial == 0.0:
@@ -1364,8 +1364,8 @@ def backtestMoneda(**config):
     for registro in resultado:
         # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
         _codigo, _nombre, ticket, mercado, _max52, _maxDia, _min52, _minDia, valorActual, _volumenMedio, volumen, _error, fechaRegistro = registro
-        print('Quedan por analizar un total de %d' % cuentaatras)
-        print('Analizando ticket %s' % ticket)
+        print(('Quedan por analizar un total de %d' % cuentaatras))
+        print(('Analizando ticket %s' % ticket))
 
         diario = None
         semanal = None
@@ -1479,8 +1479,8 @@ def backtestMoneda(**config):
                 else:
                     fechainicial, precioinicial = LTi
                     fechafinal, preciofinal = LTf
-                    fechainicial = map(int, (fechainicial.split('-')))
-                    fechafinal = map(int, (fechafinal.split('-')))
+                    fechainicial = list(map(int, (fechainicial.split('-'))))
+                    fechafinal = list(map(int, (fechafinal.split('-'))))
                     diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
 
                     if estrategia == 'Alcista':
@@ -1630,8 +1630,8 @@ def backtestMoneda(**config):
                             p -= 1  # Puede que el ciclo que me saca, no impida que vuelva a entrar
                         # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
 
-                        fechainicial = map(int, (fechaentrada.split('-')))
-                        fechafinal = map(int, (fechasalida.split('-')))
+                        fechainicial = list(map(int, (fechaentrada.split('-'))))
+                        fechafinal = list(map(int, (fechasalida.split('-'))))
                         diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
                         if estrategia == 'Alcista':
                             try:
@@ -1671,8 +1671,8 @@ def backtestMoneda(**config):
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
 #                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
-                    fechainicial = map(int, (fechaentrada.split('-')))
-                    fechafinal = map(int, (fechasalida.split('-')))
+                    fechainicial = list(map(int, (fechaentrada.split('-'))))
+                    fechafinal = list(map(int, (fechasalida.split('-'))))
                     diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
                     if estrategia == 'Alcista':
                         try:
@@ -1760,7 +1760,7 @@ def backtestMoneda(**config):
             inversionTotal = inversionTotal + inversion
             inversionrecuperadaTotal = inversionrecuperadaTotal + inversionrecuperada
 
-        for n in xrange(0, 4):
+        for n in range(0, 4):
             j.write('\n')
 
         j.write('Parametros : \n')
@@ -1792,63 +1792,63 @@ def backtestMoneda(**config):
         j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
         j.write('Moneda del Backtest : %s\n' % moneda)
 
-        for n in xrange(0, 4):
+        for n in range(0, 4):
             j.write('\n')
 
         print('')
         j.write('Resultado: \n')
         print  ('Resultado: ')
         j.write('Numero de operaciones totales: %d\n' % len(backtest))
-        print  ('Numero de operaciones totales: %d' % (len(backtest)))
+        print  (('Numero de operaciones totales: %d' % (len(backtest))))
         j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)
                  ).replace('.', ','))
-        print   ('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100))
+        print  (('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)))
         j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)
                  ).replace('.', ','))
-        print   ('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100))
+        print  (('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)))
         if len(positivas) > 0:
             j.write(('Ganancia Media : %.2f\n' % (sum(positivas) / (len(positivas) * 1.0))
                      ).replace('.', ','))
-            print   ('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0))
+            print  (('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0)))
         else:
             j.write('Ganancia Media : 0.00\n')
-            print  ('Ganancia Media : 0.0')
+            print (('Ganancia Media : 0.0'))
         if len(negativas) > 0:
             j.write(('Perdida Media : %.2f\n' % (sum(negativas) / (len(negativas) * 1.0))
                      ).replace('.', ','))
-            print   ('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0))
+            print  (('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0)))
         else:
             j.write('Perdida Media : 0.00\n')
-            print  ('Perdida Media : 0.00')
+            print (('Perdida Media : 0.00'))
         j.write(('Inversion Total : %.2f\n' % inversionTotal).replace('.', ','))
-        print   ('Inversion Total : %.2f' % inversionTotal)
+        print  (('Inversion Total : %.2f' % inversionTotal))
         j.write(('Inversion Recuperada : %.2f\n' % inversionrecuperadaTotal).replace('.', ','))
-        print   ('Inversion Recuperada : %.2f' % inversionrecuperadaTotal)
+        print  (('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
         if estrategia == 'Alcista':
             j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)
                      ).replace('.', ','))
-            print   ('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100))
+            print  (('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
         elif estrategia == 'Bajista':
             j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)
                      ).replace('.', ','))
-            print   ('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100))
+            print  (('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
         if len(positivas) > 0 and len(negativas) > 0:
             j.write(('Esperanza Matematica : %.2f\n' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
                                                         abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))
                      ).replace('.', ','))
-            print   ('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
-                                                   abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0))))
+            print  (('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
+                                                   abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))))
             j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))
                      ).replace('.', ','))
-            print   ('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))
+            print  (('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
             j.write(('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
                                                                                                / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)
                      ).replace('.', ','))
-            print   ('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                                                                                               / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100))
+            print  (('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+                                                                                               / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)))
         j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
                 ).replace('.', ','))
-        print   ('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0))
+        print  (('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)))
         j.close()
         print('')
     else:
@@ -1923,14 +1923,14 @@ def ticketsexcluidos(SUFIJOSEXCLUIDOS):
             # for ticket in listatickets:
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
-                print ('Quedan por borrar %d tickets' % len(listatickets))
+                print (('Quedan por borrar %d tickets' % len(listatickets)))
                 BBDD.ticketborra(ticket)
     db.close()
 
 
 def main():
 
-    for carpeta in CARPETAS.keys():
+    for carpeta in list(CARPETAS.keys()):
         nombrecarpeta = os.path.join(os.getcwd(), CARPETAS[carpeta])
         if not os.path.exists(nombrecarpeta):
             os.mkdir(nombrecarpeta)
@@ -1950,8 +1950,8 @@ def main():
         print('')
         if opcion == None:
 
-            print('Total de mercados : %d' % (len(mercados)))
-            print('Total de tickets : %d' % (len(tickets.keys())))
+            print(('Total de mercados : %d' % (len(mercados))))
+            print(('Total de tickets : %d' % (len(list(tickets.keys())))))
 
             iopciones = 0
             opciones = creaMenu(')', (
@@ -2012,7 +2012,7 @@ def main():
             if numeroResultado == 0:
                 cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                 db.commit()
-                print(naccion[0] + ' anadido a la base de datos')
+                print((naccion[0] + ' anadido a la base de datos'))
 
             # Actualizamos las cotizaciones
             yahoofinance.cotizacionesTicket(naccion[0])
@@ -2064,7 +2064,7 @@ def main():
 
             if BBDD.datoshistoricosexisten(naccion):
                 for timminganalisis in 'dwm':
-                    print('Timming del analisis: ', timminganalisis)
+                    print(('Timming del analisis: ', timminganalisis))
                     if timminganalisis == 'w':
                         filtrosalida = filtrosalidasemanal
                     elif timminganalisis == 'm':
@@ -2181,7 +2181,7 @@ def main():
             print(seleccion)
             for mercado in mercados:
                 print (mercado)
-            print('Total de mercados %d' % (len(mercados)))
+            print(('Total de mercados %d' % (len(mercados))))
 
         # G) Anadir Ticket Mercado',
         elif opcion == 'g':
@@ -2246,20 +2246,20 @@ def main():
                 moneda = urlmonedas.popleft()
                 yahoofinance.cotizacionesMoneda(moneda)
                 yahoofinance.duerme()
-                print('Quedan por actualizar un total de : %d' % len(urlmonedas))
+                print(('Quedan por actualizar un total de : %d' % len(urlmonedas)))
             db.close()
 
 #        'L) Listar Tickets',
         elif opcion == 'l':
-            listatickets = tickets.keys()
+            listatickets = list(tickets.keys())
             listatickets.sort()
             ticketsnoBBDD = 0
             for ticket in listatickets:
-                print(ticket, tickets[ticket])
+                print((ticket, tickets[ticket]))
                 if tickets[ticket] == '' or tickets[ticket] == 0:
                     ticketsnoBBDD = +1
             print(('Total de tickets %d' % (len(tickets))))
-            print('Tickets que no estan en la BBDD : %s' % ticketsnoBBDD)
+            print(('Tickets que no estan en la BBDD : %s' % ticketsnoBBDD))
 
             del listatickets, ticketsnoBBDD
 
@@ -2278,9 +2278,9 @@ def main():
                         ticketsanadidos += 1
 
                 if len(ticketscomponentesmercados) == 0:
-                    print ('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado)
+                    print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
                     BBDD.mercadosdeshabilita(mercado)
-            print('Se han anadido un total de : %d tickets' % ticketsanadidos)
+            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
             del ticketscomponentesmercados
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
@@ -2293,7 +2293,7 @@ def main():
                 ticket = listatickets.popleft()
                 yahoofinance.cotizacionesTicket(ticket)
 
-                print('Quedan por actualizar un total de : %d' % len(listatickets))
+                print(('Quedan por actualizar un total de : %d' % len(listatickets)))
                 yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
@@ -2315,7 +2315,7 @@ def main():
                 ticket = listatickets.popleft()
                 # accioninvalida=''
                 print ('')
-                print('Tickets pendientes de comprobar %d' % len(listatickets))
+                print(('Tickets pendientes de comprobar %d' % len(listatickets)))
 
                 # if naccion in tickets:
 
@@ -2336,9 +2336,9 @@ def main():
             while len(listatickets) > 0:
 
                 print('')
-                print('Quedan por analizar un total de %d' % len(listatickets))
+                print(('Quedan por analizar un total de %d' % len(listatickets)))
                 ticket = listatickets.popleft()
-                print('Analizando ticket %s' % ticket)
+                print(('Analizando ticket %s' % ticket))
 
                 analisisTicket(ticket)
             db.close()
@@ -2467,7 +2467,7 @@ def main():
             # lo mostramos en una lista
             # nos pide la moneda a buscar y la convertimos en la variable de la siguiente consulta con la que obtenemos la lista de tickes para hacer el backtest
             for mon in resultado:
-                print((mon)[0])
+                print((mon[0]))
                 monedas.append(mon[0])
 
             while True:
@@ -2480,7 +2480,7 @@ def main():
                     # lo mostramos en una lista
                     # nos pide la moneda a buscar y la convertimos en la variable de la siguiente consulta con la que obtenemos la lista de tickes para hacer el backtest
                     for mon in resultado:
-                        print((mon)[0])
+                        print((mon[0]))
                         monedas.append(mon[0])
                     while True:
                         moneda = raw_input('Introduce nombre del mercado en la que se hace el backtest, recuerda escribirlo exactamente igual : ')
@@ -2503,10 +2503,11 @@ def main():
             print (seleccion)
             j = open(ARCHIVOCONFIGBACKTEST, 'r')
             lineas = j.readlines()
+            j.close()
             for linea in lineas:
-                diccionario = ast.literal_eval(linea)
-                backtestMoneda(**diccionario)
-                del diccionario
+                dicc = ast.literal_eval(linea)
+                backtestMoneda(**dicc)
+                del dicc
 
 #            'Cambiar sistema de analisis',
 #            '------------------------------',
@@ -2544,8 +2545,8 @@ def main():
                 naccion = (naccion.strip('"')).replace(',', '')
 
                 print('')
-                print('Tickets pendientes de exportar %d' % len(listatickets))
-                print('Exportando ticket %s' % ticket)
+                print(('Tickets pendientes de exportar %d' % len(listatickets)))
+                print(('Exportando ticket %s' % ticket))
 
                 if BBDD.datoshistoricosexisten(ticket):
                     # funcion maximo minimo historico
@@ -2587,21 +2588,21 @@ def main():
 
                 print('')
 
-            print('Tickets para los que no hay cotizaciones historicas')
+            print(('Tickets para los que no hay cotizaciones historicas'))
             for ticket in ticketsnodescargados:
                 print(ticket)
-            print('Un total de : ', len(ticketsnodescargados))
+            print(('Un total de : ', len(ticketsnodescargados)))
 
 #        'W) Dar de alta acciones desde archivo',
         elif opcion == 'w':
             print(seleccion)
             incluidos = 0
-            jstock = os.path.join(u'C:\Program Files (x86)\JStock\database')
+            jstock = os.path.join('C:\Program Files (x86)\JStock\database')
             paises = os.listdir(jstock)
             paises.remove('database.zip')
             cursor, db = BBDD.conexion()
             for n in paises:
-                archivowtickers = os.path.join(u'C:\Program Files (x86)\JStock\database', n, u'database\stock-info-database.csv')
+                archivowtickers = os.path.join('C:\Program Files (x86)\JStock\database', n, 'database\stock-info-database.csv')
                 f = open(archivowtickers, "r")
                 lineas = f.readlines()
                 f.close()
@@ -2623,7 +2624,7 @@ def main():
                                 # print(naccion[0] + ' anadido a la base de datos')
                                 incluidos += 1
                         i += 1
-                    print ('Anadido pais, %s' % n)
+                    print (('Anadido pais, %s' % n))
 
             if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
                 db.commit()

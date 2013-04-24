@@ -120,7 +120,7 @@ def duerme(tiempo=1500):
 
     """
     x = (randint(0, tiempo)) / 1000.0
-    print('Pausa de %.3f segundos' % x)
+    print(('Pausa de %.3f segundos' % x))
     sleep(x)
 
 
@@ -150,20 +150,20 @@ def ticketsdeMercado(mercado):
                 web = (f.read()).decode('UTF-8')
                 f.close()
             except urllib2.HTTPError as e:
-                print('Conexion Perdida')
-                print(e.code)
+                print ('Conexion Perdida')
+                print ((e.code))
                 if e.code == 500:
                     return ticketsanadidos
                 else:
                     web = None
                     raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
             except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
-                print('Conexion Erronea')
+                print ('Conexion Erronea')
                 # print(e.reason)
-                print(url, e)
+                print ((url, e))
                 web = None
                 logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url.encode('UTF-8')))
-                print ('Pausa de %d segundos' % pausareconexion)
+                print (('Pausa de %d segundos' % pausareconexion))
                 sleep(pausareconexion)
 
         if ultimapagina == 0:
@@ -176,7 +176,7 @@ def ticketsdeMercado(mercado):
                 ultimapaginafinal = web.find('">Last</a></div>', ultimapaginainicio)
                 ultimapagina = int(web[ultimapaginainicio:ultimapaginafinal])
 
-        print("Mercado %s Pagina %d de %d" % (mercado, pagina, ultimapagina))
+        print (("Mercado %s Pagina %d de %d" % (mercado, pagina, ultimapagina)))
 
         ticketfin = 0
         while True:
@@ -297,7 +297,7 @@ def descargaHistoricoAccion(naccion, **config):
             f = urllib2.urlopen(r)
             print (url)
         except urllib2.HTTPError as e:
-            print(e.code)
+            print((e.code))
             print('Url invalida, accion no disponible')
             print(url)
             f = None
@@ -305,10 +305,10 @@ def descargaHistoricoAccion(naccion, **config):
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
             print('Conexion Perdida')
             # print(e.reason)
-            print(url, e)
+            print((url, e))
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, naccion.encode('UTF-8'), url.encode('UTF-8')))
             f = None
-            print ('Pausa de %d segundos' % pausareconexion)
+            print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
 
             # cuando la conexion se pierde, pasa por aqui, dando como error
@@ -444,7 +444,7 @@ def cotizacionesTicket(nombreticket):
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
-            print(e.code)
+            print((e.code))
             datosurl = None
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
@@ -452,7 +452,7 @@ def cotizacionesTicket(nombreticket):
             print(e)
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
-            print ('Pausa de %d segundos' % pausareconexion)
+            print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
             # raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
 #        except IOError as e:
@@ -507,7 +507,7 @@ def cotizacionesTicketWeb(nombreticket):
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
-            print(e.code)
+            print((e.code))
             web = None
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
@@ -515,7 +515,7 @@ def cotizacionesTicketWeb(nombreticket):
             print(e)
             web = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
-            print ('Pausa de %d segundos' % pausareconexion)
+            print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
     # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
     # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,"N/A"
@@ -607,7 +607,7 @@ def cotizacionesMoneda(nombreticket):
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
-            print(e.code)
+            print((e.code))
             datosurl = None
             raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
@@ -616,7 +616,7 @@ def cotizacionesMoneda(nombreticket):
             print(e)
             datosurl = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
-            print ('Pausa de %d segundos' % pausareconexion)
+            print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
 
     BBDD.monedacotizaciones(nombreticket, datosurl)
@@ -660,7 +660,7 @@ def subirtimming(datos, **config):
         elif timming == 'w':
             # %w     Weekday as a decimal number [0(Sunday),6].
             # el siguiente domigo a la fecha de inico
-            fechaagr = map(int, (((datos[0][fechadatos]).split('-'))))
+            fechaagr = list(map(int, (((datos[0][fechadatos]).split('-')))))
             fechaagr = (date(fechaagr[0], fechaagr[1], fechaagr[2]))
             fechaagr += timedelta(days=6 - fechaagr.weekday())
 
@@ -673,7 +673,7 @@ def subirtimming(datos, **config):
                 if timming == 'm':
                     fechaagr = strftime('%Y, %m', fecha)
                 elif timming == 'w':
-                    fechaagr = map(int, (((datos[i][fechadatos]).split('-'))))
+                    fechaagr = list(map(int, (((datos[i][fechadatos]).split('-')))))
                     fechaagr = (date(fechaagr[0], fechaagr[1], fechaagr[2]))
                     fechaagr += timedelta(days=6 - fechaagr.weekday())
 

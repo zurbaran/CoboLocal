@@ -90,7 +90,7 @@ def comprobaciones(colaResultado=None):
     resultado = cursor.fetchall()
     if colaResultado == None:
         for n in resultado:
-            print('%s contiene %d tickets' % (n))
+            print(('%s contiene %d tickets' % (n)))
         print ('')
 
     # Buscar tickets duplicados en la BBDD
@@ -98,14 +98,14 @@ def comprobaciones(colaResultado=None):
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if colaResultado == None:
-        print('Tickets duplicados : %d' % numeroResultado)
+        print(('Tickets duplicados : %d' % numeroResultado))
 
     # Buscar tikets a las que les falte relacion entre mercados y monedas
     sql = " SELECT `tiket`,`mercado` FROM `Cobo_componentes` where `mercado` not in (SELECT `nombreUrl` FROM `Cobo_mercado_moneda`)"
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if colaResultado == None:
-        print('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado)
+        print(('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado))
 
     # Tickets con errores
 #    Cobo_nombreticket = Table('Cobo_nombreticket')
@@ -115,7 +115,7 @@ def comprobaciones(colaResultado=None):
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if colaResultado == None:
-        print('Tickets con errores : %d' % numeroResultado)
+        print(('Tickets con errores : %d' % numeroResultado))
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
     diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['d'])).strftime("%Y-%m-%d %H:%M:%S")
@@ -124,7 +124,7 @@ def comprobaciones(colaResultado=None):
     cursor.execute(sql)
     listatickets = cursor.fetchall()
     if colaResultado == None:
-        print('Tickets pendientes de realiar una actualizacion : %d' % len(listatickets))
+        print(('Tickets pendientes de realiar una actualizacion : %d' % len(listatickets)))
     if colaResultado == 'Cotizacion':
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
@@ -139,7 +139,7 @@ def comprobaciones(colaResultado=None):
     cursor.execute(sql)
     listatickets = cursor.fetchall()
     if colaResultado == None:
-        print('Tickets pendientes de realiar una actualizacion del historico : %d' % len(listatickets))
+        print(('Tickets pendientes de realiar una actualizacion del historico : %d' % len(listatickets)))
     if colaResultado == 'Historico':
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
@@ -148,7 +148,7 @@ def comprobaciones(colaResultado=None):
     cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if colaResultado == None:
-        print('Tickets necesitan de actualizar completamente : %d' % numeroResultado)
+        print(('Tickets necesitan de actualizar completamente : %d' % numeroResultado))
 
     db.close()
 
@@ -187,7 +187,7 @@ def ticketborra(ticket, **config):
 
     if ticket != '' or ticket != ' ' or ticket != None:
         if BBDD:
-            print('Borrando de la BBDD el ticket %s' % ticket)
+            print(('Borrando de la BBDD el ticket %s' % ticket))
 
             sql = "SELECT `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '" + ticket + "')"
             cursor.execute(sql)
@@ -214,7 +214,7 @@ def ticketborra(ticket, **config):
             cursor.execute(sql)
 
         if historico:
-            print('Borrando los Datos historicos de la BBDD del ticket %s' % ticket)
+            print(('Borrando los Datos historicos de la BBDD del ticket %s' % ticket))
             ticket2 = ticket.replace('.', '_')
             ticket2 = ticket2.replace('-', '_')
             ticket2 = ticket2.replace('^', 'Indice')
@@ -222,12 +222,12 @@ def ticketborra(ticket, **config):
             cursor.execute(sql)
 
         if archivos:
-            print('Borrando los Archivos de Registro del ticket %s' % ticket)
+            print(('Borrando los Archivos de Registro del ticket %s' % ticket))
             # tickets = ticketlistacodigo(ticket)
             # if ticket in tickets:
             # nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
             nombre = ('%s' % ticket).replace('.', '_')
-            for carpeta in CARPETAS.keys():
+            for carpeta in list(CARPETAS.keys()):
                 archivosticket = glob.glob(os.path.join(os.getcwd(), CARPETAS[carpeta], nombre + ".*"))
                 for archivo in archivosticket:
                     os.remove(archivo)
@@ -303,7 +303,7 @@ def ticketcambia(ticketviejo, ticketnuevo):
     db.commit()
     db.close()
 
-    print('El ticket %s ha cambiado a %s. Cambiandolo en BBDD' % (ticketviejo, ticketnuevo))
+    print(('El ticket %s ha cambiado a %s. Cambiandolo en BBDD' % (ticketviejo, ticketnuevo)))
     print('')
     ticketerror(ticketnuevo)
     ticketborra(ticketviejo)
@@ -319,7 +319,7 @@ def ticketerror(ticket):
     cursor.execute(sql)
     hayerror = cursor.fetchall()
     print('')
-    print('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket)
+    print(('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket))
     print('')
     if len(hayerror) > 0 and hayerror[0][0] == None:  # Solo almacenamos error si no habia otro error
         sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
@@ -411,14 +411,14 @@ def ticketcotizaciones(nombreticket, datosurl):
 
                 if salida == None or salida == '':
                     salida = 0.0
-                elif type(salida) == unicode:
+                elif type(salida) == unicode or type(salida) == str:
                     # Corregimos un posible fallo. Cuando en un analisis introducimos datos manualmente, posteriormente cuando recuperamos esa informacion
                     # lo que recuperamos es un valor unicode con con coma y no punto u'48,760'
                     salida = float(salida.replace(',', '.'))
 
                 if entrada == None or salida == '':
                     entrada = 0.0
-                elif type(entrada) == unicode:
+                elif type(entrada) == unicode or type(salida) == str:
                     entrada = float(entrada.replace(',', '.'))
 
                 if precio_ini <= precio_fin:  # datos de una accion alcista
@@ -432,8 +432,8 @@ def ticketcotizaciones(nombreticket, datosurl):
                         cursor.execute(sql)
             # en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
 
-        print('Actualizando cotizaciones de : %s' % nombreticket)
-        print('Actualizando %s con datos %s' % (nombreticket, datosurl))
+        print(('Actualizando cotizaciones de : %s' % nombreticket))
+        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
         db.commit()
         db.close()
         ticketactualizado(nombreticket)
@@ -595,7 +595,7 @@ def datoshistoricosactualizacion(naccion):
 
     fechahoy = ((date.today().timetuple()))
 
-    fechaultimoregistro = map(int, ((historico[-1][0]).split('-')))
+    fechaultimoregistro = list(map(int, ((historico[-1][0]).split('-'))))
 
     desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaultimoregistro[0], fechaultimoregistro[1], fechaultimoregistro[2])).days
 # Comparar fecha de hoy con la del archivo he incluirla en el if con un and
@@ -603,7 +603,7 @@ def datoshistoricosactualizacion(naccion):
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
     if (desdeultimaactualizacion > DIFREGACTUALIZAR['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
-        print('Registro pendiente de una actualizacion desde %s' % (historico[-2][0]))
+        print(('Registro pendiente de una actualizacion desde %s' % (historico[-2][0])))
         return (str(historico[-3][0]), True)
     else:
         print('Registro actualizado')
@@ -670,8 +670,8 @@ def monedacotizaciones(nombreticket, datosurl):
         db.commit()
         db.close()
 
-        print('Actualizando cotizaciones de : %s' % nombreticket)
-        print('Actualizando %s con datos %s' % (nombreticket, datosurl))
+        print(('Actualizando cotizaciones de : %s' % nombreticket))
+        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
 
 
 def listacciones(**config):
@@ -733,10 +733,10 @@ def listacciones(**config):
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
-    resultado2=[]
-    for ticket,nombre,mercado,moneda,timming,rent,inve,entrada,salida,numaccion,ltdateini,ltpriceini,ltdatefin,ltpricefin in resultado:
-        numaccion=int(numaccion)
-        resultado2.append((ticket,nombre,mercado,moneda,timming,rent,inve,entrada,salida,numaccion,ltdateini,ltpriceini,ltdatefin,ltpricefin))
+    resultado2 = []
+    for ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
+        numaccion = int(numaccion)
+        resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
 
 if __name__ == '__main__':
