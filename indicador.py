@@ -44,7 +44,7 @@ def MME(datos, **config):
     resultado = []
 
     k = (2.0 / (1.0 + n))
-    for iMME in xrange(0, len(datos)):
+    for iMME in range(0, len(datos)):
         fechaMME = datos[iMME][0]
         cierreMME = datos[iMME][indicedatos]
         if iMME == 0:
@@ -74,7 +74,7 @@ def TR(datos, **config):
     numberound = config.get('numberound', True)
     listaTR = []
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
         if i == 0:
@@ -110,7 +110,7 @@ def TAR(datos, **config):
     valoresTR = []
     listaTAR = []
 
-    for i in xrange(0, len(listaTR)):
+    for i in range(0, len(listaTR)):
         assert datos[i][0] == listaTR[i][0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
@@ -143,7 +143,7 @@ def DM(datos, **config):
     listaDM = []
     numberound = config.get('numberound', True)
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
         if i == 0:
@@ -199,7 +199,7 @@ def ADM(datos, **config):
     valorADMas = 0.0
     valorADMenos = 0.0
 
-    for i in xrange(0, len(listaDM)):
+    for i in range(0, len(listaDM)):
         assert datos[i][0] == listaDM[i][0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
@@ -254,7 +254,7 @@ def DI(datos, **config):
 
     assert len(datos) == len(listaADM) and len(datos) == len(listaTAR)  # Comprobamos que tienen la misma cantidad de datos
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         assert datos[i][0] == listaADM[i][0] and datos[i][0] == listaTAR[i][0]  # Comprobamos que cohinciden las fechas
 
@@ -293,7 +293,7 @@ def DX(datos, **config):
 
     assert len(datos) == len(listaDI)  # Comprobamos que tienen la misma cantidad de datos
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         assert datos[i][0] == listaDI[i][0]  # Comprobamos que cohinciden las fechas
 
@@ -326,7 +326,7 @@ def ADX(datos, **config):
     listaADX = []
     valoresDX = []
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         assert datos[i][0] == listaDX[i][0]
 
@@ -452,12 +452,12 @@ def Averange(datos, **config):
     listaA = []
     valores = []
 
-    for i in xrange(0, len(lista)):
+    for i in range(0, len(lista)):
         assert datos[i][0] == lista[i][0]  # Comprobamos que cohinciden las fechas
 
         valores.append(list(lista[i]))
 
-        for i2 in xrange(1, len(lista[i])):
+        for i2 in range(1, len(lista[i])):
 
             valor = lista[i][i2]
             if i == 0:
@@ -475,7 +475,7 @@ def Averange(datos, **config):
                 else:
                     divisor = 1
 
-                for i3 in xrange(inicio + 1, i):
+                for i3 in range(inicio + 1, i):
                     valor = lista[i3][i2] + valor
                     divisor += 1
 
@@ -493,7 +493,7 @@ def Averange(datos, **config):
                 if i < (n * 2) - 1:
                     valorA = 0.0
                 elif i == ((n * 2) - 1):
-                    for i3 in xrange((i + 1) - n, i):
+                    for i3 in range((i + 1) - n, i):
                         valor = lista[i3][i2] + valor
                     valorA = valor / n
                 else:
@@ -514,7 +514,7 @@ def Averange(datos, **config):
 
     if indicedatos != 0 and indicedatos > 0:
         listaB = []
-        for i in xrange(0, len(listaA)):
+        for i in range(0, len(listaA)):
             listaB.append((listaA[i][0], listaA[i][indicedatos]))
         listaA = listaB
         del (listaB)
@@ -544,7 +544,7 @@ def sesionesHL(datos, **config):
     listamaximos = ([n[2] for n in datos])
     listaminimos = ([n[3] for n in datos])
 
-    for i in xrange(0, len(datos)):
+    for i in range(0, len(datos)):
 
         fecha, _apertura, maximo, minimo, _cierre, _volumen = datos[i]
 
@@ -572,15 +572,16 @@ def sesionesHL(datos, **config):
     assert len(listaHL) == len(datos)
     return (listaHL)
 
+
 def fibonacci(numero):
     """
     >>> fibonacci(24)
     [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657]
-    >>> 
+    >>>
     """
     a, b = 0, 1
-    lista = [1,]
-    for i in range (numero-2):
+    lista = [1, ]
+    for _i in range(numero - 2):
         a, b = b, a + b
         lista.append(b)
     return lista
