@@ -33,7 +33,7 @@ MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
 CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
     'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
 # Expresa la diferencia entre los registros para hacer una actualizacion
-DIFREGACTUALIZAR = {'d': 10, 'w': 15, 'm': 33, 'noActualizados': 120}
+DIFREGACTUALIZAR = {'historico': 10, 'cotizacion': 10, 'noActualizados': 120}
 BACKTESTOPERACIONESSOSPECHOSAS = 1.50
 
 
@@ -144,7 +144,7 @@ def analisisAlcistaAccion(naccion, **config):
     naccion = naccion.upper()
 
     historico = BBDD.datoshistoricoslee(naccion)
-
+    HLBarras = config.get('HLBarras', False)
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
     if MME == False:
@@ -228,6 +228,9 @@ def analisisAlcistaAccion(naccion, **config):
     if not (ADX == False):
         puntosADX = indicador.ADX(datoshistoricos, ADX=ADX)
         puntosDI = indicador.DI(datoshistoricos, DI=ADX)
+
+    if HLBarras != False:
+        _puntosHL = indicador.sesionesHL(datoshistoricos, periodos=HLBarras)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -602,7 +605,7 @@ def analisisBajistaAccion(naccion, **config):
     naccion = naccion.upper()
 
     historico = BBDD.datoshistoricoslee(naccion)
-
+    HLBarras = config.get('HLBarras', False)
     conEntradaLT = config.get('conEntradaLT', True)
     MME = config.get('MME', False)
     if MME == False:
@@ -686,6 +689,9 @@ def analisisBajistaAccion(naccion, **config):
     if not (ADX == False):
         puntosADX = indicador.ADX(datoshistoricos, ADX=ADX)
         puntosDI = indicador.DI(datoshistoricos, DI=ADX)
+
+    if HLBarras != False:
+        _puntosHL = indicador.sesionesHL(datoshistoricos, periodos=HLBarras)
 
     while i < len(datoshistoricos):
         fecha, apertura, maximo, minimo, cierre, volumen = datoshistoricos[i]
@@ -1179,9 +1185,6 @@ def analisisTicket(nombreticket):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
                 break
-
-        # TODO: falla logica, puede ser que en mensual el analisis sea bajista, pero en semanal alcista. Hay que dar preferencia al alcista semanal, la resistencia o fecha de entrada seria posterior al soporte o entrada en bajista mensual
-
         # Existen ambos analisis, comparamos proximidada a ruptura
         # la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
         if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
@@ -1332,7 +1335,6 @@ def backtestMoneda(**config):
     seleccionbacktest = opcionesbacktest[opcionbacktest]
 # En el caso de hacer un solo ticket, comentar desde aqui hasta print 'Analizando ticket %s' % ticket incluido, desdentar desde este comentario hasta el siguiente parecedo
     # obtenemos la lista de las monedas
-# FIXME: Seguir desde aqui
     moneda = config.get('moneda', 'E')
     cursor, db = BBDD.conexion()
 
@@ -2320,7 +2322,7 @@ def main():
                 # if naccion in tickets:
 
                 historicoTicket(ticket, borranoactualizados=borranoactualizados)
-
+                analisisTicket(ticket)
                 # cuentaatras -= 1
 
         elif opcion == 'q':
@@ -2332,6 +2334,7 @@ def main():
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
+            db.close()
             # for ticket in listatickets:
             while len(listatickets) > 0:
 
@@ -2341,7 +2344,6 @@ def main():
                 print(('Analizando ticket %s' % ticket))
 
                 analisisTicket(ticket)
-            db.close()
 
 #        'S) BackTest
         elif opcion == 's':

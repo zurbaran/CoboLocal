@@ -118,7 +118,7 @@ def comprobaciones(colaResultado=None):
         print(('Tickets con errores : %d' % numeroResultado))
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
-    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['d'])).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['cotizacion'])).strftime("%Y-%m-%d %H:%M:%S")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` IS NULL or `fechaError` IS NOT NULL) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     cursor.execute(sql)
@@ -129,7 +129,7 @@ def comprobaciones(colaResultado=None):
         colaResultado = ((ticket[0]) for ticket in listatickets)
 
     # Tickets pendientes de realiar una actualizacion en el historico
-    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['d'])).strftime("%Y-%m-%d")
+    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['historico'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
     # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
@@ -355,7 +355,7 @@ def ticketactualizadohistorico(ticket, fecha):
 def ticketcotizaciones(nombreticket, datosurl):
     """
     """
-
+    # datosurl=datosurl.replace('ñ','n')
     cursor, db = conexion()
     datosurl2 = datosurl.rsplit(',', 10)
     datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl2
@@ -602,7 +602,7 @@ def datoshistoricosactualizacion(naccion):
 # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
 #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > DIFREGACTUALIZAR['d']):  # and (desdeultimaactualizacionarchivo>difregistros):
+    if (desdeultimaactualizacion > DIFREGACTUALIZAR['historico']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print(('Registro pendiente de una actualizacion desde %s' % (historico[-2][0])))
         return (str(historico[-3][0]), True)
     else:
