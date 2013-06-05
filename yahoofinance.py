@@ -218,8 +218,8 @@ def descargaHistoricoAccion(naccion, **config):
 
     el return devuelve o:
         los datos
-        que ha habido pago de dividendos
-        o que la url no es valida
+        que ha habido pago de dividendos 'Pago Dividendos'
+        o que la url no es valida 'URL invalida'
     """
 
     naccion = naccion.upper()

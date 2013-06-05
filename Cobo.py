@@ -1079,6 +1079,7 @@ def creaMenu(sep, lmenu, cola=True):
 def historicoTicket(nombreticket, **config):
     """
     """
+    correcto = True
     borranoactualizados = config.get('borranoactualizados', False)
     if not BBDD.datoshistoricosexisten(nombreticket):
         print(('Ticket %s nuevo, descarga completa del historico de la accion' % nombreticket))
@@ -1087,6 +1088,7 @@ def historicoTicket(nombreticket, **config):
         yahoofinance.duerme()
         if accioninvalida == 'URL invalida':
             BBDD.ticketborra(nombreticket)
+            correcto = False
 
     else:
         print(('Ticket %s ya descargado, comprobando la actualizacion de los datos' % nombreticket))
@@ -1123,6 +1125,8 @@ def historicoTicket(nombreticket, **config):
 
             elif  accioninvalida == 'URL invalida':
                 BBDD.ticketborra(nombreticket)
+                correcto = False
+    return correcto
 
 
 def analisisTicket(nombreticket):
@@ -2308,9 +2312,9 @@ def main():
 
 # #            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
 # #            if borranoactualizados == '':
-# #                borranoactualizados = False
+            borranoactualizados = False
 # #            else:
-            borranoactualizados = True
+#            borranoactualizados = True
 
             # for ticket in listatickets:
             while len(listatickets) > 0:
@@ -2318,11 +2322,9 @@ def main():
                 # accioninvalida=''
                 print ('')
                 print(('Tickets pendientes de comprobar %d' % len(listatickets)))
-
                 # if naccion in tickets:
-
-                historicoTicket(ticket, borranoactualizados=borranoactualizados)
-                analisisTicket(ticket)
+                if historicoTicket(ticket, borranoactualizados=borranoactualizados):
+                    analisisTicket(ticket)
                 # cuentaatras -= 1
 
         elif opcion == 'q':
@@ -2652,24 +2654,33 @@ def main():
                 inv = 900
             else:
                 inv = int(inv)
+            riesg = raw_input('riesgo por operacion (200E)?')
+            if riesg == '':
+                riesg = 200
+            else:
+                riesg = int(riesg)
 
-            resultado = BBDD.listacciones(volumen=vol, rentabilidad=rent, inversion=inv)
+            resultado = BBDD.listacciones(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
+            resultado2 = BBDD.listaccionesLT(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
 
             f = open(ficheroDatos, "w")
-            htmlcode = HTML.table(resultado, header_row=['Ticket',
-                                           'Nombre',
-                                           'Mercado',
-                                           'Moneda',
-                                           'Timming',
-                                           'Rentabilidad',
-                                           'Inversion en Euros',
-                                           'Entrada',
-                                           'Salida',
-                                           'Numero Acciones',
-                                           'LT Fecha Ini',
-                                           'LT Precio Ini',
-                                           'LT Fecha Fin',
-                                           'LT Precio Fin'])
+
+            for res in (resultado, resultado2):
+                htmlcode = HTML.table(res, header_row=['Ticket',
+                                               'Nombre',
+                                               'Mercado',
+                                               'Moneda',
+                                               'Timming',
+                                               'Rentabilidad',
+                                               'Inversion en Euros',
+                                               'Entrada',
+                                               'Salida',
+                                               'Numero Acciones',
+                                               'LT Fecha Ini',
+                                               'LT Precio Ini',
+                                               'LT Fecha Fin',
+                                               'LT Precio Fin'])
+                f.write(htmlcode)
 #             for n in resultado:
 #                 ticket, nombre, mercado, moneda, timming, rentabilidad, inversion, entrada, salida, numeroacc, LTFIni, LTPIni, LTFFin, LTFPFin = n
 #                 if rentabilidad >= 0.0:
@@ -2680,7 +2691,6 @@ def main():
 #                 htmlcode.rows.append(colored_n)
 #                 # table.rows.append(colored_n)
 #             htmlcode = str(htmlcode)
-            f.write(htmlcode)
             f.close()
 #
 #
