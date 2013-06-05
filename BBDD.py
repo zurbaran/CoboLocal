@@ -680,6 +680,7 @@ def listacciones(**config):
     vol = config.get('volumen', 20000000)
     rent = config.get('rentabilidad', 0.35)
     inv = config.get('inversion', 900)
+    riesgo = config.get('riesgo', 200)
 
     cursor, db = conexion()
     sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
@@ -688,10 +689,10 @@ def listacciones(**config):
        Cobo_monedas.descripcion AS Moneda,\
        Cobo_params_operaciones.timing AS Timing,\
        round( Cobo_params_operaciones.rentabilidad * 100, 2 ) AS Rentabilidad,\
-       round( (  (  (  ( round( ( Cobo_monedas.valor * 200 ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 )  ) * Cobo_params_operaciones.entrada )  ) / Cobo_monedas.valor ) , 2 ) AS InversionEnEuros,\
+       round( (  (  (  ( round( ( Cobo_monedas.valor * %d ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 )  ) * Cobo_params_operaciones.entrada )  ) / Cobo_monedas.valor ) , 2 ) AS InversionEnEuros,\
        Cobo_params_operaciones.entrada AS Entrada,\
        Cobo_params_operaciones.salida AS Salida,\
-       round( ( Cobo_monedas.valor * 200 ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 ) AS NumeroAcciones,\
+       round( ( Cobo_monedas.valor * %d ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 ) AS NumeroAcciones,\
        Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
        Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
        Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
@@ -729,7 +730,7 @@ def listacciones(**config):
            Cobo_componentes.mercado = 'PSX'\
            OR\
        Cobo_componentes.mercado = 'NGM' )\
- ORDER BY Moneda DESC, Cobo_params_operaciones.rentabilidad DESC, InversionEnEuros DESC" % (vol, vol, rent, rent, rent, inv, inv))
+ ORDER BY Moneda DESC, Cobo_params_operaciones.rentabilidad DESC, InversionEnEuros DESC" % (riesgo, riesgo, vol, vol, rent, rent, rent, inv, inv))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
@@ -738,6 +739,97 @@ def listacciones(**config):
         numaccion = int(numaccion)
         resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
+
+def listaccionesLT(**config):
+    """
+    """
+    vol = config.get('volumen', 20000000)
+    rent = config.get('rentabilidad', 0.35)
+    inv = config.get('inversion', 900)
+    riesgo = config.get('riesgo', 200)
+
+    cursor, db = conexion()
+    sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
+       Cobo_componentes.nombre AS Nombre,\
+       Cobo_componentes.mercado AS Mercado,\
+       Cobo_monedas.descripcion AS Moneda,\
+       Cobo_monedas.valor As divisa,\
+       Cobo_params_operaciones.timing AS Timing,\
+       round( Cobo_params_operaciones.rentabilidad * 100, 2 ) AS Rentabilidad,\
+       Cobo_params_operaciones.precio_salida AS Salida,\
+       Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
+       Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
+       Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
+       Cobo_params_operaciones.precio_fin AS [LT Precio Fin]\
+  FROM Cobo_componentes,\
+       Cobo_mercado_moneda,\
+       Cobo_monedas,\
+       Cobo_params_operaciones\
+ WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl\
+       AND\
+       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo \
+       AND\
+       Cobo_componentes.codigo = Cobo_params_operaciones.codigo\
+       AND\
+       ( ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )\
+           OR\
+       ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
+       AND\
+       ( Cobo_params_operaciones.rentabilidad >= %f\
+           OR\
+           Cobo_params_operaciones.rentabilidad <=-( %f /( 1 + %f )  )\
+           OR\
+       Cobo_params_operaciones.rentabilidad = 0.0 )\
+       AND\
+           (Cobo_params_operaciones.precio_ini > 0.0\
+           AND\
+           Cobo_params_operaciones.precio_fin > 0.0)\
+       AND\
+       NOT( Cobo_componentes.mercado = 'Other OTC'\
+           OR\
+           Cobo_componentes.mercado = 'PCX'\
+           OR\
+           Cobo_componentes.mercado = 'IOB'\
+           OR\
+           Cobo_componentes.mercado = 'PSX'\
+           OR\
+           Cobo_componentes.mercado = 'NGM' )\
+ ORDER BY Cobo_monedas.descripcion DESC,\
+           Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rent, rent, rent))
+    cursor.execute(sql)
+    resultado = cursor.fetchall()
+    db.close()
+    resultado2 = []
+    # FIXME: comprobar si al precio_salida hay que aplicarle los filtros en funcion del timming
+    # si la rentabilidad es positiva alcista, comprobar que el precio_salida es inferior a la salida, en bajista precio_salida superior a la salida 
+    
+    for ticket, nombre, mercado, moneda, divisa, timming, rent, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
+        # FIXME: las diferencias entre fechas no se pueden calcular asi, la variable i... es la fecha actual. Los incrementos en fecha van en funcion del timming, asi que a i habra que incrementarle en funcion del timmin, para este periodo o para el siguiente
+        ltdateini2 = list(map(int, (ltdateini.split('-'))))
+        ltdatefin2 = list(map(int, (ltdatefin.split('-'))))
+        fechahoy = ((date.today().timetuple()))
+        diffechas = (date(ltdatefin2[0], ltdatefin2[1], ltdatefin2[2]) - date(ltdateini2[0], ltdateini2[1], ltdateini2[2])).days
+        diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(ltdateini2[0], ltdateini2[1], ltdateini2[2])).days
+        if timming=='d':
+            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** diffechas) - 1.0)) ** diffechas2)), 3)
+        elif timming=='w':
+            #   (H8+        (ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (1/(360/7))))          - 1.0)) ** (diffechas2 /(360/(360/7))+1))-1)))
+            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** ((360/7) / diffechas)) - 1.0)) ** (diffechas2 / (360/7)))), 3)
+        elif timming=='m':
+            #   (H8+        (ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (1/12)))            - 1.0)) ** (diffechas2 /(360/12)+1))-1)))
+            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (12.0 / diffechas)) - 1.0)) ** (diffechas2 / 12.0))), 3)
+
+        numaccion =  int( ( divisa * riesgo ) / ( entrada - salida ))
+        inve = round( (numaccion * entrada) / divisa, 2 )
+        if rent>=0.0: # Alcista
+            pass
+        elif rent<0.0: #Bajista
+            pass
+        
+        if inve>=inv:
+            resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+    return tuple(resultado2)
+
 
 if __name__ == '__main__':
     pass
