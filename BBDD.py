@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 ####################################################
-# Name:        Cobo.py
+# Name:        BBDD.py
 # Purpose:
 #
 # Author:      Antonio
@@ -39,6 +39,7 @@ except ImportError:
 ####################################################
 # modulos no estandar o propios
 from Cobo import CARPETAS, DIFREGACTUALIZAR
+from yahoofinance import precioentradaLT
 
 
 def conexion(archivo=None):
@@ -737,8 +738,10 @@ def listacciones(**config):
     resultado2 = []
     for ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
         numaccion = int(numaccion)
+        nombre = nombre.encode('UTF-8')
         resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
+
 
 def listaccionesLT(**config):
     """
@@ -747,6 +750,7 @@ def listaccionesLT(**config):
     rent = config.get('rentabilidad', 0.35)
     inv = config.get('inversion', 900)
     riesgo = config.get('riesgo', 200)
+    incremperiod = config.get('incremperiod', 0)
 
     cursor, db = conexion()
     sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
@@ -760,7 +764,10 @@ def listaccionesLT(**config):
        Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
        Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
        Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
-       Cobo_params_operaciones.precio_fin AS [LT Precio Fin]\
+       Cobo_params_operaciones.precio_fin AS [LT Precio Fin],\
+       Cobo_componentes.maxDia AS MaxDia,\
+       Cobo_componentes.minDia AS MinDia,\
+       Cobo_componentes.valorActual AS ValorActual\
   FROM Cobo_componentes,\
        Cobo_mercado_moneda,\
        Cobo_monedas,\
@@ -800,34 +807,28 @@ def listaccionesLT(**config):
     resultado = cursor.fetchall()
     db.close()
     resultado2 = []
-    # FIXME: comprobar si al precio_salida hay que aplicarle los filtros en funcion del timming
-    # si la rentabilidad es positiva alcista, comprobar que el precio_salida es inferior a la salida, en bajista precio_salida superior a la salida 
-    
-    for ticket, nombre, mercado, moneda, divisa, timming, rent, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
-        # FIXME: las diferencias entre fechas no se pueden calcular asi, la variable i... es la fecha actual. Los incrementos en fecha van en funcion del timming, asi que a i habra que incrementarle en funcion del timmin, para este periodo o para el siguiente
-        ltdateini2 = list(map(int, (ltdateini.split('-'))))
-        ltdatefin2 = list(map(int, (ltdatefin.split('-'))))
-        fechahoy = ((date.today().timetuple()))
-        diffechas = (date(ltdatefin2[0], ltdatefin2[1], ltdatefin2[2]) - date(ltdateini2[0], ltdateini2[1], ltdateini2[2])).days
-        diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(ltdateini2[0], ltdateini2[1], ltdateini2[2])).days
-        if timming=='d':
-            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** diffechas) - 1.0)) ** diffechas2)), 3)
-        elif timming=='w':
-            #   (H8+        (ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (1/(360/7))))          - 1.0)) ** (diffechas2 /(360/(360/7))+1))-1)))
-            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** ((360/7) / diffechas)) - 1.0)) ** (diffechas2 / (360/7)))), 3)
-        elif timming=='m':
-            #   (H8+        (ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (1/12)))            - 1.0)) ** (diffechas2 /(360/12)+1))-1)))
-            entrada = round((ltpriceini * ((1 + (((1.0 + (((ltpricefin - ltpriceini) / ltpriceini))) ** (12.0 / diffechas)) - 1.0)) ** (diffechas2 / 12.0))), 3)
+    # TODO: comprobar si al precio_salida hay que aplicarle los filtros en funcion del timming
 
-        numaccion =  int( ( divisa * riesgo ) / ( entrada - salida ))
-        inve = round( (numaccion * entrada) / divisa, 2 )
-        if rent>=0.0: # Alcista
-            pass
-        elif rent<0.0: #Bajista
-            pass
-        
-        if inve>=inv:
+    for ticket, nombre, mercado, moneda, divisa, timming, rent, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin, maxDia, minDia, valorActual in resultado:
+        nombre = nombre.encode('UTF-8')
+        entrada = precioentradaLT(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+        if entrada!=salida:
+            numaccion = int((divisa * riesgo) / (entrada - salida))
+        else:
+            numaccion = 0
+        inve = round((numaccion * entrada) / divisa, 2)
+
+        # dependiendo de si es alcista o bajista que:
+        # Comprobamos inversion minima
+        # en alcista el precio de entrada se encuenta por debajo de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por encima de la salida
+        # en bajista el precio de entrada se encuenta por encima de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por debajo de la salida
+        if inve >= inv and\
+            ((rent >= 0.0 and\
+              (maxDia >= entrada and minDia >= entrada and valorActual >= entrada and entrada >= salida)) or\
+             (rent < 0.0 and \
+              (maxDia <= entrada and minDia <= entrada and valorActual <= entrada and entrada <= salida))):  # Bajista
             resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+
     return tuple(resultado2)
 
 
