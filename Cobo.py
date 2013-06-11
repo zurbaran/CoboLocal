@@ -2662,10 +2662,11 @@ def main():
 
             resultado = BBDD.listacciones(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
             resultado2 = BBDD.listaccionesLT(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
+            resultado3 = BBDD.listaccionesLT(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg, incremperiod=1)
 
             f = open(ficheroDatos, "w")
 
-            for res in (resultado, resultado2):
+            for res in (resultado, resultado2, resultado3):
                 htmlcode = HTML.table(res, header_row=['Ticket',
                                                'Nombre',
                                                'Mercado',
@@ -2681,6 +2682,7 @@ def main():
                                                'LT Fecha Fin',
                                                'LT Precio Fin'])
                 f.write(htmlcode)
+                f.write('<br>Calculos para entradas en Linea de Tendencia<br><p><br></p>')
 #             for n in resultado:
 #                 ticket, nombre, mercado, moneda, timming, rentabilidad, inversion, entrada, salida, numeroacc, LTFIni, LTPIni, LTFFin, LTFPFin = n
 #                 if rentabilidad >= 0.0:
