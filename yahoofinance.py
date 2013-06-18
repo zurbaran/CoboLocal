@@ -480,8 +480,8 @@ def cotizacionesTicket(nombreticket):
 def cotizacionesTicketWeb(nombreticket):
     """
     >>> nombreticket='AAPL'
-    >>> #len(cotizacionesTicketWeb(nombreticket))==len(cotizacionesTicket(nombreticket))
-    #True
+    >>> len(cotizacionesTicketWeb(nombreticket))==len(cotizacionesTicket(nombreticket))
+    True
     """
     nombreticket = nombreticket.upper()
     # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
@@ -697,53 +697,6 @@ def subirtimming(datos, **config):
         datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[-1][cierredatos], volumen))
 
     return datostimming
-
-
-def precioentradaLT(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, **config):
-    """
-    >>> precioentradaLT('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-04-18')
-    76.958
-    >>> precioentradaLT('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-04-25')
-    80.01
-    >>> precioentradaLT('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-05-02')
-    83.182
-    >>> precioentradaLT('2008-01-25', 48.260, '2008-04-18', 76.958, 'm', fechahoy='2008-04-25')
-    76.958
-    >>> precioentradaLT('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-06-27')
-    113.538
-    >>> precioentradaLT('2011-06-01', 4.5, '2013-02-01', 15.2, 'w', fechahoy='2013-06-10')
-    19.537
-    >>> precioentradaLT('2011-06-01', 15.2, '2013-02-01', 4.5, 'm', fechahoy='2013-06-10')
-    3.531
-    >>> precioentradaLT('2011-06-01', 15.2, '2013-02-01', 4.5, 'w', fechahoy='2013-06-10')
-    3.501
-    """
-
-    fechahoy = config.get('fechahoy', False)
-    incremperiod = config.get('incremperiod', 0)
-
-    ltdateini = list(map(int, (ltdateini.split('-'))))
-    ltdatefin = list(map(int, (ltdatefin.split('-'))))
-
-    if fechahoy:
-        fechahoy = list(map(int, (fechahoy.split('-'))))
-    else:
-        fechahoy = (date.today().year, date.today().month, date.today().day)
-
-    diffechas = (date(ltdatefin[0], ltdatefin[1], ltdatefin[2]) - date(ltdateini[0], ltdateini[1], ltdateini[2])).days
-    diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(ltdatefin[0], ltdatefin[1], ltdatefin[2])).days
-
-    _rentaanual = (((1.0 + (ltpricefin - ltpriceini) / ltpriceini) ** (365.0 / diffechas)) - 1.0)
-
-    # Calculos de entrada obtenidos apartir de la hoja Excel, Analisis y reducida ecuacion con Maple
-    if timming == 'd':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 365.0)) ** (diffechas2 + incremperiod + 0.0)
-    elif timming == 'w':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (7.0 / 365.0)) ** (int((1.0 / 7.0) * diffechas2) + incremperiod + 0.0)
-    elif timming == 'm':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 12.0)) ** (int((1.0 / 30.0) * diffechas2) + incremperiod + 0.0)
-
-    return round(entrada, 3)
 
 
 if __name__ == '__main__':
