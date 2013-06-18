@@ -39,7 +39,7 @@ except ImportError:
 ####################################################
 # modulos no estandar o propios
 from Cobo import CARPETAS, DIFREGACTUALIZAR
-from yahoofinance import precioentradaLT
+from indicador import puntocurvaexponencial
 
 
 def conexion(archivo=None):
@@ -811,8 +811,8 @@ def listaccionesLT(**config):
 
     for ticket, nombre, mercado, moneda, divisa, timming, rent, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin, maxDia, minDia, valorActual in resultado:
         nombre = nombre.encode('UTF-8')
-        entrada = precioentradaLT(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
-        if entrada!=salida:
+        entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+        if entrada != salida:
             numaccion = int((divisa * riesgo) / (entrada - salida))
         else:
             numaccion = 0

@@ -297,7 +297,8 @@ def analisisAlcistaAccion(naccion, **config):
             _fechaLTf, minimoLTf = LineaTendenciaFin
 
             if minimoLTi > 0 and minimoLTf > 0:
-
+                # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
                 precioentradapuntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((i - LTi) / 12.0))), 3)
 
                 if precioentradapuntoLT >= minimo:
@@ -382,6 +383,9 @@ def analisisAlcistaAccion(naccion, **config):
                             LTi -= 1
                             break
                         try:
+                            # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                            # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
                             logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s' \
@@ -430,6 +434,9 @@ def analisisAlcistaAccion(naccion, **config):
                             LTf += 1
                             break
                         try:
+                            # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                            # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
                             logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s' \
@@ -757,6 +764,9 @@ def analisisBajistaAccion(naccion, **config):
 
             if maximoLTi > 0 and maximoLTf > 0:
                 # try:
+                # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+
                 precioentradapuntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((i - LTi) / 12.0))), 3)
 
                 # except OverflowError:
@@ -845,6 +855,9 @@ def analisisBajistaAccion(naccion, **config):
                             LTi -= 1
                             break
                         try:
+                            # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                            # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
                             logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s' \
@@ -895,6 +908,9 @@ def analisisBajistaAccion(naccion, **config):
                             break
                         try:
                             # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
+                            # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                            # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
                             logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s' \
