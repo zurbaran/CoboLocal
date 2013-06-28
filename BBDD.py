@@ -817,16 +817,18 @@ def listaccionesLT(**config):
         else:
             numaccion = 0
         inve = round((numaccion * entrada) / divisa, 2)
-
+	# FIXME: hay que quitar la igualdad de los >= <=
+	# FIXME: en los calculos de inversion en bajista, la inve es negativo
         # dependiendo de si es alcista o bajista que:
-        # Comprobamos inversion minima
-        # en alcista el precio de entrada se encuenta por debajo de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por encima de la salida
-        # en bajista el precio de entrada se encuenta por encima de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por debajo de la salida
-        if inve >= inv and\
+        # Comprobamos inversion minima bajista en negativo e inversion minima alcista
+        # en alcista el precio de entrada se encuenta por debajo de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por encima de la salida sin ser igual
+        # en bajista el precio de entrada se encuenta por encima de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por debajo de la salida sin ser igual
+        if not ((-1.0*inv)<= inve <= inv) and\
             ((rent >= 0.0 and\
-              (maxDia >= entrada and minDia >= entrada and valorActual >= entrada and entrada >= salida)) or\
+              (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or\
              (rent < 0.0 and \
-              (maxDia <= entrada and minDia <= entrada and valorActual <= entrada and entrada <= salida))):  # Bajista
+              (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))\
+             ):
             resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
 
     return tuple(resultado2)
