@@ -1,4 +1,4 @@
-# /usr/bin/python
+#!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
 yahoofinance.py - v0.02 2013-07-16 Antonio Caballero
