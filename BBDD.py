@@ -8,9 +8,11 @@ Este modulo proporciona las herramientas necesarias para junto con Cobo o Cooper
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.02'
-__date__ = '2013-07-16'
-__author__ = 'Antonio Caballero'
+__version__ = '0.03'
+__date__ = '2013-07-26'
+__author__ = ('Antonio Caballero',)
+__mail__ = ('zurbaran79@hotmail.com',)
+__license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
 #
@@ -110,8 +112,8 @@ except ImportError:
 
 ####################################################
 # modulos no estandar o propios
-from Cobo import CARPETAS, DIFREGACTUALIZAR
-from indicador import puntocurvaexponencial
+from Cobo import CARPETAS, DIFREGACTUALIZAR, FILTROSTOPLOSS, FILTROS
+from indicador import puntocurvaexponencial, curvexprent
 
 
 def conexion(archivo=None):
@@ -750,26 +752,28 @@ def monedacotizaciones(nombreticket, datosurl):
 def listacciones(**config):
     """
     """
-    vol = config.get('volumen', 20000000)
-    rent = config.get('rentabilidad', 0.35)
-    inv = config.get('inversion', 900)
-    riesgo = config.get('riesgo', 200)
+    vol = config.get('volumen', FILTROS['volumen'])
+    rentMinima = config.get('rentMinima', FILTROS['rentMinima'])
+    inv = config.get('inversion', FILTROS['invMinima'])
+    riesgo = config.get('riesgo', FILTROS['riesgo'])
+    filtroM = config.get('filtroM', FILTROSTOPLOSS['m'])
+    filtroW = config.get('filtroW', FILTROSTOPLOSS['w'])
+    filtroD = config.get('filtroD', FILTROSTOPLOSS['d'])
+    filtro = {'m': filtroM, 'w': filtroW, 'd': filtroD}
 
     cursor, db = conexion()
     sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
-       Cobo_componentes.nombre AS Nombre,\
-       Cobo_componentes.mercado AS Mercado,\
-       Cobo_monedas.descripcion AS Moneda,\
-       Cobo_params_operaciones.timing AS Timing,\
-       round( Cobo_params_operaciones.rentabilidad * 100, 2 ) AS Rentabilidad,\
-       round( (  (  (  ( round( ( Cobo_monedas.valor * %d ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 )  ) * Cobo_params_operaciones.entrada )  ) / Cobo_monedas.valor ) , 2 ) AS InversionEnEuros,\
-       Cobo_params_operaciones.entrada AS Entrada,\
-       Cobo_params_operaciones.salida AS Salida,\
-       round( ( Cobo_monedas.valor * %d ) / ( Cobo_params_operaciones.entrada - Cobo_params_operaciones.salida ) , 0 ) AS NumeroAcciones,\
-       Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
-       Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
-       Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
-       Cobo_params_operaciones.precio_fin AS [LT Precio Fin]\
+       Cobo_componentes.nombre,\
+       Cobo_componentes.mercado,\
+       Cobo_monedas.descripcion,\
+       Cobo_monedas.valor,\
+       Cobo_params_operaciones.timing,\
+       Cobo_params_operaciones.entrada,\
+       Cobo_params_operaciones.salida,\
+       Cobo_params_operaciones.fecha_ini,\
+       Cobo_params_operaciones.precio_ini,\
+       Cobo_params_operaciones.fecha_fin,\
+       Cobo_params_operaciones.precio_fin\
   FROM Cobo_componentes,\
        Cobo_mercado_moneda,\
        Cobo_monedas,\
@@ -784,15 +788,11 @@ def listacciones(**config):
            OR\
         (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
        AND\
-        ( Cobo_params_operaciones.rentabilidad >= %f\
+           ( Cobo_params_operaciones.rentabilidad >= %f\
            OR\
        Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) )\
            OR\
        Cobo_params_operaciones.rentabilidad = 0.0 )\
-       AND\
-        ( InversionEnEuros >= %d\
-           OR\
-       InversionEnEuros <= -(%d) )\
        AND\
        NOT ( Cobo_componentes.mercado = 'Other OTC'\
            OR\
@@ -803,40 +803,62 @@ def listacciones(**config):
            Cobo_componentes.mercado = 'PSX'\
            OR\
        Cobo_componentes.mercado = 'NGM' )\
- ORDER BY Moneda DESC, Cobo_params_operaciones.rentabilidad DESC, InversionEnEuros DESC" % (riesgo, riesgo, vol, vol, rent, rent, rent, inv, inv))
+ ORDER BY Cobo_monedas.descripcion DESC,\
+           Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
     resultado2 = []
-    for ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
-        numaccion = int(numaccion)
+
+    for ticket, nombre, mercado, moneda, divisa, timming, entrada, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
         nombre = nombre.encode('UTF-8')
-        resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin, ltpricefin)
+        if entrada == None:
+            entrada = 0.0
+        if salida == None:
+            salida = 0.0
+        if rentabilidad >= 0.0:
+            entrada = entrada + 0.01
+            salida = salida * (1.0 - filtro[timming])
+        elif rentabilidad < 0.0:
+            entrada = entrada - 0.01
+            salida = salida * (1.0 + filtro[timming])
+        numaccion = int((divisa * riesgo) / (entrada - salida))
+        inve = round(((numaccion * 1.0) * entrada) / divisa, 2)
+        if not ((-1.0 * inv) <= inve <= inv) and \
+           (rentabilidad >= rentMinima or \
+           rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or \
+           rentabilidad == 0.0):
+            resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
 
 
 def listaccionesLT(**config):
     """
     """
-    vol = config.get('volumen', 20000000)
-    rent = config.get('rentabilidad', 0.35)
-    inv = config.get('inversion', 900)
-    riesgo = config.get('riesgo', 200)
+    vol = config.get('volumen', FILTROS['volumen'])
+    rentMinima = config.get('rentMinima', FILTROS['rentMinima'])
+    inv = config.get('inversion', FILTROS['invMinima'])
+    riesgo = config.get('riesgo', FILTROS['riesgo'])
+    filtroM = config.get('filtroM', FILTROSTOPLOSS['m'])
+    filtroW = config.get('filtroW', FILTROSTOPLOSS['w'])
+    filtroD = config.get('filtroD', FILTROSTOPLOSS['d'])
+    filtro = {'m': filtroM, 'w': filtroW, 'd': filtroD}
+
     incremperiod = config.get('incremperiod', 0)
 
     cursor, db = conexion()
-    sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
-       Cobo_componentes.nombre AS Nombre,\
-       Cobo_componentes.mercado AS Mercado,\
-       Cobo_monedas.descripcion AS Moneda,\
-       Cobo_monedas.valor As divisa,\
-       Cobo_params_operaciones.timing AS Timing,\
-       round( Cobo_params_operaciones.rentabilidad * 100, 2 ) AS Rentabilidad,\
-       Cobo_params_operaciones.precio_salida AS Salida,\
-       Cobo_params_operaciones.fecha_ini AS [LT Fecha Ini],\
-       Cobo_params_operaciones.precio_ini AS [LT Precio Ini],\
-       Cobo_params_operaciones.fecha_fin AS [LT Fecha Fin],\
-       Cobo_params_operaciones.precio_fin AS [LT Precio Fin],\
+    sql = ("SELECT Cobo_componentes.tiket,\
+       Cobo_componentes.nombre,\
+       Cobo_componentes.mercado,\
+       Cobo_monedas.descripcion,\
+       Cobo_monedas.valor,\
+       Cobo_params_operaciones.timing,\
+       Cobo_params_operaciones.precio_salida,\
+       Cobo_params_operaciones.fecha_ini,\
+       Cobo_params_operaciones.precio_ini,\
+       Cobo_params_operaciones.fecha_fin,\
+       Cobo_params_operaciones.precio_fin,\
        Cobo_componentes.maxDia AS MaxDia,\
        Cobo_componentes.minDia AS MinDia,\
        Cobo_componentes.valorActual AS ValorActual\
@@ -854,7 +876,7 @@ def listaccionesLT(**config):
            OR\
        ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
        AND\
-       ( Cobo_params_operaciones.rentabilidad >= %f\
+         ( Cobo_params_operaciones.rentabilidad >= %f\
            OR\
            Cobo_params_operaciones.rentabilidad <=-( %f /( 1 + %f )  )\
            OR\
@@ -874,34 +896,48 @@ def listaccionesLT(**config):
            OR\
            Cobo_componentes.mercado = 'NGM' )\
  ORDER BY Cobo_monedas.descripcion DESC,\
-           Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rent, rent, rent))
+           Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
     resultado2 = []
-    # TODO: comprobar si al precio_salida hay que aplicarle los filtros en funcion del timming
 
-    for ticket, nombre, mercado, moneda, divisa, timming, rent, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin, maxDia, minDia, valorActual in resultado:
+    # TODO: comprobar si al precio_salida hay que aplicarle los filtros en funcion del timming
+    for ticket, nombre, mercado, moneda, divisa, timming, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin, maxDia, minDia, valorActual in resultado:
         nombre = nombre.encode('UTF-8')
+        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin, ltpricefin)
         entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+        if entrada == None:
+            entrada = 0.0
+        if salida == None:
+            salida = 0.0
+        if rentabilidad >= 0.0:
+            salida = salida * (1.0 - filtro[timming])
+        elif rentabilidad < 0.0:
+            salida = salida * (1.0 + filtro[timming])
         if entrada != salida:
             numaccion = int((divisa * riesgo) / (entrada - salida))
         else:
             numaccion = 0
-        inve = round((numaccion * entrada) / divisa, 2)
-	# FIXME: hay que quitar la igualdad de los >= <=
-	# FIXME: en los calculos de inversion en bajista, la inve es negativo
+        inve = round(((numaccion * 1.0) * entrada) / divisa, 2)
+        # FIXME: hay que quitar la igualdad de los >= <=
+        # FIXME: en los calculos de inversion en bajista, la inve es negativo
         # dependiendo de si es alcista o bajista que:
         # Comprobamos inversion minima bajista en negativo e inversion minima alcista
+        # Comprobamos la rentabilidad minima
         # en alcista el precio de entrada se encuenta por debajo de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por encima de la salida sin ser igual
         # en bajista el precio de entrada se encuenta por encima de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por debajo de la salida sin ser igual
-        if not ((-1.0*inv)<= inve <= inv) and\
-            ((rent >= 0.0 and\
+
+        if not ((-1.0 * inv) <= inve <= inv) and \
+           (rentabilidad >= rentMinima or \
+           rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or \
+           rentabilidad == 0.0) and\
+            ((rentabilidad >= 0.0 and\
               (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or\
-             (rent < 0.0 and \
+             (rentabilidad < 0.0 and\
               (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))\
              ):
-            resultado2.append((ticket, nombre, mercado, moneda, timming, rent, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+            resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
 
     return tuple(resultado2)
 
