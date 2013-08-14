@@ -760,6 +760,7 @@ def listacciones(**config):
     filtroW = config.get('filtroW', FILTROSTOPLOSS['w'])
     filtroD = config.get('filtroD', FILTROSTOPLOSS['d'])
     filtro = {'m': filtroM, 'w': filtroW, 'd': filtroD}
+    timmings = config.get('timmings', ('m', 'w', 'd'))
 
     cursor, db = conexion()
     sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
@@ -819,16 +820,17 @@ def listacciones(**config):
             salida = 0.0
         if rentabilidad >= 0.0:
             entrada = entrada + 0.01
-            salida = salida * (1.0 - filtro[timming])
+            salida = round(salida * (1.0 - filtro[timming]), 2)
         elif rentabilidad < 0.0:
             entrada = entrada - 0.01
-            salida = salida * (1.0 + filtro[timming])
+            salida = round(salida * (1.0 + filtro[timming]), 2)
         numaccion = int((divisa * riesgo) / (entrada - salida))
         inve = round(((numaccion * 1.0) * entrada) / divisa, 2)
         if not ((-1.0 * inv) <= inve <= inv) and \
            (rentabilidad >= rentMinima or \
            rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or \
-           rentabilidad == 0.0):
+           rentabilidad == 0.0) and\
+           timming in timmings:
             resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
 
@@ -844,6 +846,7 @@ def listaccionesLT(**config):
     filtroW = config.get('filtroW', FILTROSTOPLOSS['w'])
     filtroD = config.get('filtroD', FILTROSTOPLOSS['d'])
     filtro = {'m': filtroM, 'w': filtroW, 'd': filtroD}
+    timmings = config.get('timmings', ('m', 'w', 'd'))
 
     incremperiod = config.get('incremperiod', 0)
 
@@ -912,9 +915,9 @@ def listaccionesLT(**config):
         if salida == None:
             salida = 0.0
         if rentabilidad >= 0.0:
-            salida = salida * (1.0 - filtro[timming])
+            salida = round(salida * (1.0 - filtro[timming]), 2)
         elif rentabilidad < 0.0:
-            salida = salida * (1.0 + filtro[timming])
+            salida = round(salida * (1.0 + filtro[timming]), 2)
         if entrada != salida:
             numaccion = int((divisa * riesgo) / (entrada - salida))
         else:
@@ -935,8 +938,8 @@ def listaccionesLT(**config):
             ((rentabilidad >= 0.0 and\
               (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or\
              (rentabilidad < 0.0 and\
-              (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))\
-             ):
+              (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))) and\
+           timming in timmings :
             resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
 
     return tuple(resultado2)
