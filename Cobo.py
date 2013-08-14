@@ -111,7 +111,7 @@ BACKTESTOPERACIONESSOSPECHOSAS = 1.50
 FILTROSTOPLOSS = {'m': 0.04, 'w': 0.03, 'd': 0.02}
 FILTROS = {'volumen': 20000000,
            'rentMinima': 0.35,
-           'invMinima': 900,
+           'invMinima': 800,
            'riesgo': 200}
 
 
@@ -245,21 +245,21 @@ def analisisAlcistaAccion(naccion, **config):
         datoshistoricos = historico
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.01
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.02
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.03
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 2.5
 
@@ -714,21 +714,21 @@ def analisisBajistaAccion(naccion, **config):
         datoshistoricos = historico
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.01
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.02
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.03
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 2.5
 
@@ -1233,7 +1233,7 @@ def analisisTicket(nombreticket):
     cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
     registro = cursor.fetchall()
     # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-    codigo, _nombre, ticket, _mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
+    codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
     proximidadalcista, proximidadbajista = 0, 0
     if BBDD.datoshistoricosexisten(ticket):
 
@@ -1285,8 +1285,10 @@ def analisisTicket(nombreticket):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
                 break
+# FIXME: Comprobar las proximidades alcista y bajista
         # Existen ambos analisis, comparamos proximidada a ruptura
         # la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
+
         if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
             resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
             soporte, stoploss = soporte
@@ -1342,17 +1344,17 @@ def analisisTicket(nombreticket):
 
         if ((entrada > stoploss) and\
             # Alcista obsoleto, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
-            ((max52 != 'NULL' and max52 > resistencia[2]) or\
-             (maxDia != 'NULL' and maxDia > resistencia[2]) or\
+            # ((max52 != 'NULL' and max52 > resistencia[2]) or\ # Eliminamos la comparacion con el max52week porque en ocasiones cuando se paga un dividendo o se produce un split, este valor tardan en ajustarlo a esos cambios y queda por encima del precio de entrada, provocando esta comparacion que algunos analisis no aparezcan
+             ((maxDia != 'NULL' and maxDia > resistencia[2]) or\
              (valorActual != 'NULL' and valorActual > resistencia[2]) or\
              (entrada > resistencia[2])))\
-             or\
-             ((entrada < stoploss) and\
-              # Bajista obsoleto, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
-              ((min52 != 'NULL' and min52 < soporte[3]) or\
-               (minDia != 'NULL' and minDia < soporte[3]) or\
-               (valorActual != 'NULL' and valorActual < soporte[3]) or\
-               (entrada < soporte[3]))):
+           or\
+           ((entrada < stoploss) and\
+            # Bajista obsoleto, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
+            # ((min52 != 'NULL' and min52 < soporte[3]) or\ # Eliminamos la comparacion con el min52week porque en ocasiones cuando se paga un dividendo o se produce un split, este valor tardan en ajustarlo a esos cambios y queda por debajo del precio de entrada, provocando esta comparacion que algunos analisis no aparezcan
+             ((minDia != 'NULL' and minDia < soporte[3]) or\
+             (valorActual != 'NULL' and valorActual < soporte[3]) or\
+             (entrada < soporte[3]))):
 
             # si true, analisis ya cumplido, obsoleto y lo actualizamos
             if numeroResultado == 1:
@@ -2143,19 +2145,19 @@ def main():
                 EntradaLT = False
             else:
                 EntradaLT = True
-            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, % (0.03): ')
+            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
             if filtrosalidamensual == '':
-                filtrosalidamensual = 0.03
+                filtrosalidamensual = FILTROSTOPLOSS['m']
             else:
                 filtrosalidamensual = float(filtrosalidamensual)
-            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion, % (0.02): ')
+            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion,(%.2f): ' % (FILTROSTOPLOSS['w']))
             if filtrosalidasemanal == '':
-                filtrosalidasemanal = 0.02
+                filtrosalidasemanal = FILTROSTOPLOSS['w']
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
             if filtrosalidadiario == '':
-                filtrosalidadiario = 0.01
+                filtrosalidadiario = FILTROSTOPLOSS['d']
             else:
                 filtrosalidadiario = float(filtrosalidadiario)
 
@@ -2771,6 +2773,11 @@ def main():
                 config['filtroD'] = float(filtroD)
             else:
                 config['filtroD'] = FILTROSTOPLOSS['d']
+            timmings=[]
+            for n in ('m', 'w', 'd'):
+                if raw_input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n)=='':
+                    timmings.append(n)
+            config['timmings'] = tuple (timmings)
 
             resultado = BBDD.listacciones(**config)
             resultado2 = BBDD.listaccionesLT(**config)
