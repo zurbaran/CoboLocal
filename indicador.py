@@ -1,4 +1,4 @@
-# /usr/bin/python
+#!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
 indicador.py - v0.02 2013-07-16 Antonio Caballero, Paco Corbi
@@ -8,9 +8,11 @@ Este modulo proporciona los indicadores utilizados en el resto de modulos
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.02'
-__date__ = '2013-07-16'
-__author__ = 'Antonio Caballero, Paco Corbi'
+__version__ = '0.03'
+__date__ = '2013-07-26'
+__author__ = ('Antonio Caballero', 'Paco Corbi')
+__mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
+__license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
 #
@@ -712,6 +714,21 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
         entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 12.0)) ** (int((1.0 / 30.0) * diffechas2) + incremperiod + 0.0)
 
     return round(entrada, 3)
+
+
+def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
+    if fechainicial == '0-0-0' or fechafinal == '0-0-0': # or precioinicial== 0.0 or preciofinal== 0.0:
+        rentabilidad = 0.00
+    else:
+        fechainicial = list(map(int, (fechainicial.split('-'))))
+        fechafinal = list(map(int, (fechafinal.split('-'))))
+        diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
+        # evitando que la division de mas abajo sea por 0
+        if precioinicial == 0.0:
+            precioinicial = 0.001
+    #                        if entrada > stoploss:#Alcista
+        rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+    return rentabilidad
 
 
 if __name__ == '__main__':

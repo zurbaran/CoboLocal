@@ -1,4 +1,4 @@
-# /usr/bin/python
+#!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
 yahoofinance.py - v0.02 2013-07-16 Antonio Caballero
@@ -8,9 +8,11 @@ Este modulo proporciona las herramientas necesarias la descarga de datos de yaho
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.02'
-__date__ = '2013-07-16'
-__author__ = 'Antonio Caballero'
+__version__ = '0.03'
+__date__ = '2013-07-26'
+__author__ = ('Antonio Caballero',)
+__mail__ = ('zurbaran79@hotmail.com',)
+__license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
 #
