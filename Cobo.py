@@ -1,4 +1,4 @@
-# /usr/bin/python
+#!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
 Cobo.py - v0.02 2013-07-16 Antonio Caballero, Paco Corbi
@@ -8,9 +8,11 @@ Este modulo proporciona las herramientas necesarias para el analisis, gestion y 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.02'
-__date__ = '2013-07-16'
-__author__ = 'Antonio Caballero, Paco Corbi'
+__version__ = '0.03'
+__date__ = '2013-07-26'
+__author__ = ('Antonio Caballero', 'Paco Corbi')
+__mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
+__license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
 #
@@ -106,6 +108,11 @@ CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
 # Expresa la diferencia entre los registros para hacer una actualizacion
 DIFREGACTUALIZAR = {'historico': 10, 'cotizacion': 10, 'noActualizados': 120}
 BACKTESTOPERACIONESSOSPECHOSAS = 1.50
+FILTROSTOPLOSS = {'m': 0.04, 'w': 0.03, 'd': 0.02}
+FILTROS = {'volumen': 20000000,
+           'rentMinima': 0.35,
+           'invMinima': 800,
+           'riesgo': 200}
 
 
 ####################################################
@@ -238,21 +245,21 @@ def analisisAlcistaAccion(naccion, **config):
         datoshistoricos = historico
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.01
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.02
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.03
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 2.5
 
@@ -655,7 +662,8 @@ def analisisAlcistaAccion(naccion, **config):
     if len(analisisalcista) == 1:  # esto esta porque puede que en el analisisalcista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return (analisisalcista[-1], 0, analisisalcista)
     elif len(analisisalcista) > 1:
-        return (analisisalcista[-1], (analisisalcista[-2][1][1]), analisisalcista)  # [-2][1][1]=penultimo analisis, Soporte, stoploss
+        # TODO:  es posible que haya que cambiar analisisalcista[-2][1][1] por analisisalcista[-2][1][0][3]
+        return (analisisalcista[-1], (analisisalcista[-2][1][0][3]), analisisalcista)  # [-2][1][1]=penultimo analisis, Soporte, stoploss
     else:
         # habria que comprobar un timming inferirior al obtener como resultado 0
         return None
@@ -706,21 +714,21 @@ def analisisBajistaAccion(naccion, **config):
         datoshistoricos = historico
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.01
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.7
     elif timming == 'w':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='w')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.02
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 3.0
     elif timming == 'm':
         datoshistoricos = yahoofinance.subirtimming(historico, timming='m')
         if filtro == 0.0:
             if TAR == False:
-                filtro = 0.03
+                filtro = FILTROSTOPLOSS[timming]
             else:
                 filtro = 2.5
 
@@ -1122,7 +1130,8 @@ def analisisBajistaAccion(naccion, **config):
     if len(analisisbajista) == 1:  # esto esta porque puede que en el analisisbajista en el timming actual no produzca resultado al no existir resistencia alcista en el timming actual
         return ((analisisbajista[-1]), 0, analisisbajista)
     elif len(analisisbajista) > 1:
-        return ((analisisbajista[-1]), (analisisbajista[-2][1][1]), analisisbajista)  # [-2][1][1]=penultimo analisis, resistencia, stoploss
+        # TODO:  es posible que haya que cambiar analisisbajista[-2][1][1] por analisisbajista[-2][1][0][2]
+        return ((analisisbajista[-1]), (analisisbajista[-2][1][0][2]), analisisbajista)  # [-2][1][1]=penultimo analisis, resistencia, stoploss
     else:
         # habria que comprobar un timming inferirior al obtener como resultado 0
         return None
@@ -1224,14 +1233,14 @@ def analisisTicket(nombreticket):
     cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
     registro = cursor.fetchall()
     # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-    codigo, _nombre, ticket, _mercado, max52, maxDia, min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
+    codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
     proximidadalcista, proximidadbajista = 0, 0
     if BBDD.datoshistoricosexisten(ticket):
 
         # al final si utilizamos indicador.MME, el indicador.MME sera la decision de si es alcista o bajista
         for timminganalisis in 'mwd':
             print(('Timming del analisis alcista: %s' % timminganalisis))
-            analisisalcista = analisisAlcistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
+            analisisalcista = analisisAlcistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False, filtro=FILTROSTOPLOSS[timminganalisis])
             if analisisalcista != None:
                 alcista, soporteanterioralcista, _analisisalcistatotal = analisisalcista
                 resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
@@ -1255,7 +1264,7 @@ def analisisTicket(nombreticket):
 
         for timminganalisis in 'mwd':
             print(('Timming del analisis bajista: %s' % timminganalisis))
-            analisisbajista = analisisBajistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False)
+            analisisbajista = analisisBajistaAccion(ticket, timming=timminganalisis, conEntradaLT=False, txt=False, filtro=FILTROSTOPLOSS[timminganalisis])
             if analisisbajista != None:
                 bajista, soporteanteriorbajista, _analisisbajistatotal = analisisbajista
                 soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
@@ -1276,28 +1285,34 @@ def analisisTicket(nombreticket):
 #                                proximidadbajista.append(abs(1 - (soporte[3] / precio)))
 #                            proximidadbajista = min(proximidadbajista)
                 break
+# FIXME: Comprobar las proximidades alcista y bajista
         # Existen ambos analisis, comparamos proximidada a ruptura
         # la minima proximidadbajista es mayor o igual a la proximidadalcista, alcista
+
         if analisisalcista != None and analisisbajista != None and proximidadbajista >= proximidadalcista:
             resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
             soporte, stoploss = soporte
+            salida = soporte[3]
             ruptura, entrada = ruptura
             soporteanterior = soporteanterioralcista
         # la minima proximidadbajista es menor a la proximidadalcista, bajista
         elif analisisalcista != None and analisisbajista != None and proximidadbajista < proximidadalcista:
             soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
             resistencia, stoploss = resistencia
+            salida = resistencia[3]
             ruptura, entrada = ruptura
             soporteanterior = soporteanteriorbajista
         # Uno de los analisis no existe, asignamos el contrario
         elif analisisalcista == None and analisisbajista != None:
             soporte, resistencia, ruptura, LTi, LTf, _salida, timming, _indices = bajista
             resistencia, stoploss = resistencia
+            salida = resistencia[3]
             ruptura, entrada = ruptura
             soporteanterior = soporteanteriorbajista
         elif analisisbajista == None and analisisalcista != None:
             resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
             soporte, stoploss = soporte
+            salida = soporte[3]
             ruptura, entrada = ruptura
             soporteanterior = soporteanterioralcista
         elif analisisbajista == None and analisisalcista == None:  # No existe analisis posible
@@ -1307,6 +1322,7 @@ def analisisTicket(nombreticket):
         else:  # Por defecto lo consideramos alcista, aunque aqui deberia entrar solo en el caso se que no se de la 3 condicion del if anterior
             resistencia, soporte, ruptura, LTi, LTf, _salida, timming, _indices = alcista
             soporte, stoploss = soporte
+            salida = soporte[3]
             ruptura, entrada = ruptura
             soporteanterior = soporteanterioralcista
 
@@ -1319,17 +1335,7 @@ def analisisTicket(nombreticket):
         else:
             fechainicial, precioinicial = LTi
             fechafinal, preciofinal = LTf
-            fechainicial = list(map(int, (fechainicial.split('-'))))
-            fechafinal = list(map(int, (fechafinal.split('-'))))
-            diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
-            # evitando que la division de mas abajo sea por 0
-            if precioinicial == 0.0:
-                precioinicial = 0.001
-#                        if entrada > stoploss:#Alcista
-            rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
-#                        elif entrada < stoploss:#Bajista
-                # TODO: la rentabilidad en bajista tiene que ser negativa, pero el equivalente en positiva
-#                            rentabilidad = ((((1 + ((precioinicial - preciofinal) / preciofinal)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+            rentabilidad = indicador.curvexprent(fechainicial, precioinicial, fechafinal, preciofinal)
 
         # no nos interesan los datos almacenados de analisis anteriores
         # comprobamos que el analisis obtenido y que vamos a almacenar en la BBDD es o
@@ -1338,17 +1344,17 @@ def analisisTicket(nombreticket):
 
         if ((entrada > stoploss) and\
             # Alcista obsoleto, maximo52, maximo del dia, valoractual, precio de entrada (split) > Resitencia
-            ((max52 != 'NULL' and max52 > resistencia[2]) or\
-             (maxDia != 'NULL' and maxDia > resistencia[2]) or\
+            # ((max52 != 'NULL' and max52 > resistencia[2]) or\ # Eliminamos la comparacion con el max52week porque en ocasiones cuando se paga un dividendo o se produce un split, este valor tardan en ajustarlo a esos cambios y queda por encima del precio de entrada, provocando esta comparacion que algunos analisis no aparezcan
+             ((maxDia != 'NULL' and maxDia > resistencia[2]) or\
              (valorActual != 'NULL' and valorActual > resistencia[2]) or\
              (entrada > resistencia[2])))\
-             or\
-             ((entrada < stoploss) and\
-              # Bajista obsoleto, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
-              ((min52 != 'NULL' and min52 < soporte[3]) or\
-               (minDia != 'NULL' and minDia < soporte[3]) or\
-               (valorActual != 'NULL' and valorActual < soporte[3]) or\
-               (entrada < soporte[3]))):
+           or\
+           ((entrada < stoploss) and\
+            # Bajista obsoleto, minimo52, minimo del dia, valoractual, precio de entrada (split) < soporte
+            # ((min52 != 'NULL' and min52 < soporte[3]) or\ # Eliminamos la comparacion con el min52week porque en ocasiones cuando se paga un dividendo o se produce un split, este valor tardan en ajustarlo a esos cambios y queda por debajo del precio de entrada, provocando esta comparacion que algunos analisis no aparezcan
+             ((minDia != 'NULL' and minDia < soporte[3]) or\
+             (valorActual != 'NULL' and valorActual < soporte[3]) or\
+             (entrada < soporte[3]))):
 
             # si true, analisis ya cumplido, obsoleto y lo actualizamos
             if numeroResultado == 1:
@@ -1360,9 +1366,9 @@ def analisisTicket(nombreticket):
         else:  # anali
             # si false, analisis valido, sin cumplir
             if numeroResultado == 1:
-                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, timming, soporteanterior, rentabilidad, codigo)
+                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = %.3f, `entrada` = %.3f, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], salida, entrada, timming, soporteanterior, rentabilidad, codigo)
             elif numeroResultado == 0:
-                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], stoploss, entrada, codigo, timming, soporteanterior, rentabilidad)
+                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s','%s',%.3f , %.3f, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], salida, entrada, codigo, timming, soporteanterior, rentabilidad)
 
         cursor.execute(sql)
 
@@ -1387,14 +1393,14 @@ def backtestMoneda(**config):
     if analizardesde != False:
         analizardesde = (todohistorico, analizardesde)
 
-    riesgo = config.get('riesgo', 200.0)
-    volumenminimo = config.get('volumenminimo', 20000000.0)
-    filtrosalidamensual = config.get('filtrosalidamensual', 0.03)
-    filtrosalidasemanal = config.get('filtrosalidasemanal', 0.02)
-    filtrosalidadiario = config.get('filtrosalidadiario', 0.01)
-    rentabilidadminima = config.get('rentabilidadminima', 0.35)
+    riesgo = config.get('riesgo', FILTROS['riesgo'])
+    volumenminimo = config.get('volumenminimo', FILTROS['volumen'])
+    filtrosalidamensual = config.get('filtrosalidamensual', FILTROSTOPLOSS['m'])
+    filtrosalidasemanal = config.get('filtrosalidasemanal', FILTROSTOPLOSS['w'])
+    filtrosalidadiario = config.get('filtrosalidadiario', FILTROSTOPLOSS['d'])
+    rentabilidadminima = config.get('rentabilidadminima', FILTROS['rentMinima'])
     rentabilidad0 = config.get('rentabilidad0', True)  # True/False Consideramos Rentabilidad 0 igual a la rentabilidad minima,
-    inversionminima = config.get('inversionminima', 800)
+    inversionminima = config.get('inversionminima', FILTROS['invMinima'])
     inversionmaxima = config.get('inversionmaxima', False)  # False / entero
 
     MMediario = config.get('MMediario', False)
@@ -2139,19 +2145,19 @@ def main():
                 EntradaLT = False
             else:
                 EntradaLT = True
-            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, % (0.03): ')
+            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
             if filtrosalidamensual == '':
-                filtrosalidamensual = 0.03
+                filtrosalidamensual = FILTROSTOPLOSS['m']
             else:
                 filtrosalidamensual = float(filtrosalidamensual)
-            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion, % (0.02): ')
+            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion,(%.2f): ' % (FILTROSTOPLOSS['w']))
             if filtrosalidasemanal == '':
-                filtrosalidasemanal = 0.02
+                filtrosalidasemanal = FILTROSTOPLOSS['w']
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
             if filtrosalidadiario == '':
-                filtrosalidadiario = 0.01
+                filtrosalidadiario = FILTROSTOPLOSS['d']
             else:
                 filtrosalidadiario = float(filtrosalidadiario)
 
@@ -2454,34 +2460,34 @@ def main():
                 if raw_input('Utilizamos todo el historico para el analisis, (Si): ') != '':
                     config['todohistorico'] = False
 
-            riesgo = raw_input('Riesgo por operacion (200): ')
+            riesgo = raw_input('Riesgo por operacion (%d): ' % (FILTROS['riesgo']))
             if riesgo != '':
                 config['riesgo'] = int(riesgo)
 
-            volumenminimo = raw_input('Volumen Minimo por operacion (20000000): ')
+            volumenminimo = raw_input('Volumen Minimo por operacion (%d): ' % (FILTROS['volumen']))
             if volumenminimo != '':
                 config['volumenminimo'] = int(volumenminimo)
 
-            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, % (0.03): ')
+            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
             if filtrosalidamensual != '':
                 config['filtrosalidamensual'] = float(filtrosalidamensual)
 
-            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion, % (0.02): ')
+            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w']))
             if filtrosalidasemanal != '':
                 config['filtrosalidasemanal'] = float(filtrosalidasemanal)
 
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, % (0.01): ')
+            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
             if filtrosalidadiario != '':
                 config['filtrosalidadiario'] = float(filtrosalidadiario)
 
-            rentabilidadminima = raw_input('Rentabilidad minima por operacion, % (0.35): ')
+            rentabilidadminima = raw_input('Rentabilidad minima por operacion, (%.2f): ' % (FILTROS['rentMinima']))
             if rentabilidadminima != '':
                 config['rentabilidadminima'] = float(rentabilidadminima)
 
             if raw_input('Consideramos Rentabilidad 0 igual a la rentabilidad minima, (Si): ') != '':
                 config['rentabilidad0'] = False
 
-            inversionminima = raw_input('Inversion minima por operacion (800): ')
+            inversionminima = raw_input('Inversion minima por operacion (%d): ' % (FILTROS['invMinima']))
             if inversionminima != '':
                 config['inversionminima'] = int(inversionminima)
 
@@ -2724,40 +2730,83 @@ def main():
         # x) Generar lista de acciones
         elif opcion == 'x':
             print(seleccion)
+            config = {}
 
-            ficheroDatos = os.path.join(os.getcwd(), str(date.today()) + '.html')
-            vol = raw_input('Volumen minimo (20000000)?')
-            if vol == '':
-                vol = 20000000
+            vol = raw_input('Volumen minimo (%d)?' % (FILTROS['volumen']))
+            if vol != '':
+                config['volumen'] = int(vol)
             else:
-                vol = int(vol)
-            rent = raw_input('rentabilidad minima (0.35)?')
-            if rent == '':
-                rent = 0.35
-            else:
-                rent = float(rent)
-            inv = raw_input('inversion minima (900E)?')
-            if inv == '':
-                inv = 900
-            else:
-                inv = int(inv)
-            riesg = raw_input('riesgo por operacion (200E)?')
-            if riesg == '':
-                riesg = 200
-            else:
-                riesg = int(riesg)
+                config['volumen'] = FILTROS['volumen']
 
-            resultado = BBDD.listacciones(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
-            resultado2 = BBDD.listaccionesLT(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg)
-            resultado3 = BBDD.listaccionesLT(volumen=vol, rentabilidad=rent, inversion=inv, riesgo=riesg, incremperiod=1)
+            rentMinima = raw_input('rentabilidad minima (%.2f)?' % (FILTROS['rentMinima']))
+            if rentMinima != '':
+                config['rentMinima'] = float(rentMinima)
+            else:
+                config['rentMinima'] = FILTROS['rentMinima']
 
+            inversion = raw_input('inversion minima (%dE)?' % (FILTROS['invMinima']))
+            if inversion != '':
+                config['inversion'] = int(inversion)
+            else:
+                config['inversion'] = FILTROS['invMinima']
+
+            riesgo = raw_input('riesgo por operacion (%dE)?' % (FILTROS['riesgo']))
+            if riesgo != '':
+                config['riesgo'] = int(riesgo)
+            else:
+                config['riesgo'] = FILTROS['riesgo']
+
+            filtroM = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
+            if filtroM != '':
+                config['filtroM'] = float(filtroM)
+            else:
+                config['filtroM'] = FILTROSTOPLOSS['m']
+
+            filtroW = raw_input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w']))
+            if filtroW != '':
+                config['filtroW'] = float(filtroW)
+            else:
+                config['filtroW'] = FILTROSTOPLOSS['w']
+
+            filtroD = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
+            if filtroD != '':
+                config['filtroD'] = float(filtroD)
+            else:
+                config['filtroD'] = FILTROSTOPLOSS['d']
+            timmings=[]
+            for n in ('m', 'w', 'd'):
+                if raw_input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n)=='':
+                    timmings.append(n)
+            config['timmings'] = tuple (timmings)
+
+            resultado = BBDD.listacciones(**config)
+            resultado2 = BBDD.listaccionesLT(**config)
+            resultado3 = BBDD.listaccionesLT(incremperiod=1, **config)
+
+            ficheroDatos = os.path.join(os.getcwd(), ((datetime.now()).strftime("%Y%m%d %H%M%S")) + '.html')
             f = open(ficheroDatos, "w")
+            f.write('<!DOCTYPE html>\n')
+            f.write('<html>\n')
             f.write('<head>\n')
-            f.write('<meta name="author" content="Antonio Caballero">\n')
-            f.write('<meta name="mail" content="zurbaran79@hotmail.com">\n')
-            f.write('<meta name="description" content="Lista Generada Automaticamente. Parametros:   Volumen: %d, Rentabilidad: %.2f, InversionMinima: %d, Riesgo: %d">\n' % (vol, rent, inv, riesg))
-            f.write('<meta name="license" content="http://creativecommons.org/licenses/by-sa/3.0/legalcode">\n')
+            f.write('<meta content="text/html; charset=windows-1252" http-equiv="content-type">\n')
+            for name, content in (('author', __author__[0]),
+                                  ('mail', __mail__[0]),
+                                  ('license', 'http://creativecommons.org/licenses/by-sa/3.0/legalcode')):
+                f.write('<meta name="' + name + '" content="' + content + '">\n')
             f.write('</head>\n')
+            f.write('<body>\n')
+            f.write('<p>Lista Generada Automaticamente. Parametros:</p>\n\
+                        <ul>\n\
+                          <li>Volumen: %d</li>\n\
+                          <li>Rentabilidad: %.2f</li>\n\
+                          <li>InversionMinima: %d</li>\n\
+                          <li>Riesgo: %d</li>\n\
+                          <li>FiltroMensual %.2f</li>\n\
+                          <li>FiltroSemanal %.2f</li>\n\
+                          <li>FiltroDiario %.2f</li>\n\
+                        </ul>\n' %
+                    (config['volumen'], config['rentMinima'], config['inversion'], config['riesgo'], config['filtroM'], config['filtroW'], config['filtroD']))
+
             for res in (resultado, resultado2, resultado3):
                 htmlcode = HTML.table(res, header_row=['Ticket',
                                                'Nombre',
@@ -2786,6 +2835,8 @@ def main():
 #                 # table.rows.append(colored_n)
 #             htmlcode = str(htmlcode)
             f.write('<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO"><img alt="Licencia Creative Commons" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a><br />Este obra está bajo una <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO">Licencia Creative Commons Atribución-CompartirIgual 3.0 Unported</a>.')
+            f.write('</body>\n')
+            f.write('</html>\n')
             f.close()
 #
 #
@@ -2798,7 +2849,7 @@ def main():
     # os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
         elif opcion == 'z':
 
-            # cursor.close()
+            # cursor.close()x
             # db.close()
             break
 
