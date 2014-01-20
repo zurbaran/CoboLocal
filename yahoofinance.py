@@ -279,6 +279,101 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
+def ticketsIPO(meses=5):
+    """
+
+    >>> ipos = ticketsIPO(meses=2)
+
+    http://biz.yahoo.com/ipo/prc_cal.html
+    Pausa de 1.269 segundos
+
+    http://biz.yahoo.com/ipo/prc_dec13.html
+    Pausa de 0.405 segundos
+
+    http://biz.yahoo.com/ipo/prc_nov13.html
+    Pausa de 1.374 segundos
+
+          40 Tickets IPO aÃ±adidas
+
+    >>> ipos
+    [u'CELP', u'RTRX', u'GLYC', u'ITCI', u'SPCBF', u'AMC', u'CAMBU', u'ADMP', u'SALT', u'TLOG', u'KIN', u'KFX', u'XNCR', u'GMZ', u'IPWR', u'WBAI', u'VNCE', u'OXFD', u'GOMO', u'EVGN', u'RLYP', u'ZU', u'FRBA', u'TNDM', u'LEVYU', u'HMHC', u'EROS', u'DLNG', u'STAY', u'CHGG', u'NMIH', u'JGW', u'TWTR', u'MEP', u'MVNR', u'BANX', u'LGIH', u'NCFT', u'KPTI', u'WIX', u'CUDA', u'ARCX']
+    """
+    ticketsanadidos = []
+    pagina = 'prc_cal.html'
+    i = 0
+    while i <= meses:
+        print('')
+        url = 'http://biz.yahoo.com/ipo/' + pagina
+        print(url)
+
+        web = None
+        while web == None:
+            try:
+                r = urllib2.Request(url, headers=webheaders)
+                f = urllib2.urlopen(r)
+                web = (f.read()).decode('UTF-8')
+                f.close()
+            except urllib2.HTTPError as e:
+                print ('Conexion Perdida')
+                print ((e.code))
+                if e.code == 500:
+                    return ticketsanadidos
+                else:
+                    web = None
+                    sleep(pausareconexion)
+                    # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+                print ('Conexion Erronea')
+                # print(e.reason)
+                print ((url, e))
+                web = None
+                #logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url.encode('UTF-8')))
+                print (('Pausa de %d segundos' % pausareconexion))
+                sleep(pausareconexion)
+
+        # Buscamos '<table><tr><th><a href="'
+        paginainicio = web.find ('<table><tr><th><a href="') + len('<table><tr><th><a href="')
+        # Buscamos '">Prev. Month</a></th>'
+        paginafin = web.find('">Prev. Month</a></th>', paginainicio)
+        # obtenemos la pagina previa que contiene mas IPOs a añadir
+        pagina = web[paginainicio:paginafin]
+
+        ticketfin = paginafin
+        while True:
+            ticketinicio = web.find('<tr><td align=right>', ticketfin)
+            if ticketinicio == -1:
+                break
+            else:
+                ticketinicio = ticketinicio + len ('<tr><td align=right>')
+
+            for _i2_ in (0, 1):
+                ticketinicio = web.find('</td><td>', ticketinicio) + len ('</td><td>')
+
+            ticketfin = web.find('</a><td align=right>', ticketinicio)
+            if ticketfin == -1:
+                break
+
+            ticket = (web[ticketinicio:ticketfin].strip())
+
+            # En ocasiones la cerda ticket contiene el ticket y un enlace, comprobamos que no existe este enlace:
+            if '<a href="http://finance.yahoo.com/q?s=' in ticket:  # Si que existe este enlace
+                ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len ('<a href="http://finance.yahoo.com/q?s=')
+                ticketinicio = web.find('&d=t">', ticketinicio) + len ('&d=t">')
+                ticket = (web[ticketinicio:ticketfin].strip())
+            ticket = ticket.upper()
+
+            if (ticket not in ticketsanadidos) and ('%20' not in ticket):
+                ticketsanadidos.append(ticket)
+
+        duerme()
+        i += 1
+    print('')
+    print(("%8d Tickets IPO añadidas" % (len(ticketsanadidos))))
+    print('')
+
+    return ticketsanadidos
+
+
 def descargaHistoricoAccion(naccion, **config):
     # global webheaders
     """ Funcion para la descarga de las cotizaciones historicas de una accion.
