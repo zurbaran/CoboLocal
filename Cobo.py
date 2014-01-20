@@ -1,15 +1,15 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-Cobo.py - v0.02 2013-07-16 Antonio Caballero, Paco Corbi
+Cobo.py - v0.03 2013-07-26 Antonio Caballero, Paco Corbi
 
 Este modulo proporciona las herramientas necesarias para el analisis, gestion y backtest de acciones
 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.03'
-__date__ = '2013-07-26'
+__version__ = '0.04'
+__date__ = '2014-01-20'
 __author__ = ('Antonio Caballero', 'Paco Corbi')
 __mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -2381,6 +2381,16 @@ def main():
                     BBDD.mercadosdeshabilita(mercado)
             print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
             del ticketscomponentesmercados
+
+            print('Se han anadiendo IPOs del mercado americano')
+            ticketsanadidos = 0
+            tickets = yahoofinance.ticketsIPO()
+            for ticket in tickets:
+                if BBDD.ticketalta(ticket):
+                    ticketsanadidos += 1
+            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
+            del tickets
+            
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
