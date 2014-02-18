@@ -824,6 +824,11 @@ def listacciones(**config):
         elif rentabilidad < 0.0:
             entrada = entrada - 0.01
             salida = round(salida * (1.0 + filtro[timming]), 2)
+        # FIXME: entrada y salida deben ser distintos
+        # [(u'ISAT.L', u'INMARSAT', u'London', u'Libra Esterlina(Peniques)', 82.95, u'm', ...), (u'RR.L', u'ROLLS-ROYCE HLDGS', u'London', u'Libra Esterlina(Peniques)', 82.95, u'm', ...), (u'AZN.L', u'ASTRAZENECA', u'London', u'Libra Esterlina(Peniques)', 82.95, u'm', ...), (u'CPG.L', u'COMPASS GROUP', u'London', u'Libra Esterlina(Peniques)', 82.95, u'm', ...), (u'RMG.L', u'ROYAL MAIL', u'London', u'Libra Esterlina(Peniques)', 82.95, u'w', ...), (u'CSR.L', u'CSR', u'London', u'Libra Esterlina(Peniques)', 82.95, u'm', ...), ...]
+        # 'Kofax Limited'
+        # entrada y salida son 6.51, puede ser una cohincidencia en los calculos
+
         numaccion = int((divisa * riesgo) / (entrada - salida))
         inve = round(((numaccion * 1.0) * entrada) / divisa, 2)
         if not ((-1.0 * inv) <= inve <= inv) and \
@@ -939,7 +944,7 @@ def listaccionesLT(**config):
               (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or\
              (rentabilidad < 0.0 and\
               (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))) and\
-           timming in timmings :
+           timming in timmings:
             resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
 
     return tuple(resultado2)
