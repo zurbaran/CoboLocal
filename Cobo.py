@@ -2390,7 +2390,6 @@ def main():
                     ticketsanadidos += 1
             print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
             del tickets
-            
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
@@ -2783,11 +2782,11 @@ def main():
                 config['filtroD'] = float(filtroD)
             else:
                 config['filtroD'] = FILTROSTOPLOSS['d']
-            timmings=[]
+            timmings = []
             for n in ('m', 'w', 'd'):
-                if raw_input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n)=='':
+                if raw_input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n) == '':
                     timmings.append(n)
-            config['timmings'] = tuple (timmings)
+            config['timmings'] = tuple(timmings)
 
             resultado = BBDD.listacciones(**config)
             resultado2 = BBDD.listaccionesLT(**config)

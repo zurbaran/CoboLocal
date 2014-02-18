@@ -187,6 +187,12 @@ logging.basicConfig(filename=ARCHIVO_LOG,
     level=logging.DEBUG)
 
 
+# TODO: Utilizando la red TOR para descargar la informacion de yahoo
+proxy_handler = urllib2.ProxyHandler({"tcp": "http://127.0.0.1:9050"})
+opener = urllib2.build_opener(proxy_handler)
+urllib2.install_opener(opener)
+
+
 def _test():
     import doctest
     doctest.testmod()
@@ -279,7 +285,7 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
-def ticketsIPO(meses=5):
+def ticketsIPO(meses=5, columna=1):
     """
 
     >>> ipos = ticketsIPO(meses=2)
@@ -332,7 +338,7 @@ def ticketsIPO(meses=5):
                 sleep(pausareconexion)
 
         # Buscamos '<table><tr><th><a href="'
-        paginainicio = web.find ('<table><tr><th><a href="') + len('<table><tr><th><a href="')
+        paginainicio = web.find('<table><tr><th><a href="') + len('<table><tr><th><a href="')
         # Buscamos '">Prev. Month</a></th>'
         paginafin = web.find('">Prev. Month</a></th>', paginainicio)
         # obtenemos la pagina previa que contiene mas IPOs a añadir
@@ -344,10 +350,10 @@ def ticketsIPO(meses=5):
             if ticketinicio == -1:
                 break
             else:
-                ticketinicio = ticketinicio + len ('<tr><td align=right>')
+                ticketinicio = ticketinicio + len('<tr><td align=right>')
 
-            for _i2_ in (0, 1):
-                ticketinicio = web.find('</td><td>', ticketinicio) + len ('</td><td>')
+            for _i2_ in (0, columna):
+                ticketinicio = web.find('</td><td>', ticketinicio) + len('</td><td>')
 
             ticketfin = web.find('</a><td align=right>', ticketinicio)
             if ticketfin == -1:
@@ -357,8 +363,8 @@ def ticketsIPO(meses=5):
 
             # En ocasiones la cerda ticket contiene el ticket y un enlace, comprobamos que no existe este enlace:
             if '<a href="http://finance.yahoo.com/q?s=' in ticket:  # Si que existe este enlace
-                ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len ('<a href="http://finance.yahoo.com/q?s=')
-                ticketinicio = web.find('&d=t">', ticketinicio) + len ('&d=t">')
+                ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len('<a href="http://finance.yahoo.com/q?s=')
+                ticketinicio = web.find('&d=t">', ticketinicio) + len('&d=t">')
                 ticket = (web[ticketinicio:ticketfin].strip())
             ticket = ticket.upper()
 
