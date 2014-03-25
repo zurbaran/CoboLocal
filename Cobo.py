@@ -126,7 +126,7 @@ import glob
 import logging
 import os
 import ast
-import winsound
+# import winsound
 # from adodbapi.adodbapi import type
 # import traceback
 # from decimal import Decimal
@@ -1952,7 +1952,7 @@ def backtestMoneda(**config):
         print('')
     else:
         raw_input('Backtest no realizado')
-    winsound.PlaySound("*", winsound.SND_ALIAS)
+        # winsound.PlaySound("*", winsound.SND_ALIAS)
 
 
 def pidedato(texto, tipodato):
