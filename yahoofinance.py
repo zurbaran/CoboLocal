@@ -499,6 +499,22 @@ def descargaHistoricoAccion(naccion, **config):
 #            sleep (pausareconexion)
 #            print ('Pausa de %d segundos' % pausareconexion)
 
+# # No se posible hacer una barra de progreseo porque el el header del archivo no existe 'Content-Length'
+#     meta = f.info()
+#     file_size = int(meta.getheaders("Content-Length")[0])# Falla aqui porque no existe en el header del archivo
+#     file_size = os.path.getsize(buffer)
+#     print "Descargando : %s Bytes: %s" % (url, file_size)
+#     file_size_dl = 0
+#     block_sz = 8192
+#     while True:
+#         _buffer = f.read(block_sz)
+#         if not _buffer:
+#             break
+#         file_size_dl += len(_buffer)
+#         status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
+#         status = status + chr(8) * (len(status) + 1)
+#         print status,
+
     lineas = f.readlines()
     f.close()
     if not (lineas[0] == "Date,Open,High,Low,Close,Volume,Adj Close\n"):
