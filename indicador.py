@@ -717,7 +717,7 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
 
 
 def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
-    if fechainicial == '0-0-0' or fechafinal == '0-0-0': # or precioinicial== 0.0 or preciofinal== 0.0:
+    if fechainicial == '0-0-0' or fechafinal == '0-0-0':  # or precioinicial== 0.0 or preciofinal== 0.0:
         rentabilidad = 0.00
     else:
         fechainicial = list(map(int, (fechainicial.split('-'))))

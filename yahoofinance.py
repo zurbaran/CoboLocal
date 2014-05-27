@@ -94,7 +94,7 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 # Constantes locales
 
 webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0'}
-pausareconexion = 20
+pausareconexion = 35
 prefijo = {'': '',
            '.AS': 'nl.',
            '.AT': 'gr.',
@@ -591,7 +591,7 @@ def descargaHistoricoAccion(naccion, **config):
         nombre = (str(naccion)).replace('.', '_')
         archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
-        writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
+        writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep, doublequote=True)
         for n in datosaccion:
 
             fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -604,7 +604,7 @@ def descargaHistoricoAccion(naccion, **config):
             n = (fecha, apertura, maximo, minimo, cierre, volumen)
 
             writercsv.writerow(n)
-            # j.write(str(n)+'\n')
+            # j.write(str(n)+os.linesep)
         j.close()
     return datosaccion
 

@@ -1,7 +1,68 @@
+Comprobar porque se detiene hasta que ctrl+c
+Ticket CDL.AX ya descargado, comprobando la actualizacion de los datos
+Registro pendiente de una actualizacion desde 2013-04-19
+c^CPausa de 0.734 segundos
+http://ichart.finance.yahoo.com/table.csv?s=CDL.AX&a=3&b=18&c=2013&d=3&e=15&f=2014&g=d&ignore=.csv
+3 Registros de la accion
+
+
+Actualizando cotizaciones de : SM
+Actualizando SM con datos "SM Energy Company","SM","NYSE",94.00,77.80,58.89,76.31,76.39,1153950,706083,"N/A"
+Quedan por actualizar un total de : 14842
+Pausa de 1.478 segundos
+^CTraceback (most recent call last):
+  File "Cobo.py", line 2870, in <module>
+    main()
+  File "Cobo.py", line 2403, in main
+    yahoofinance.cotizacionesTicket(ticket)
+  File "/media/MisDocumentos/workspace/CoboLocal/yahoofinance.py", line 637, in cotizacionesTicket
+    f = urllib2.urlopen(r)
+  File "/usr/lib/python2.7/urllib2.py", line 127, in urlopen
+    return _opener.open(url, data, timeout)
+  File "/usr/lib/python2.7/urllib2.py", line 404, in open
+    response = self._open(req, data)
+  File "/usr/lib/python2.7/urllib2.py", line 422, in _open
+    '_open', req)
+  File "/usr/lib/python2.7/urllib2.py", line 382, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python2.7/urllib2.py", line 1214, in http_open
+    return self.do_open(httplib.HTTPConnection, req)
+  File "/usr/lib/python2.7/urllib2.py", line 1187, in do_open
+    r = h.getresponse(buffering=True)
+  File "/usr/lib/python2.7/httplib.py", line 1045, in getresponse
+    response.begin()
+  File "/usr/lib/python2.7/httplib.py", line 409, in begin
+    version, status, reason = self._read_status()
+  File "/usr/lib/python2.7/httplib.py", line 365, in _read_status
+    line = self.fp.readline(_MAXLINE + 1)
+  File "/usr/lib/python2.7/socket.py", line 476, in readline
+    data = self._sock.recv(self._rbufsize)
+KeyboardInterrupt
+
+
+
+
+
+###########################################
+
+en la opcion "n" y "o", obtener acciones a actualizar y crear aleatoriedad al ir hacerlo de entre las acciones obtenidas
+todo esto con la intencion de que cuando hayan varios procesos trabajando en distintas maquinas, que no lo hagan siguiendo el mismo camino
+consecuencia:
+
+  File "Cobo.py", line 1237, in analisisTicket
+    codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
+IndexError: list index out of range
+
+###########################################
+
+aÃ±adir fecha y hora antes de imprimir "Tickets pendientes de comprobar...."
+
+###########################################
+
 Al crear dentro del modulo de yahoo la funcion entradaLT que calcula los puntos de entrada en la LT, comprobar, y en el caso de que sea correcto, remplazar las formulas de los analisis. Podemos compararlos con un assert
 
 Comprobar HPP, GRF.MC y ULTA la posibilidad de modificar los filtros de salida
 
-añadir funcione de agregar ipos para que devuelva los tickets, solo los tickets
+aï¿½adir funcione de agregar ipos para que devuelva los tickets, solo los tickets
 desde las webs de los mercados
 comprobar tickets si existen, si no, agregarlos

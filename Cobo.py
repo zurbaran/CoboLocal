@@ -8,8 +8,8 @@ Este modulo proporciona las herramientas necesarias para el analisis, gestion y 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.04'
-__date__ = '2014-01-20'
+__version__ = '0.05'
+__date__ = '2014-05-20'
 __author__ = ('Antonio Caballero', 'Paco Corbi')
 __mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -152,7 +152,7 @@ import HTML
 logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
-logging.debug('\n')
+logging.debug(os.linesep)
 logging.debug('Inicio de Aplicacion')
 
 
@@ -635,25 +635,25 @@ def analisisAlcistaAccion(naccion, **config):
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
         archivo = os.path.join(os.getcwd(), CARPETAS["Analisis"], nombre + "." + timming + ".analisisalcista.txt")
         j = open(archivo, "w")
-        j.write(str(config) + '\n')
+        j.write(str(config) + os.linesep)
         for n in analisisalcista:
-            # ~ j.write(str(n)+'\n')
+            # ~ j.write(str(n)+os.linesep)
             resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = n
-            j.write("Resistencia " + str(resistencia) + '\n')
-            j.write("Soporte     " + str(soporte) + '\n')
-            j.write("Ruptura     " + str(ruptura) + '\n')
-            j.write("LT Inicio   " + str(LTi) + '\n')
-            j.write("LT Final    " + str(LTf) + '\n')
-            j.write("Salida      " + str(salida) + '\n')
-            j.write("Timming     " + str(timming) + '\n')
-            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
-            j.write('\n')
+            j.write("Resistencia " + str(resistencia) + os.linesep)
+            j.write("Soporte     " + str(soporte) + os.linesep)
+            j.write("Ruptura     " + str(ruptura) + os.linesep)
+            j.write("LT Inicio   " + str(LTi) + os.linesep)
+            j.write("LT Final    " + str(LTf) + os.linesep)
+            j.write("Salida      " + str(salida) + os.linesep)
+            j.write("Timming     " + str(timming) + os.linesep)
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + os.linesep)
+            j.write(os.linesep)
 
         for n in range(5):
-            j.write('\n')
+            j.write(os.linesep)
 
         for n in listastoploss:
-            j.write(str(n) + '\n')
+            j.write(str(n) + os.linesep)
 
         j.close()
 
@@ -1103,25 +1103,25 @@ def analisisBajistaAccion(naccion, **config):
         nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
         archivo = os.path.join(os.getcwd(), CARPETAS["Analisis"], nombre + "." + timming + ".analisisbajista.txt")
         j = open(archivo, "w")
-        j.write(str(config) + '\n')
+        j.write(str(config) + os.linesep)
         for n in analisisbajista:
-            # ~ j.write(str(n)+'\n')
+            # ~ j.write(str(n)+os.linesep)
             soporte, resistencia, ruptura, LTi, LTf, salida, timming, indicadores = n
-            j.write("Soporte     " + str(soporte) + '\n')
-            j.write("Resistencia " + str(resistencia) + '\n')
-            j.write("Ruptura     " + str(ruptura) + '\n')
-            j.write("LT Inicio   " + str(LTi) + '\n')
-            j.write("LT Final    " + str(LTf) + '\n')
-            j.write("Salida      " + str(salida) + '\n')
-            j.write("Timming     " + str(timming) + '\n')
-            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + '\n')
-            j.write('\n')
+            j.write("Soporte     " + str(soporte) + os.linesep)
+            j.write("Resistencia " + str(resistencia) + os.linesep)
+            j.write("Ruptura     " + str(ruptura) + os.linesep)
+            j.write("LT Inicio   " + str(LTi) + os.linesep)
+            j.write("LT Final    " + str(LTf) + os.linesep)
+            j.write("Salida      " + str(salida) + os.linesep)
+            j.write("Timming     " + str(timming) + os.linesep)
+            j.write("Indicadores ADX, DI+, DI- " + str(indicadores) + os.linesep)
+            j.write(os.linesep)
 
         for n in range(5):
-            j.write('\n')
+            j.write(os.linesep)
 
         for n in listastoploss:
-            j.write(str(n) + '\n')
+            j.write(str(n) + os.linesep)
 
         j.close()
 
@@ -1233,6 +1233,7 @@ def analisisTicket(nombreticket):
     cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
     registro = cursor.fetchall()
     # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
+    ## TODO: FIXME: a veces, cuando esta haciendose en modo multiple, registro=[] y IndexError: list index out of range
     codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
     proximidadalcista, proximidadbajista = 0, 0
     if BBDD.datoshistoricosexisten(ticket):
@@ -1803,14 +1804,14 @@ def backtestMoneda(**config):
 
         archivobacktest = os.path.join(os.getcwd(), CARPETAS['Backtest'], ((datetime.now()).strftime("%Y-%m-%d %H%M")) + '.Cobo.csv')
         j = open(archivobacktest, 'w')
-        j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;rentabilidad;ADX;DI+;DI-\n')
-        # writercsv = csv.writer(j, delimiter=';', lineterminator = '\n', doublequote = True)
+        j.write('ticket;mercado;AnoE;MesE;DiaE;PrecioE;TimmingE;Nacciones;AnoS;MesS;DiaS;PrecioS;TimmingS;InversionE;InversionS;resultado;rentabilidad;ADX;DI+;DI-' + os.linesep)
+        # writercsv = csv.writer(j, delimiter=';', lineterminator = os.linesep, doublequote = True)
 
         for n in backtest:
             ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance, rentabilidadoperacion, indicadores = n
             # si los indicadores son False, esto no funcionara
             if ADXobjetivo == False:  # la otra opcion era asignarle a los indicacores valor Falso o 0 , pero no me parecio bien y es lioso imprimir columnas inecesarias
-                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f\n") \
+                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f" + os.linesep) \
                          % (
                             ticket,
                             mercado,
@@ -1828,7 +1829,7 @@ def backtestMoneda(**config):
                             )).replace('.', ',')
             else:
 
-                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n") \
+                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f" + os.linesep) \
                          % (
                             ticket,
                             mercado,
@@ -1860,94 +1861,94 @@ def backtestMoneda(**config):
             inversionrecuperadaTotal = inversionrecuperadaTotal + inversionrecuperada
 
         for n in range(0, 4):
-            j.write('\n')
+            j.write(os.linesep)
 
-        j.write('Parametros : \n')
-        j.write('Estrategia : %s\n' % estrategia)
-        j.write('Backtest desde la fecha : %s\n' % str(analizardesde))
-        j.write('Riesgo : %d\n' % riesgo)
-        j.write('Volumen Minimo : %d\n' % volumenminimo)
-        j.write(('Filtro Mensual : %.2f\n' % (filtrosalidamensual)).replace('.', ','))
-        j.write(('Filtro Semanal : %.2f\n' % (filtrosalidasemanal)).replace('.', ','))
-        j.write(('Filtro Diario : %.2f\n' % (filtrosalidadiario)).replace('.', ','))
-        j.write(('Rentabilidad Minima : %.2f\n' % (rentabilidadminima)).replace('.', ','))
-        j.write('Rentabilidad 0 igual a rentabilidad minima : %s\n' % rentabilidad0)
-        j.write(('Inversion Minima : %.2f\n' % inversionminima).replace('.', ','))
-        j.write('Inversion Maxima : %s\n' % inversionmaxima)
-        j.write(('Media Movil Exponencial diario  : %s\n' % MMediario))
-        j.write(('Media Movil Exponencial semanal : %s\n' % MMesemanal))
-        j.write(('Media Movil Exponencial mensual : %s\n' % MMemensual))
-        j.write(('Media Movil Exponencial 2A para cruce de medias diario  : %s\n' % MMe2diario))
-        j.write(('Media Movil Exponencial 2A para cruce de medias semanal : %s\n' % MMe2semanal))
-        j.write(('Media Movil Exponencial 2A para cruce de medias mensual : %s\n' % MMe2mensual))
-        j.write(('True Averange xrange Mensual: %s\n' % TARmensual))
-        j.write(('True Averange xrange Samanal: %s\n' % TARsemanal))
-        j.write(('True Averange xrange Diario : %s\n' % TARdiario))
-        j.write(('Average Directional Movement Index Objetivo: %s\n' % ADXobjetivo))
-        j.write(('Average Directional Movement Index Mensual: %s\n' % ADXmensual))
-        j.write(('Average Directional Movement Index Samanal: %s\n' % ADXsemanal))
-        j.write(('Average Directional Movement Index Diario: %s\n' % ADXdiario))
-        j.write(('Con entradas en Linea de tendencia : %s\n' % EntradaLT))
-        j.write('Timming de las operaciones : %s\n' % seleccionbacktest)
-        j.write('Moneda del Backtest : %s\n' % moneda)
+        j.write('Parametros : ' + os.linesep)
+        j.write(('Estrategia : %s' + os.linesep) % estrategia)
+        j.write(('Backtest desde la fecha : %s' + os.linesep) % str(analizardesde))
+        j.write(('Riesgo : %d' + os.linesep) % riesgo)
+        j.write(('Volumen Minimo : %d' + os.linesep) % volumenminimo)
+        j.write((('Filtro Mensual : %.2f' + os.linesep) % (filtrosalidamensual)).replace('.', ','))
+        j.write((('Filtro Semanal : %.2f' + os.linesep) % (filtrosalidasemanal)).replace('.', ','))
+        j.write((('Filtro Diario : %.2f' + os.linesep) % (filtrosalidadiario)).replace('.', ','))
+        j.write((('Rentabilidad Minima : %.2f' + os.linesep) % (rentabilidadminima)).replace('.', ','))
+        j.write(('Rentabilidad 0 igual a rentabilidad minima : %s' + os.linesep) % rentabilidad0)
+        j.write((('Inversion Minima : %.2f' + os.linesep) % inversionminima).replace('.', ','))
+        j.write(('Inversion Maxima : %s' + os.linesep) % inversionmaxima)
+        j.write((('Media Movil Exponencial diario  : %s' + os.linesep) % MMediario))
+        j.write((('Media Movil Exponencial semanal : %s' + os.linesep) % MMesemanal))
+        j.write((('Media Movil Exponencial mensual : %s' + os.linesep) % MMemensual))
+        j.write((('Media Movil Exponencial 2A para cruce de medias diario  : %s' + os.linesep) % MMe2diario))
+        j.write((('Media Movil Exponencial 2A para cruce de medias semanal : %s' + os.linesep) % MMe2semanal))
+        j.write((('Media Movil Exponencial 2A para cruce de medias mensual : %s' + os.linesep) % MMe2mensual))
+        j.write((('True Averange xrange Mensual: %s' + os.linesep) % TARmensual))
+        j.write((('True Averange xrange Samanal: %s' + os.linesep) % TARsemanal))
+        j.write((('True Averange xrange Diario : %s' + os.linesep) % TARdiario))
+        j.write((('Average Directional Movement Index Objetivo: %s' + os.linesep) % ADXobjetivo))
+        j.write((('Average Directional Movement Index Mensual: %s' + os.linesep) % ADXmensual))
+        j.write((('Average Directional Movement Index Samanal: %s' + os.linesep) % ADXsemanal))
+        j.write((('Average Directional Movement Index Diario: %s' + os.linesep) % ADXdiario))
+        j.write((('Con entradas en Linea de tendencia : %s' + os.linesep) % EntradaLT))
+        j.write(('Timming de las operaciones : %s' + os.linesep) % seleccionbacktest)
+        j.write(('Moneda del Backtest : %s' + os.linesep) % moneda)
 
         for n in range(0, 4):
-            j.write('\n')
+            j.write(os.linesep)
 
         print('')
-        j.write('Resultado: \n')
+        j.write('Resultado: ' + os.linesep)
         print  ('Resultado: ')
-        j.write('Numero de operaciones totales: %d\n' % len(backtest))
+        j.write(('Numero de operaciones totales: %d' + os.linesep) % len(backtest))
         print  (('Numero de operaciones totales: %d' % (len(backtest))))
-        j.write(('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f\n' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)
+        j.write((('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' + os.linesep) % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)
                  ).replace('.', ','))
         print  (('Numero de operaciones positivas: %d   Representa un porcetaje de %.2f' % (len(positivas), (len(positivas) * 1.0 / len(backtest) * 1.0) * 100)))
-        j.write(('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f\n' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)
+        j.write((('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' + os.linesep) % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)
                  ).replace('.', ','))
         print  (('Numero de operaciones negativas: %d   Representa un porcetaje de %.2f' % (len(negativas), (len(negativas) * 1.0 / len(backtest) * 1.0) * 100)))
         if len(positivas) > 0:
-            j.write(('Ganancia Media : %.2f\n' % (sum(positivas) / (len(positivas) * 1.0))
+            j.write((('Ganancia Media : %.2f' + os.linesep) % (sum(positivas) / (len(positivas) * 1.0))
                      ).replace('.', ','))
             print  (('Ganancia Media : %.2f' % (sum(positivas) / len(positivas) * 1.0)))
         else:
-            j.write('Ganancia Media : 0.00\n')
+            j.write('Ganancia Media : 0.00' + os.linesep)
             print (('Ganancia Media : 0.0'))
         if len(negativas) > 0:
-            j.write(('Perdida Media : %.2f\n' % (sum(negativas) / (len(negativas) * 1.0))
+            j.write((('Perdida Media : %.2f' + os.linesep) % (sum(negativas) / (len(negativas) * 1.0))
                      ).replace('.', ','))
             print  (('Perdida Media : %.2f' % (sum(negativas) / len(negativas) * 1.0)))
         else:
-            j.write('Perdida Media : 0.00\n')
+            j.write('Perdida Media : 0.00' + os.linesep)
             print (('Perdida Media : 0.00'))
-        j.write(('Inversion Total : %.2f\n' % inversionTotal).replace('.', ','))
+        j.write((('Inversion Total : %.2f' + os.linesep) % inversionTotal).replace('.', ','))
         print  (('Inversion Total : %.2f' % inversionTotal))
-        j.write(('Inversion Recuperada : %.2f\n' % inversionrecuperadaTotal).replace('.', ','))
+        j.write((('Inversion Recuperada : %.2f' + os.linesep) % inversionrecuperadaTotal).replace('.', ','))
         print  (('Inversion Recuperada : %.2f' % inversionrecuperadaTotal))
         if estrategia == 'Alcista':
-            j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)
+            j.write((('Rentabilidad (Porcentaje): %.2f' + os.linesep) % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)
                      ).replace('.', ','))
             print  (('Rentabilidad (Porcentaje): %.2f' % (((inversionrecuperadaTotal / inversionTotal) - 1) * 100)))
         elif estrategia == 'Bajista':
-            j.write(('Rentabilidad (Porcentaje): %.2f\n' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)
+            j.write((('Rentabilidad (Porcentaje): %.2f' + os.linesep) % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)
                      ).replace('.', ','))
             print  (('Rentabilidad (Porcentaje): %.2f' % (((inversionTotal / inversionrecuperadaTotal) - 1) * 100)))
         if len(positivas) > 0 and len(negativas) > 0:
-            j.write(('Esperanza Matematica : %.2f\n' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
+            j.write((('Esperanza Matematica : %.2f' + os.linesep) % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
                                                         abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))
                      ).replace('.', ','))
             print  (('Esperanza Matematica : %.2f' % (((len(positivas) * 1.0 / len(backtest) * 1.0) * (sum(positivas) / len(positivas) * 1.0)) -
                                                    abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))))
-            j.write(('Ratio profit/lost : %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))
+            j.write((('Ratio profit/lost : %.2f' + os.linesep) % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))
                      ).replace('.', ','))
-            print  (('Ratio profit/lost :  %.2f\n' % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
-            j.write(('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+            print  ((('Ratio profit/lost :  %.2f' + os.linesep) % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
+            j.write((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
                                                                                                / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)
                      ).replace('.', ','))
-            print  (('minimo de porcentage aciertos para no perder con el sistema : %.2f\n' % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
+            print  ((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
                                                                                                / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)))
-        j.write(('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
+        j.write((('factor ruina : %.2f' + os.linesep) % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)
                 ).replace('.', ','))
-        print  (('factor ruina : %.2f\n' % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)))
+        print  ((('factor ruina : %.2f' + os.linesep) % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)))
         j.close()
         print('')
     else:
@@ -2212,28 +2213,28 @@ def main():
 
             archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "data.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep, doublequote=True)
             for n in datos:
                 writercsv.writerow(n)
-                # j.write(str(n)+'\n')
+                # j.write(str(n)+os.linesep)
             j.close()
 
             archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "metatrader.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
-            j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>\n')
+            writercsv = csv.writer(j, delimiter=',', lineterminator=os.linesep, doublequote=True)
+            j.write('<TICKER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>' + os.linesep)
             for n in datos:
                 fecha, apertura, maximo, minimo, cierre, volumen = n
                 fecha = fecha.replace('-', '')
 
                 writercsv.writerow((ticket, fecha, '000000', apertura, maximo, minimo, cierre, volumen))
-                # j.write(str(n)+'\n')
+                # j.write(str(n)+os.linesep)
             j.close()
 
             archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], 'metastock.csv')
             j = open(archivo, 'w')
-            j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
-            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
+            j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>' + os.linesep)
+            writercsv = csv.writer(j, delimiter=',', lineterminator=os.linesep, doublequote=True)
             for n in datos:
 
                 fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -2253,7 +2254,7 @@ def main():
 
             archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "MME.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep, doublequote=True)
             for n in datosMME:
                 writercsv.writerow(n)
             j.close()
@@ -2269,7 +2270,7 @@ def main():
 
             archivo = os.path.join(os.getcwd(), CARPETAS['Graficos'], "TAR.csv")
             j = open(archivo, 'w')
-            writercsv = csv.writer(j, delimiter=';', lineterminator='\n', doublequote=True)
+            writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep, doublequote=True)
             for n in datosTAR:
                 writercsv.writerow(n)
             j.close()
@@ -2394,8 +2395,8 @@ def main():
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
             print(seleccion)
-            listatickets = BBDD.comprobaciones(colaResultado='Cotizacion')
-            listatickets = deque(list(listatickets))
+            listatickets = BBDD.comprobaciones(colaResultado='Cotizacion', aleatorio=True)
+            listatickets = deque(listatickets)
 
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
@@ -2409,8 +2410,8 @@ def main():
             print(seleccion)
             # TODO : como ahora tenemos una columna en `Cobo_nombreticket` que contiene la fecha del historico descargado
 #            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
-            listatickets = BBDD.comprobaciones(colaResultado='Historico')
-            listatickets = deque(list(listatickets))
+            listatickets = BBDD.comprobaciones(colaResultado='Historico', aleatorio=True)
+            listatickets = deque(listatickets)
 
 # #            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
 # #            if borranoactualizados == '':
@@ -2530,17 +2531,17 @@ def main():
             if raw_input('True Avenrange xrange (Sin TAR en todos los timmings): ') != '':
                 TARmensual = raw_input('True Avenrange xrange Mensual (Sin TAR): ')
                 if TARmensual != '':
-                    config['TARmensual'] = int(TARmensual)
+                    config['TARmensual'] = float(TARmensual)
                 TARsemanal = raw_input('True Avenrange xrange Semanal (Sin TAR): ')
                 if TARsemanal != '':
-                    config['TARsemanal'] = int(TARsemanal)
+                    config['TARsemanal'] = float(TARsemanal)
                 TARdiario = raw_input('True Avenrange xrange Diario (Sin TAR): ')
                 if TARdiario != '':
-                    config['TARdiario'] = int(TARdiario)
+                    config['TARdiario'] = float(TARdiario)
 
             ADXobjetivo = raw_input('Average Directional Movement Index, introduce entero, excluir entradas que no lleguen a (deja en blanco pulsando intro para Sin ADX en todos los timmings): ')
             if ADXobjetivo != '':
-                config['ADXobjetivo'] = float(ADXobjetivo)
+                config['ADXobjetivo'] = int(ADXobjetivo)
                 ADXmensual = raw_input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): ')
                 if ADXmensual != '':
                     config['ADXmensual'] = int(ADXmensual)
@@ -2671,8 +2672,8 @@ def main():
                             # nombre = (str(ticket) + str(codigo)).replace('.', '_')
                             archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + '.' + timming + '.csv')
                             j = open(archivo, 'w')
-                            j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>\n')
-                            writercsv = csv.writer(j, delimiter=',', lineterminator='\n', doublequote=True)
+                            j.write('<TICKER>,<NAME>,<PER>,<DTYYYYMMDD>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>,<OPENINT>' + os.linesep)
+                            writercsv = csv.writer(j, delimiter=',', lineterminator=os.linesep, doublequote=True)
                             for n in datosaccion:
 
                                 fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -2681,7 +2682,7 @@ def main():
                                 n = (ticket, naccion, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0')
 
                                 writercsv.writerow(n)
-                                # j.write(str(n)+'\n')
+                                # j.write(str(n)+os.linesep)
                             j.close()
 
                         else:  # No existe suficiente historico
@@ -2794,16 +2795,16 @@ def main():
 
             ficheroDatos = os.path.join(os.getcwd(), ((datetime.now()).strftime("%Y%m%d %H%M%S")) + '.html')
             f = open(ficheroDatos, "w")
-            f.write('<!DOCTYPE html>\n')
-            f.write('<html>\n')
-            f.write('<head>\n')
-            f.write('<meta content="text/html; charset=windows-1252" http-equiv="content-type">\n')
+            f.write('<!DOCTYPE html>' + os.linesep)
+            f.write('<html>' + os.linesep)
+            f.write('<head>' + os.linesep)
+            f.write('<meta content="text/html; charset=windows-1252" http-equiv="content-type">' + os.linesep)
             for name, content in (('author', __author__[0]),
                                   ('mail', __mail__[0]),
                                   ('license', 'http://creativecommons.org/licenses/by-sa/3.0/legalcode')):
-                f.write('<meta name="' + name + '" content="' + content + '">\n')
-            f.write('</head>\n')
-            f.write('<body>\n')
+                f.write('<meta name="' + name + '" content="' + content + '">' + os.linesep)
+            f.write('</head>' + os.linesep)
+            f.write('<body>' + os.linesep)
             f.write('<p>Lista Generada Automaticamente. Parametros:</p>\n\
                         <ul>\n\
                           <li>Volumen: %d</li>\n\
@@ -2844,8 +2845,8 @@ def main():
 #                 # table.rows.append(colored_n)
 #             htmlcode = str(htmlcode)
             f.write('<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO"><img alt="Licencia Creative Commons" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a><br />Este obra está bajo una <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO">Licencia Creative Commons Atribución-CompartirIgual 3.0 Unported</a>.')
-            f.write('</body>\n')
-            f.write('</html>\n')
+            f.write('</body>' + os.linesep)
+            f.write('</html>' + os.linesep)
             f.close()
 #
 #
@@ -2858,7 +2859,7 @@ def main():
     # os.spawnl( os.P_NOWAIT, 'C:\\xampp\\apache\\bin\pv.exe -f -k mysqld.exe -q' )
         elif opcion == 'z':
 
-            # cursor.close()x
+            # cursor.close()
             # db.close()
             break
 
