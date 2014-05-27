@@ -93,10 +93,11 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 ####################################################
 # modulos estandar importados
 
-from setuptools.command.easy_install import main as install
 import os
 import glob
 from datetime import date, datetime, timedelta
+from random import choice
+
 
 # from sql import *
 # from sql.aggregate import *
@@ -107,6 +108,7 @@ try:
     from pysqlite2 import dbapi2 as sqlite3
 except ImportError:
     print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
+    from setuptools.command.easy_install import main as install
     import sqlite3  # lint:ok
     install(['-v', 'pysqlite'])
 
@@ -152,7 +154,7 @@ def conexion(archivo=None):
         return cursor, db
 
 
-def comprobaciones(colaResultado=None):
+def comprobaciones(colaResultado=None, aleatorio=False):
     """
     """
     # TODO : darle parametros a esta funciona para obtener listas de tickets pendientes de actualizar,....
@@ -201,7 +203,15 @@ def comprobaciones(colaResultado=None):
     if colaResultado == None:
         print(('Tickets pendientes de realiar una actualizacion : %d' % len(listatickets)))
     if colaResultado == 'Cotizacion':
-        colaResultado = ((ticket[0]) for ticket in listatickets)
+        if aleatorio == False:
+            colaResultado = list((ticket[0]) for ticket in listatickets)
+        elif aleatorio == True:
+            colaResultado2 = list((ticket[0]) for ticket in listatickets)
+            colaResultado = []
+            while len(colaResultado2) != 0:
+                ticket = choice(colaResultado2)
+                colaResultado.append(ticket)
+                colaResultado2.remove(ticket)
 
     # Tickets pendientes de realiar una actualizacion en el historico
     diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['historico'])).strftime("%Y-%m-%d")
@@ -216,7 +226,15 @@ def comprobaciones(colaResultado=None):
     if colaResultado == None:
         print(('Tickets pendientes de realiar una actualizacion del historico : %d' % len(listatickets)))
     if colaResultado == 'Historico':
-        colaResultado = ((ticket[0]) for ticket in listatickets)
+        if aleatorio == False:
+            colaResultado = list((ticket[0]) for ticket in listatickets)
+        elif aleatorio == True:
+            colaResultado2 = list((ticket[0]) for ticket in listatickets)
+            colaResultado = []
+            while len(colaResultado2) != 0:
+                ticket = choice(colaResultado2)
+                colaResultado.append(ticket)
+                colaResultado2.remove(ticket)
 
     # Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
     sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `Cobo_componentes`)"
