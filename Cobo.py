@@ -2402,7 +2402,7 @@ def main():
                 ticket = listatickets.popleft()
                 yahoofinance.cotizacionesTicket(ticket)
 
-                print(('Quedan por actualizar un total de : %d' % len(listatickets)))
+                print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
                 yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
@@ -2424,7 +2424,7 @@ def main():
                 ticket = listatickets.popleft()
                 # accioninvalida=''
                 print ('')
-                print(('Tickets pendientes de comprobar %d' % len(listatickets)))
+                print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Tickets pendientes de comprobar %d' % len(listatickets)))
                 # if naccion in tickets:
                 if historicoTicket(ticket, borranoactualizados=borranoactualizados):
                     analisisTicket(ticket)
