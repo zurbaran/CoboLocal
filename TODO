@@ -1,10 +1,26 @@
 Comprobar porque se detiene hasta que ctrl+c
+
 Ticket CDL.AX ya descargado, comprobando la actualizacion de los datos
 Registro pendiente de una actualizacion desde 2013-04-19
 c^CPausa de 0.734 segundos
 http://ichart.finance.yahoo.com/table.csv?s=CDL.AX&a=3&b=18&c=2013&d=3&e=15&f=2014&g=d&ignore=.csv
 3 Registros de la accion
 
+Localizado el error, se detiene al abrir la web que abrimos antes aqui en la funcion descargaHistoricoAccion de yahoofinance
+    # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
+    # la abrimos para hacerle creer que venimos de aqui
+    # hemos observado casos donde hasta que no entrabamos en esta pagina no actualizaba correctamente la informacion en el archivo que nos descargamos posteriormente
+    r1 = urllib2.Request(preurl, headers=webheaders)
+    try:
+    urllib2.urlopen(r1)
+    except:
+        pass
+    print ('Pausa de 1 segundo')
+    duerme(tiempo=1000)
+
+#######################################################
+
+puede que este error sea como el anterior
 
 Actualizando cotizaciones de : SM
 Actualizando SM con datos "SM Energy Company","SM","NYSE",94.00,77.80,58.89,76.31,76.39,1153950,706083,"N/A"
@@ -52,10 +68,6 @@ consecuencia:
   File "Cobo.py", line 1237, in analisisTicket
     codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
 IndexError: list index out of range
-
-###########################################
-
-añadir fecha y hora antes de imprimir "Tickets pendientes de comprobar...."
 
 ###########################################
 

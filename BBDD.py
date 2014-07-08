@@ -847,7 +847,11 @@ def listacciones(**config):
         # 'Kofax Limited'
         # entrada y salida son 6.51, puede ser una cohincidencia en los calculos
 
-        numaccion = int((divisa * riesgo) / (entrada - salida))
+        if entrada != salida:
+            numaccion = int((divisa * riesgo) / (entrada - salida))
+        else:
+            numaccion = 0
+            
         inve = round(((numaccion * 1.0) * entrada) / divisa, 2)
         if not ((-1.0 * inv) <= inve <= inv) and \
            (rentabilidad >= rentMinima or \

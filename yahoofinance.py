@@ -96,9 +96,9 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20100101 Firefox/16.0'}
 pausareconexion = 35
 prefijo = {'': '',
-           '.AS': 'nl.',
+           '.AS': '',
            '.AT': 'gr.',
-           '.AX': 'au.',
+           '.AX': '',
            '.BA': 'ar.',
            '.BC': 'es.',
            '.BE': 'de.',
@@ -109,7 +109,7 @@ prefijo = {'': '',
            '.CBT': '',
            '.CME': '',
            '.CMX': '',
-           '.CO': 'dk.',
+           '.CO': '',
            '.DE': 'de.',
            '.DU': 'de.',
            '.EX': '',
@@ -140,7 +140,7 @@ prefijo = {'': '',
            '.NYM': '',
            '.NZ': 'nz.',
            '.OB': '',
-           '.OL': 'no.',
+           '.OL': '',
            '.PA': 'fr.',
            '.PK': '',
            '.SA': 'br.',
@@ -148,8 +148,8 @@ prefijo = {'': '',
            '.SI': 'sg.',
            '.SN': 'cl.',
            '.SS': '',
-           '.ST': 'se.',
-           '.SW': 'ch.',
+           '.ST': '',
+           '.SW': '',
            '.SZ': '',
            '.TA': 'ta.',
            '.TO': 'ca.',
@@ -465,11 +465,23 @@ def descargaHistoricoAccion(naccion, **config):
     # la abrimos para hacerle creer que venimos de aqui
     # hemos observado casos donde hasta que no entrabamos en esta pagina no actualizaba correctamente la informacion en el archivo que nos descargamos posteriormente
     r1 = urllib2.Request(preurl, headers=webheaders)
+
+
     try:
         urllib2.urlopen(r1)
-    except:
-        pass
-    duerme(tiempo=1000)
+    except urllib2.HTTPError as e:
+        print((e.code))
+        print('Url invalida, accion no disponible')
+        print(preurl)
+    except (KeyboardInterrupt ,urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        print('Conexion Perdida')
+        # print(e.reason)
+        print((preurl, e))
+        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
+    finally:
+        print ('Pausa de 1 segundo')
+        duerme(tiempo=1000)
+
 
     while f == None:
         try:
