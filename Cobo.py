@@ -1811,7 +1811,7 @@ def backtestMoneda(**config):
             ticket, mercado, fechaentrada, precionentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversion, inversionrecuperada, balance, rentabilidadoperacion, indicadores = n
             # si los indicadores son False, esto no funcionara
             if ADXobjetivo == False:  # la otra opcion era asignarle a los indicacores valor Falso o 0 , pero no me parecio bien y es lioso imprimir columnas inecesarias
-                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f" + os.linesep) \
+                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f\n") \
                          % (
                             ticket,
                             mercado,
@@ -1829,7 +1829,7 @@ def backtestMoneda(**config):
                             )).replace('.', ',')
             else:
 
-                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f" + os.linesep) \
+                texto = (("%s;%s;%s;%.3f;%s;%d;%s;%.3f;%s;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f;%.3f\n" + os.linesep) \
                          % (
                             ticket,
                             mercado,

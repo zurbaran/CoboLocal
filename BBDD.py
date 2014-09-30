@@ -180,9 +180,12 @@ def comprobaciones(colaResultado=None, aleatorio=False):
     # Buscar tikets a las que les falte relacion entre mercados y monedas
     sql = " SELECT `tiket`,`mercado` FROM `Cobo_componentes` where `mercado` not in (SELECT `nombreUrl` FROM `Cobo_mercado_moneda`)"
     cursor.execute(sql)
-    numeroResultado = len(cursor.fetchall())
+    listatickets = cursor.fetchall()
+    numeroResultado = len(listatickets)
     if colaResultado == None:
         print(('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado))
+	if numeroResultado >= 1:
+	    print listatickets
 
     # Tickets con errores
 #    Cobo_nombreticket = Table('Cobo_nombreticket')
