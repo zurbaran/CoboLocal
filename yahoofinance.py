@@ -229,7 +229,7 @@ def ticketsdeMercado(mercado):
         while web == None:
             try:
                 r = urllib2.Request(url, headers=webheaders)
-                f = urllib2.urlopen(r)
+                f = urllib2.urlopen(r, timeout=pausareconexion)
                 web = (f.read()).decode('UTF-8')
                 f.close()
             except urllib2.HTTPError as e:
@@ -316,7 +316,7 @@ def ticketsIPO(meses=5, columna=1):
         while web == None:
             try:
                 r = urllib2.Request(url, headers=webheaders)
-                f = urllib2.urlopen(r)
+                f = urllib2.urlopen(r, timeout=pausareconexion)
                 web = (f.read()).decode('UTF-8')
                 f.close()
             except urllib2.HTTPError as e:
@@ -468,7 +468,7 @@ def descargaHistoricoAccion(naccion, **config):
 
 
     try:
-        urllib2.urlopen(r1)
+        urllib2.urlopen(r1, timeout=pausareconexion)
     except urllib2.HTTPError as e:
         print((e.code))
         print('Url invalida, accion no disponible')
@@ -478,6 +478,8 @@ def descargaHistoricoAccion(naccion, **config):
         # print(e.reason)
         print((preurl, e))
         logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
+    except:
+        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
     finally:
         print ('Pausa de 1 segundo')
         duerme(tiempo=1000)
@@ -485,7 +487,7 @@ def descargaHistoricoAccion(naccion, **config):
 
     while f == None:
         try:
-            f = urllib2.urlopen(r)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
             print (url)
         except urllib2.HTTPError as e:
             print((e.code))
@@ -646,7 +648,7 @@ def cotizacionesTicket(nombreticket):
 
     while datosurl == None:
         try:
-            f = urllib2.urlopen(r)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
             datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le
             f.close()
         except urllib2.HTTPError as e:
@@ -710,7 +712,7 @@ def cotizacionesTicketWeb(nombreticket):
 
     while web == None:
         try:
-            f = urllib2.urlopen(r)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
             web = f.read().decode('UTF-8')
             f.close()
         except urllib2.HTTPError as e:
@@ -810,7 +812,7 @@ def cotizacionesMoneda(nombreticket):
 
     while datosurl == None:
         try:
-            f = urllib2.urlopen(r)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
             # f= urllib.urlopen (urldatos)
             datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le
             f.close()

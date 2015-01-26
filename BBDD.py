@@ -184,8 +184,8 @@ def comprobaciones(colaResultado=None, aleatorio=False):
     numeroResultado = len(listatickets)
     if colaResultado == None:
         print(('Tickets a los que les falta relacion entre mercado y moneda : %d' % numeroResultado))
-	if numeroResultado >= 1:
-	    print listatickets
+        if numeroResultado >= 1:
+            print listatickets
 
     # Tickets con errores
 #    Cobo_nombreticket = Table('Cobo_nombreticket')
@@ -256,15 +256,23 @@ def ticketalta(ticket):
     """
     cursor, db = conexion()
     ticket = ticket.upper()
+    ticket = (ticket,)
     anadido = False
-    sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` = '" + ticket + "'"
-    cursor.execute(sql)
+
+    # Comprobamos si existe
+    cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", ticket)
+    # sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` = '" + ticket + "'"
+    # cursor.execute(sql)
     numeroResultado = len(cursor.fetchall())
     if numeroResultado == 0:
-        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, `fechahistorico`) VALUES ('" + ticket + "', '" + str(date.today()) + "', NULL, NULL, NULL)"
-        cursor.execute(sql)
+        # Si no existe, lo incorporamos
+        cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, fechahistorico) VALUES (?, '" + str(date.today()) + "', NULL, NULL, NULL)", ticket)
+        # sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, `fechahistorico`) VALUES ('" + ticket + "', '" + str(date.today()) + "', NULL, NULL, NULL)"
+        # cursor.execute(sql)
         anadido = True
-    db.commit()
+        db.commit()
+        print((ticket[0] + ' anadido a la base de datos'))
+
     db.close()
     return anadido
 
@@ -535,6 +543,16 @@ def ticketcotizaciones(nombreticket, datosurl):
         ticketactualizado(nombreticket)
 
 
+def ticketobtencotizacion(nombreticket):
+         cursor, db = conexion()
+         nombreticket = (nombreticket.upper(),)
+         cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
+         registro = cursor.fetchall()
+         # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
+         ## TODO: FIXME: a veces, cuando esta haciendose en modo multiple, registro=[] y IndexError: list index out of range
+         return registro[0]
+
+
 def ticketlistacodigo(ticket=None):
     """
 
@@ -733,6 +751,7 @@ def mercadosdeshabilita(mercado):
     mercado = mercado.upper()
     sql = "UPDATE `Cobo_mercados` SET `habilitado` = 'False' WHERE `mercado` = '%s'" % mercado
     cursor.execute(sql)
+    db.commit()
     db.close()
 
 
