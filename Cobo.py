@@ -148,6 +148,7 @@ import indicador
 import BBDD
 import yahoofinance
 import HTML
+import jstock
 
 logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
@@ -1229,12 +1230,13 @@ def analisisTicket(nombreticket):
     """
     """
     cursor, db = BBDD.conexion()
-    nombreticket = (nombreticket.upper(),)
-    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
-    registro = cursor.fetchall()
-    # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
-    ## TODO: FIXME: a veces, cuando esta haciendose en modo multiple, registro=[] y IndexError: list index out of range
-    codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = registro[0]
+    # nombreticket = (nombreticket.upper(),)
+    # cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
+    # registro = cursor.fetchall()
+    # # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
+    # FIXME: codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = BBDD.ticketobtencotizacion(nombreticket)
+    # IndexError: list index out of range
+    codigo, _nombre, ticket, _mercado, _max52, maxDia, _min52, minDia, valorActual, _volumenMedio, _volumen, _error, _fechaRegistro = BBDD.ticketobtencotizacion(nombreticket)
     proximidadalcista, proximidadbajista = 0, 0
     if BBDD.datoshistoricosexisten(ticket):
 
@@ -1359,9 +1361,9 @@ def analisisTicket(nombreticket):
 
             # si true, analisis ya cumplido, obsoleto y lo actualizamos
             if numeroResultado == 1:
-                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, soporteanterior, rentabilidad, codigo)
+                sql = "UPDATE `Cobo_params_operaciones` SET `precio_ini` = %.3f, `precio_fin` = %.3f, `fecha_ini` = '%s', `fecha_fin` = '%s', `salida` = NULL, `entrada` = NULL, `timing` = '%s', `precio_salida` = %.3f, `rentabilidad` = %.3f WHERE `Cobo_params_operaciones`.`codigo` = %s" % (LTi[1], LTf[1], LTi[0], LTf[0], timming, salida, rentabilidad, codigo)
             elif numeroResultado == 0:
-                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, soporteanterior, rentabilidad)
+                sql = "INSERT INTO `Cobo_params_operaciones` (id,precio_ini,precio_fin,fecha_ini,fecha_fin,salida,entrada,codigo,timing,precio_salida,rentabilidad) VALUES (NULL, %.3f, %.3f,'%s' ,'%s' , NULL, NULL, %d,'%s', %.3f, %.3f)" % (LTi[1], LTf[1], LTi[0], LTf[0], codigo, timming, salida, rentabilidad)
 
         # Alcista/Bajista Validos
         else:  # anali
@@ -2099,30 +2101,30 @@ def main():
 # 'A) Alta/Actualizar/Descargar/Analizar Datos de 1 Ticket'
         if opcion == 'a':
             print(seleccion)
-            cursor, db = BBDD.conexion()
+            # cursor, db = BBDD.conexion()
             naccion = raw_input('Introduce ticket de la accion : ').upper()
-            naccion = (naccion,)
+            # naccion = (naccion,)
             # Primero lo borramos
-            BBDD.ticketborra(naccion[0], BBDD=False)
-
-            cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
-            numeroResultado = len(cursor.fetchall())
+            BBDD.ticketborra(naccion, BBDD=False)
 
             # Lo incorporamos a la base de datos
-            if numeroResultado == 0:
-                cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
-                db.commit()
-                print((naccion[0] + ' anadido a la base de datos'))
+            BBDD.ticketalta(naccion)
+            # cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
+            # numeroResultado = len(cursor.fetchall())
+            # if numeroResultado == 0:
+            #     cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+            #     db.commit()
+            #     print((naccion[0] + ' anadido a la base de datos'))
 
             # Actualizamos las cotizaciones
-            yahoofinance.cotizacionesTicket(naccion[0])
+            yahoofinance.cotizacionesTicket(naccion)
 
             # Descargamos/Actualizamos el historico
-            historicoTicket(naccion[0])
+            historicoTicket(naccion)
 
             # Analizamos la accion
-            analisisTicket(naccion[0])
-            db.close()
+            analisisTicket(naccion)
+            # db.close()
 
 #        'C) Analizar Datos de 1 Ticket',
         elif opcion == 'c':
@@ -2383,7 +2385,7 @@ def main():
             print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
             del ticketscomponentesmercados
 
-            print('Se han anadiendo IPOs del mercado americano')
+            print('Se estan anadiendo IPOs del mercado americano')
             ticketsanadidos = 0
             tickets = yahoofinance.ticketsIPO()
             for ticket in tickets:
@@ -2392,6 +2394,19 @@ def main():
             print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
             del tickets
 
+            print('Se estan anadiendo acciones de JStock')
+            if raw_input('Quieres iniciar el proceso de JStock (Y/....) ?')=='Y':
+                jstock.descarga()
+                jstock.descomprime()
+                ticketsanadidos = 0
+                tickets = jstock.ticketsdeJstock()
+                for ticket in tickets:
+                    if BBDD.ticketalta(ticket):
+                        ticketsanadidos += 1
+                print(('Se han anadido un total de : %d acciones de JStock' % ticketsanadidos))
+                del tickets
+
+                
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
             print(seleccion)
@@ -2426,6 +2441,10 @@ def main():
                 print ('')
                 print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Tickets pendientes de comprobar %d' % len(listatickets)))
                 # if naccion in tickets:
+		# TODO: cuando actualizo con multiples ventanas, a veces se encuentra que una de las ventanas borro la accion de la BBDD
+		# para que no se detenga, habria que comprobar si la accion existe en la BBDD
+		# con multiples ventanas borra acciones que no deberia
+		# FIXME: crear una funcion que compruebe, antes de hacer estas cosas, si la accion aun existe 
                 if historicoTicket(ticket, borranoactualizados=borranoactualizados):
                     analisisTicket(ticket)
                 # cuentaatras -= 1
@@ -2524,7 +2543,7 @@ def main():
                 MMemensual = raw_input('Media Movil Exponencial mensual (Sin MME): ')
                 if MMemensual != '':
                     config['MMemensual'] = int(MMemensual)
-                    MMe2mensual = raw_input('2A Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2mensual = raw_input('2A Media Movil Exponencial mensual para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
                     if MMe2mensual != '':
                         config['MMe2mensual'] = int(MMe2mensual)
 
@@ -2707,7 +2726,7 @@ def main():
             jstock = os.path.join('C:\Program Files (x86)\JStock\database')
             paises = os.listdir(jstock)
             paises.remove('database.zip')
-            cursor, db = BBDD.conexion()
+            #cursor, db = BBDD.conexion()
             for n in paises:
                 archivowtickers = os.path.join('C:\Program Files (x86)\JStock\database', n, 'database\stock-info-database.csv')
                 f = open(archivowtickers, "r")
@@ -2724,18 +2743,19 @@ def main():
                         punto = naccion.find('.')
                         if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
                             naccion = (naccion,)
-                            cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
-                            numeroResultado = len(cursor.fetchall())
-                            if numeroResultado == 0:
-                                cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                            if BBDD.ticketalta(naccion):
+                            #cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
+                            #numeroResultado = len(cursor.fetchall())
+                            #f numeroResultado == 0:
+                                #cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                                 # print(naccion[0] + ' anadido a la base de datos')
                                 incluidos += 1
                         i += 1
                     print (('Anadido pais, %s' % n))
 
-            if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
-                db.commit()
-            db.close()
+            #if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
+            #   db.commit()
+            #db.close()
 
         # x) Generar lista de acciones
         elif opcion == 'x':
@@ -2866,5 +2886,4 @@ def main():
 ############################################################
 # programa principal
 if __name__ == '__main__':
-    # cursor, db = BBDD.conexion()
     main()
