@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-yahoofinance.py - v0.02 2013-07-16 Antonio Caballero
+yahoofinance.py - v0.02 2013-07-16 Antonio Caballero.
 
 Este modulo proporciona las herramientas necesarias la descarga de datos de yahoo finance
 
@@ -172,12 +172,13 @@ from random import randint
 import logging
 import os
 import urllib2
+import socket
 import csv
 
 
 ####################################################
 # modulos no estandar o propios
-from Cobo import CARPETAS, ARCHIVO_LOG
+from settings import CARPETAS, ARCHIVO_LOG
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
 
@@ -185,6 +186,8 @@ import BBDD
 logging.basicConfig(filename=ARCHIVO_LOG,
     format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
     level=logging.DEBUG)
+
+socket.setdefaulttimeout(pausareconexion)
 
 
 # TODO: Utilizando la red TOR para descargar la informacion de yahoo
@@ -194,23 +197,20 @@ urllib2.install_opener(opener)
 
 
 def _test():
+    """."""
     import doctest
     doctest.testmod()
 
 
 def duerme(tiempo=1500):
-    """
-
-    """
+    """."""
     x = (randint(0, tiempo)) / 1000.0
     print(('Pausa de %.3f segundos' % x))
     sleep(x)
 
 
 def ticketsdeMercado(mercado):
-    """
-
-    """
+    """."""
     # global webheaders
     # habra que buscar los ticket y utilizar como fin de pagina el texto en la primera
     # <a href="/q/cp?s=%5EDJA&amp;c=1">Last< donde c=1 indica el final de la pagina
@@ -226,7 +226,7 @@ def ticketsdeMercado(mercado):
         print(url)
 
         web = None
-        while web == None:
+        while web is None:
             try:
                 r = urllib2.Request(url, headers=webheaders)
                 f = urllib2.urlopen(r, timeout=pausareconexion)
@@ -241,7 +241,7 @@ def ticketsdeMercado(mercado):
                     web = None
                     sleep(pausareconexion)
                     #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
                 print ('Conexion Erronea')
                 # print(e.reason)
                 print ((url, e))
@@ -286,24 +286,7 @@ def ticketsdeMercado(mercado):
 
 
 def ticketsIPO(meses=5, columna=1):
-    """
-
-    >>> ipos = ticketsIPO(meses=2)
-
-    http://biz.yahoo.com/ipo/prc_cal.html
-    Pausa de 1.269 segundos
-
-    http://biz.yahoo.com/ipo/prc_dec13.html
-    Pausa de 0.405 segundos
-
-    http://biz.yahoo.com/ipo/prc_nov13.html
-    Pausa de 1.374 segundos
-
-          40 Tickets IPO aÃ±adidas
-
-    >>> ipos
-    [u'CELP', u'RTRX', u'GLYC', u'ITCI', u'SPCBF', u'AMC', u'CAMBU', u'ADMP', u'SALT', u'TLOG', u'KIN', u'KFX', u'XNCR', u'GMZ', u'IPWR', u'WBAI', u'VNCE', u'OXFD', u'GOMO', u'EVGN', u'RLYP', u'ZU', u'FRBA', u'TNDM', u'LEVYU', u'HMHC', u'EROS', u'DLNG', u'STAY', u'CHGG', u'NMIH', u'JGW', u'TWTR', u'MEP', u'MVNR', u'BANX', u'LGIH', u'NCFT', u'KPTI', u'WIX', u'CUDA', u'ARCX']
-    """
+    """."""
     ticketsanadidos = []
     pagina = 'prc_cal.html'
     i = 0
@@ -313,7 +296,7 @@ def ticketsIPO(meses=5, columna=1):
         print(url)
 
         web = None
-        while web == None:
+        while web is None:
             try:
                 r = urllib2.Request(url, headers=webheaders)
                 f = urllib2.urlopen(r, timeout=pausareconexion)
@@ -328,7 +311,7 @@ def ticketsIPO(meses=5, columna=1):
                     web = None
                     sleep(pausareconexion)
                     # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+            except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
                 print ('Conexion Erronea')
                 # print(e.reason)
                 print ((url, e))
@@ -382,7 +365,9 @@ def ticketsIPO(meses=5, columna=1):
 
 def descargaHistoricoAccion(naccion, **config):
     # global webheaders
-    """ Funcion para la descarga de las cotizaciones historicas de una accion.
+    """
+    Funcion para la descarga de las cotizaciones historicas de una accion.
+
     Parametros : naccion - nombre de la accion
                 fechaini - fecha de inicio
                 fechafin - fecha fin
@@ -399,8 +384,8 @@ def descargaHistoricoAccion(naccion, **config):
         los datos
         que ha habido pago de dividendos 'Pago Dividendos'
         o que la url no es valida 'URL invalida'
-    """
 
+    """
     naccion = naccion.upper()
     fechaini = config.get('fechaini', None)
     fechafin = config.get('fechafin', None)
@@ -416,7 +401,7 @@ def descargaHistoricoAccion(naccion, **config):
 #    else:
 #        timming ='m'
 
-    if fechafin == None:
+    if fechafin is None:
         fechafin = ((date.today().timetuple()))
         anofin = str(fechafin[0])
         mesfin = str(fechafin[1])
@@ -434,7 +419,7 @@ def descargaHistoricoAccion(naccion, **config):
     # y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
     diafin = str(int(diafin) - 1)
     # comprobandodividendo=False
-    if fechaini == None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
+    if fechaini is None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
         actualizar = False
         url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
     else:
@@ -466,36 +451,38 @@ def descargaHistoricoAccion(naccion, **config):
     # hemos observado casos donde hasta que no entrabamos en esta pagina no actualizaba correctamente la informacion en el archivo que nos descargamos posteriormente
     r1 = urllib2.Request(preurl, headers=webheaders)
 
-
     try:
-        urllib2.urlopen(r1, timeout=pausareconexion)
+        f1 = urllib2.urlopen(r1, timeout=pausareconexion)
+        f1.read()
+        f1.close()
     except urllib2.HTTPError as e:
         print((e.code))
         print('Url invalida, accion no disponible')
         print(preurl)
-    except (KeyboardInterrupt ,urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+    except (KeyboardInterrupt, urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
         print('Conexion Perdida')
         # print(e.reason)
         print((preurl, e))
         logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
-    except:
-        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
+#    except:
+#        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
     finally:
         print ('Pausa de 1 segundo')
         duerme(tiempo=1000)
 
-
-    while f == None:
+    while f is None:
         try:
             f = urllib2.urlopen(r, timeout=pausareconexion)
             print (url)
+            lineas = f.readlines()
+            f.close()
         except urllib2.HTTPError as e:
             print((e.code))
             print('Url invalida, accion no disponible')
             print(url)
             f = None
             return 'URL invalida'
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Perdida')
             # print(e.reason)
             print((url, e))
@@ -503,6 +490,8 @@ def descargaHistoricoAccion(naccion, **config):
             f = None
             print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
+        #except:
+            #logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, naccion.encode('UTF-8'), url.encode('UTF-8')))
 
             # cuando la conexion se pierde, pasa por aqui, dando como error
             # [Errno 11004] getaddrinfo failed
@@ -529,8 +518,6 @@ def descargaHistoricoAccion(naccion, **config):
 #         status = status + chr(8) * (len(status) + 1)
 #         print status,
 
-    lineas = f.readlines()
-    f.close()
     if not (lineas[0] == "Date,Open,High,Low,Close,Volume,Adj Close\n"):
         print('Informacion invalida, accion no disponible')
         return 'URL invalida'
@@ -624,9 +611,7 @@ def descargaHistoricoAccion(naccion, **config):
 
 
 def cotizacionesTicket(nombreticket):
-    """
-
-    """
+    """."""
     nombreticket = nombreticket.upper()
     # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
@@ -646,10 +631,11 @@ def cotizacionesTicket(nombreticket):
     else:
         logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
 
-    while datosurl == None:
+    while datosurl is None:
         try:
             f = urllib2.urlopen(r, timeout=pausareconexion)
-            datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le
+            datosurl = ((f.read().strip()).replace(',N/A', ',null')).decode('UTF-8')  # UTF-16le
+            datosurl = datosurl.replace('N/A,', 'null,')
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
@@ -657,7 +643,7 @@ def cotizacionesTicket(nombreticket):
             datosurl = None
             sleep(pausareconexion)
             #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Erronea')
             print(e)
             datosurl = None
@@ -673,10 +659,10 @@ def cotizacionesTicket(nombreticket):
 #            print ('Pausa de %d segundos' % pausareconexion)
 #            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
     # crearda exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
-    # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
+    # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",nul,nul,nul,nul,0.00,0,nul,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
+    # print datosurl
     if sufijo in mercadosfail and \
-       ',"N/A",NULL,NULL,NULL,NULL,0.00,0,NULL,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=' in datosurl and \
-       __name__ != '__main__':
+       'null,null,null,null,null,null,null,null,null' in datosurl: #and  __name__ != '__main__':
         datosurl = cotizacionesTicketWeb(nombreticket)
 
     if __name__ != '__main__':
@@ -696,7 +682,7 @@ def cotizacionesTicketWeb(nombreticket):
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
     web = None
-    error = 'N/A'
+    error = 'null'
     punto = nombreticket.find('.')
     if punto == -1:
         sufijo = ''
@@ -710,7 +696,7 @@ def cotizacionesTicketWeb(nombreticket):
 
     r = urllib2.Request(urldatos, headers=webheaders)
 
-    while web == None:
+    while web is None:
         try:
             f = urllib2.urlopen(r, timeout=pausareconexion)
             web = f.read().decode('UTF-8')
@@ -721,7 +707,7 @@ def cotizacionesTicketWeb(nombreticket):
             web = None
             sleep(pausareconexion)
             #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Erronea')
             print(e)
             web = None
@@ -744,7 +730,7 @@ def cotizacionesTicketWeb(nombreticket):
     try:
         datoValorActual = float(web[inicio:fin].replace(',', '.'))
     except ValueError:
-        datoValorActual = 'NULL'
+        datoValorActual = 'null'
         error = 'No such ticker symbol.'
 
     # Con el mercado abierto este datos es correcto buscarlo asi
@@ -754,13 +740,13 @@ def cotizacionesTicketWeb(nombreticket):
     try:
         datominDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
-        datominDia = 'NULL'
+        datominDia = 'null'
     inicio = web.find('<span id="yfs_h53_' + nombreticket.lower() + '">') + len('<span id="yfs_h53_' + nombreticket.lower() + '">')
     fin = web.find('</span></span>', inicio)
     try:
         datomaxDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
-        datomaxDia = 'NULL'
+        datomaxDia = 'null'
         inicio = web.find('</th><td class="yfnc_tabledata1"><span>') + len('</th><td class="yfnc_tabledata1"><span>')
 
     inicio = web.find('<td class="yfnc_tabledata1"><span>', inicio) + len('<td class="yfnc_tabledata1"><span>')
@@ -768,36 +754,34 @@ def cotizacionesTicketWeb(nombreticket):
     try:
         datomin52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
-        datomin52 = 'NULL'
+        datomin52 = 'null'
     inicio = fin + len('</span> - <span>')
     fin = web.find('</span></td></tr><tr><th scope="row" width="48%">', inicio)
     try:
         datomax52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
-        datomax52 = 'NULL'
+        datomax52 = 'null'
 
     inicio = web.find('<span id="yfs_v53_' + nombreticket.lower() + '">') + len('<span id="yfs_v53_' + nombreticket.lower() + '">')
     fin = web.find('</span></td></tr><tr><th', inicio)
     try:
         datovolumen = int((web[inicio:fin].replace(',', '')).replace('.', ''))
     except ValueError:
-        datovolumen = 'NULL'
+        datovolumen = 'null'
 
     inicio = web.find('(3m)</span>:</th><td class="yfnc_tabledata1">') + len('(3m)</span>:</th><td class="yfnc_tabledata1">')
     fin = web.find('</td></tr><tr><th scope="row" width="48%">', inicio)
     try:
         datovolumenMedio = int((web[inicio:fin].replace(',', '')).replace('.', ''))
     except ValueError:
-        datovolumenMedio = 'NULL'
+        datovolumenMedio = 'null'
 
-    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,"%s"' % (datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
+    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
     return datosurl
 
 
 def cotizacionesMoneda(nombreticket):
-    """
-
-    """
+    """."""
     nombreticket = nombreticket.upper()
     urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=sl1e1&e=.csv"
     datosurl = None
@@ -810,11 +794,11 @@ def cotizacionesMoneda(nombreticket):
 # #        sufijo = nombreticket[punto:]
 # #    r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
 
-    while datosurl == None:
+    while datosurl is None:
         try:
             f = urllib2.urlopen(r, timeout=pausareconexion)
             # f= urllib.urlopen (urldatos)
-            datosurl = ((f.read().strip()).replace(',N/A', ',NULL')).decode('UTF-8')  # UTF-16le
+            datosurl = ((f.read().strip()).replace(',N/A', ',null')).decode('UTF-8')  # UTF-16le
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
@@ -822,7 +806,7 @@ def cotizacionesMoneda(nombreticket):
             datosurl = None
             sleep(pausareconexion)
             #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Erronea')
             # print(e.reason)
             print(e)
@@ -836,8 +820,8 @@ def cotizacionesMoneda(nombreticket):
 
 
 def subirtimming(datos, **config):
-    '''
-    Pasa un timming inferior a uno superior, el orden seria diario, semana y mensual
+    """
+    Pasa un timming inferior a uno superior, el orden seria diario, semana y mensual.
 
     >>> historicoDiario = [('2010-02-01', 20.7, 20.7, 19.6, 19.65, 165900), ('2010-02-02', 19.51, 19.98, 19.51, 19.6, 148000), ('2010-02-03', 19.6, 19.71, 19.3, 19.3, 226500), ('2010-02-04', 19.26, 19.48, 18.5, 18.5, 16900), ('2010-02-05', 18.5, 18.5, 17.5, 18.08, 238900), ('2010-02-08', 19.82, 19.82, 17.4, 18.9, 131900), ('2010-02-09', 19.49, 19.69, 18.05, 18.22, 618500), ('2010-02-10', 18.4, 19.75, 16.35, 17.5, 4991800), ('2010-02-11', 17.55, 18.45, 17.11, 17.72, 4494800), ('2010-02-12', 17.35, 20.25, 17.34, 19.76, 3526300), ('2010-02-16', 20.0, 20.24, 19.25, 20.0, 1223500), ('2010-02-17', 20.2, 20.2, 19.5, 19.87, 1026300), ('2010-02-18', 19.25, 19.78, 19.05, 19.69, 1680500), ('2010-02-19', 19.56, 19.67, 19.4, 19.5, 1230600), ('2010-02-22', 19.16, 19.59, 19.0, 19.33, 703900), ('2010-02-23', 19.33, 19.33, 18.92, 18.95, 1126800), ('2010-02-24', 18.72, 19.32, 18.62, 18.97, 832300), ('2010-02-25', 18.55, 19.66, 18.4, 19.28, 574400), ('2010-02-26', 19.17, 20.76, 18.75, 19.5, 1687900), ('2010-03-01', 19.63, 20.28, 19.6, 20.25, 766500), ('2010-03-02', 20.07, 20.53, 20.0, 20.5, 538000), ('2010-03-03', 20.18, 20.52, 20.02, 20.32, 563700), ('2010-03-04', 20.23, 20.4, 19.84, 19.96, 629100), ('2010-03-05', 20.09, 20.09, 19.3, 19.6, 440700), ('2010-03-08', 19.57, 20.0, 19.48, 19.5, 183800), ('2010-03-09', 19.37, 19.79, 19.25, 19.37, 263100), ('2010-03-10', 19.3, 19.3, 18.93, 18.99, 561200), ('2010-03-11', 18.91, 19.27, 18.75, 18.89, 595000), ('2010-03-12', 18.91, 19.77, 18.91, 19.4, 617400), ('2010-03-15', 19.4, 19.4, 18.77, 18.98, 388700), ('2010-03-16', 18.62, 19.6, 18.62, 19.51, 274400), ('2010-03-17', 19.6, 20.14, 19.32, 20.03, 322000), ('2010-03-18', 19.88, 20.65, 19.81, 20.06, 464600), ('2010-03-19', 20.22, 20.25, 19.88, 20.08, 346300), ('2010-03-22', 19.95, 20.23, 19.95, 20.11, 256800), ('2010-03-23', 20.17, 21.18, 20.1, 20.99, 498900), ('2010-03-24', 20.86, 20.91, 20.45, 20.83, 475000), ('2010-03-25', 20.85, 21.99, 20.8, 21.58, 838600), ('2010-03-26', 21.64, 22.09, 21.39, 22.0, 832400), ('2010-03-29', 22.0, 22.0, 21.53, 21.9, 149200), ('2010-03-30', 21.8, 22.04, 21.6, 21.91, 189500), ('2010-03-31', 21.84, 21.84, 21.58, 21.73, 311100), ('2010-04-01', 21.79, 22.08, 21.46, 21.81, 248900), ('2010-04-05', 21.71, 21.89, 21.45, 21.79, 517500), ('2010-04-06', 21.66, 22.12, 21.48, 22.06, 1717000), ('2010-04-07', 21.93, 22.1, 21.68, 22.02, 360900), ('2010-04-08', 21.89, 22.2, 21.74, 22.03, 303300), ('2010-04-09', 21.99, 22.23, 21.85, 22.16, 220700), ('2010-04-12', 22.22, 22.56, 21.91, 22.33, 222100), ('2010-04-13', 22.43, 22.71, 21.69, 21.9, 605600), ('2010-04-14', 21.86, 22.21, 21.86, 21.99, 507300), ('2010-04-15', 21.89, 22.0, 21.87, 21.98, 104600), ('2010-04-16', 21.9, 21.96, 21.41, 21.81, 373400), ('2010-04-19', 21.85, 21.93, 21.63, 21.83, 190000), ('2010-04-20', 21.96, 22.25, 21.78, 21.92, 311900), ('2010-04-21', 21.88, 22.0, 21.68, 21.93, 204300), ('2010-04-22', 21.73, 21.81, 21.57, 21.68, 94400), ('2010-04-23', 21.58, 21.71, 21.38, 21.59, 143000), ('2010-04-26', 21.46, 21.92, 21.46, 21.67, 70500), ('2010-04-27', 21.54, 21.6, 21.27, 21.38, 189300), ('2010-04-28', 21.38, 21.5, 20.54, 20.95, 551400), ('2010-04-29', 21.01, 21.09, 20.7, 21.0, 628400), ('2010-04-30', 21.08, 21.08, 20.59, 20.75, 324100), ('2010-05-03', 20.7, 20.88, 20.48, 20.76, 412900), ('2010-05-04', 20.56, 20.56, 20.12, 20.44, 272300), ('2010-05-05', 20.32, 20.32, 19.86, 19.96, 259300), ('2010-05-06', 19.85, 20.1, 18.7, 19.5, 395800), ('2010-05-07', 19.56, 21.43, 19.55, 20.32, 1211800), ('2010-05-10', 20.94, 21.2, 20.35, 21.15, 232000), ('2010-05-11', 20.98, 21.75, 20.88, 21.7, 262600), ('2010-05-12', 21.7, 22.33, 21.66, 22.08, 295000), ('2010-05-13', 22.19, 22.31, 22.0, 22.14, 437800), ('2010-05-14', 22.05, 22.19, 21.76, 22.0, 252800), ('2010-05-17', 22.0, 22.56, 21.84, 22.03, 245900), ('2010-05-18', 22.09, 22.54, 21.85, 21.89, 223300), ('2010-05-19', 21.81, 21.96, 21.4, 21.83, 180000), ('2010-05-20', 21.43, 21.56, 20.6, 20.69, 494800), ('2010-05-21', 20.47, 20.9, 20.1, 20.9, 369700), ('2010-05-24', 20.78, 21.0, 20.5, 20.77, 300400), ('2010-05-25', 20.5, 20.6, 20.22, 20.29, 582400), ('2010-05-26', 20.42, 21.02, 20.24, 20.26, 273200), ('2010-05-27', 20.41, 21.09, 20.26, 21.03, 304300), ('2010-05-28', 20.85, 21.31, 20.8, 21.07, 125700), ('2010-06-01', 21.04, 21.51, 20.8, 21.01, 214900), ('2010-06-02', 21.09, 21.44, 20.86, 21.13, 60900), ('2010-06-03', 21.27, 21.4, 20.8, 21.04, 141300), ('2010-06-04', 20.6, 21.08, 20.0, 20.0, 206900), ('2010-06-07', 20.0, 20.2, 19.54, 19.71, 173200), ('2010-06-08', 19.71, 19.79, 18.93, 19.17, 680800), ('2010-06-09', 19.22, 19.73, 19.0, 19.39, 245100), ('2010-06-10', 19.57, 20.01, 19.52, 20.0, 192800), ('2010-06-11', 19.87, 20.51, 19.42, 20.48, 76600), ('2010-06-14', 20.51, 21.49, 20.49, 20.75, 175600), ('2010-06-15', 20.88, 21.15, 20.24, 21.05, 84000), ('2010-06-16', 20.87, 21.35, 20.86, 21.23, 89200), ('2010-06-17', 21.4, 21.57, 20.89, 21.46, 74600), ('2010-06-18', 21.45, 21.54, 21.31, 21.48, 135400), ('2010-06-21', 21.65, 21.99, 21.28, 21.34, 244800), ('2010-06-22', 21.32, 21.5, 20.53, 20.75, 246300), ('2010-06-23', 20.68, 20.88, 20.31, 20.54, 106700), ('2010-06-24', 20.4, 20.6, 20.0, 20.04, 77700), ('2010-06-25', 20.21, 20.25, 19.5, 20.01, 747000), ('2010-06-28', 19.96, 20.26, 19.56, 20.12, 156100), ('2010-06-29', 19.87, 20.93, 19.4, 19.9, 369700), ('2010-06-30', 19.95, 20.57, 19.62, 19.67, 393900), ('2010-07-01', 19.73, 20.12, 19.29, 20.12, 364900), ('2010-07-02', 20.29, 20.29, 19.73, 20.03, 162000), ('2010-07-06', 20.38, 21.2, 19.9, 20.27, 254200), ('2010-07-07', 20.66, 21.91, 20.23, 21.57, 1712900), ('2010-07-08', 20.96, 20.96, 20.1, 20.38, 2556300), ('2010-07-09', 19.61, 19.9, 19.33, 19.44, 1257300), ('2010-07-12', 19.47, 19.6, 19.1, 19.4, 287700), ('2010-07-13', 19.46, 19.65, 19.3, 19.56, 286400), ('2010-07-14', 19.45, 19.73, 19.25, 19.56, 272800), ('2010-07-15', 19.62, 19.62, 19.22, 19.26, 270200), ('2010-07-16', 19.16, 19.16, 18.79, 18.79, 358900), ('2010-07-19', 18.88, 19.06, 18.75, 18.78, 361900), ('2010-07-20', 18.68, 18.85, 18.41, 18.82, 441900), ('2010-07-21', 18.82, 19.07, 18.73, 18.98, 374000), ('2010-07-22', 19.07, 19.11, 18.39, 19.0, 212700), ('2010-07-23', 18.93, 19.54, 18.89, 19.34, 226300), ('2010-07-26', 19.35, 19.35, 18.87, 19.0, 793600), ('2010-07-27', 19.01, 19.2, 18.78, 18.87, 317600), ('2010-07-28', 18.85, 19.07, 18.84, 19.02, 235600), ('2010-07-29', 19.07, 19.25, 18.92, 19.04, 143700), ('2010-07-30', 18.9, 19.29, 18.76, 19.24, 208300)]
     >>> historicoSemanal = [('2010-02-01', 20.7, 20.7, 17.5, 18.08, 159200), ('2010-02-08', 19.82, 20.25, 16.35, 19.76, 2752600), ('2010-02-16', 20.0, 20.24, 19.05, 19.5, 1290200), ('2010-02-22', 19.16, 20.76, 18.4, 19.5, 985000), ('2010-03-01', 19.63, 20.53, 19.3, 19.6, 587600), ('2010-03-08', 19.57, 20.0, 18.75, 19.4, 444100), ('2010-03-15', 19.4, 20.65, 18.62, 20.08, 359200), ('2010-03-22', 19.95, 22.09, 19.95, 22.0, 580300), ('2010-03-29', 22.0, 22.08, 21.46, 21.81, 224600), ('2010-04-05', 21.71, 22.23, 21.45, 22.16, 623800), ('2010-04-12', 22.22, 22.71, 21.41, 21.81, 362600), ('2010-04-19', 21.85, 22.25, 21.38, 21.59, 188700), ('2010-04-26', 21.46, 21.92, 20.54, 20.75, 352700), ('2010-05-03', 20.7, 21.43, 18.7, 20.32, 510400), ('2010-05-10', 20.94, 22.33, 20.35, 22.0, 296000), ('2010-05-17', 22.0, 22.56, 20.1, 20.9, 302700), ('2010-05-24', 20.78, 21.31, 20.22, 21.07, 317200), ('2010-06-01', 21.04, 21.51, 20.0, 20.0, 156000), ('2010-06-07', 20.0, 20.51, 18.93, 20.48, 273700), ('2010-06-14', 20.51, 21.57, 20.24, 21.48, 111700), ('2010-06-21', 21.65, 21.99, 19.5, 20.01, 284500), ('2010-06-28', 19.96, 20.93, 19.29, 20.03, 289300), ('2010-07-06', 20.38, 21.91, 19.33, 19.44, 1445100), ('2010-07-12', 19.47, 19.73, 18.79, 18.79, 295200), ('2010-07-19', 18.88, 19.54, 18.39, 19.34, 323300), ('2010-07-26', 19.35, 19.35, 18.76, 19.24, 339700)]
@@ -852,7 +836,8 @@ def subirtimming(datos, **config):
     True
     >>> historicoMensual==historicoMensual2
     True
-    '''
+
+    """
     timming = (config.get('timming', 'm')).lower()
     datostimming = []
 

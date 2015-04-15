@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-jstock.py - v0.01 2014-10-22 Antonio Caballero.
+Cobo.py - v0.03 2013-07-26 Antonio Caballero, Paco Corbi.
 
-Este modulo proporciona las herramientas necesarias para leer del repositorio de github de jstock las acciones que se han incorporado nuevas
+Este modulo proporciona las herramientas necesarias para el analisis, gestion y backtest de acciones
 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 
-__version__ = '0.01'
-__date__ = '2014-10-22'
-__author__ = ('Antonio Caballero',)
-__mail__ = ('zurbaran79@hotmail.com',)
+__version__ = '0.05'
+__date__ = '2014-05-20'
+__author__ = ('Antonio Caballero', 'Paco Corbi')
+__mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -86,153 +86,56 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #
 #     Creative Commons may be contacted at http://creativecommons.org/.
 
-
-# paginas de interes
-# http://finance.yahoo.com/international
-
-
-#################################################
-# Constantes locales
-
-
 ####################################################
 # modulos estandar importados
-
-from time import sleep
-from zipfile import ZipFile
-import logging
 import os
-import urllib2
+#################################################
+# Constantes locales
+CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
+            'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
+
+DIFREGACTUALIZAR = {'historico': 10, 'cotizacion': 10, 'noActualizados': 120}
+
+FILTROSTOPLOSS = {'m': 0.04, 'w': 0.03, 'd': 0.02}
+
+FILTROS = {'volumen': 20000000,
+           'rentMinima': 0.35,
+           'invMinima': 800,
+           'riesgo': 200}
+
+SUFIJOSEXCLUIDOS = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
+                    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
+                    '.KQ', '.KS', '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB',
+                    '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ',
+                    '.TA', '.TW', '.TWO', '.VA', '.VX',)
+
+MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
+                     'OTC BB', 'IOB', 'CDNX', 'VTX', 'MDD', 'ENX', 'PSX', 'Madrid',
+                     'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
+                     'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
+                     'FSI', 'EUX',)
+
+BACKTESTOPERACIONESSOSPECHOSAS = 1.50
+
+ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
+
+ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
 
 
 ####################################################
 # modulos no estandar o propios
-from settings import CARPETAS, ARCHIVO_LOG, SUFIJOSEXCLUIDOS
-from yahoofinance import webheaders, pausareconexion
 
 
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
-                    level=logging.DEBUG)
+############################################################
+# comprobaciones especiales
+# assert
 
 
-def descarga():
-    """
-    descargamos el archivo
-    https://github.com/yccheok/jstock/archive/master.zip
-    y lo descomprimimos
+############################################################
+# definicion de funciones
 
-    """
-    # descargamos el archivo master.zip de github para grabarlo en el directorio LOG
-    url = 'https://github.com/yccheok/jstock/archive/master.zip'
-    r = urllib2.Request(url, headers=webheaders)
-    f = None
-    while f is None:
-        try:
-            f = urllib2.urlopen(r, timeout=pausareconexion)
-        except urllib2.HTTPError as e:
-            print ('Conexion Perdida')
-            print ((e.code))
-            f = None
-            sleep(pausareconexion)
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
-            print ('Conexion Erronea')
-            print ((url, e))
-            f = None
-            print (('Pausa de %d segundos' % pausareconexion))
-            sleep(pausareconexion)
-##
-##    meta = f.info()
-##    file_size = int(meta['content-length'])# Falla aqui porque no existe en el header del archivo
-##    #file_size = os.path.getsize(buffer)
-##    print "Descargando : %s Bytes: %s" % (url, file_size)
-##    file_size_dl = 0
-##    block_sz = 8192
-##    while True:
-##        _buffer = f.read(block_sz)
-##        if not _buffer:
-##            break
-##        file_size_dl += len(_buffer)
-##        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-##        status = status + chr(8) * (len(status) + 1)
-##        print status,
+############################################################
+# programa principal
 
-    web = f.read()
-    f.close()
-
-    master = open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "w")
-    master.write(web)
-    master.close()
-
-
-def descomprime():
-    """."""
-    master = os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip")
-    # Descomprimimos el archivo master zip
-    unziped = ZipFile(master, 'r')
-    for file_path in unziped.namelist():
-        file_content = unziped.read(file_path)
-        # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
-        if file_path[-1] == '/' and file_content == '':
-            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
-            if not os.path.exists(carpeta):
-                os.mkdir(carpeta)
-        # solo descomprimimos los arvhivos que estan en esta carpeta
-        elif 'jstock-master/appengine/jstock-static/war/stocks_information/' in file_path:
-            file_unzip = open(os.path.join(os.getcwd(), CARPETAS['Log'], file_path), "w")
-            file_unzip.write(file_content)
-            file_unzip.close()
-    unziped.close()
-#    Borramos el archivo master zip
-#    os.remove(master)
-
-
-def tickets():
-    """."""
-    ticketsanadidos = []
-    jstockdir = os.path.join(os.path.join(os.getcwd(), CARPETAS['Log'], 'jstock-master/appengine/jstock-static/war/stocks_information/'))
-    # obtenemos una lista de paises
-    paises = os.listdir(jstockdir)
-    paises.remove('stock-info-database-meta.json')
-
-    for pais in paises:
-        # entramos en cada directorio que contiene un archivo stocks.zip
-        stocksZip = os.path.join(jstockdir, pais, 'stocks.zip')
-        unzipstocks = ZipFile(stocksZip, 'r')
-        # leemos el contenido del archivo stocks.csv que contiene cada archivo stocks.zip
-        file_content = unzipstocks.read('stocks.csv')
-
-        stockscsvf = os.path.join(jstockdir, pais, 'stocks.csv')
-        if not os.path.exists(stockscsvf):
-            stockscsv = open(stockscsvf, 'w')
-            stockscsv.write(file_content)
-            stockscsv.close()
-
-        f = open(stockscsvf, "r")
-        lineas = f.readlines()
-        f.close()
-        i = 1
-        if (raw_input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (pais, len(lineas) - 1))).upper() == 'Y':
-            while i < len(lineas):
-
-                linea = lineas[i].split(',', 3)
-                naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
-                punto = naccion.find('.')
-                if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-#                    naccion = (naccion,)
-#                    BBDD.ticketalta(naccion)
-                    ticketsanadidos.append(naccion)
-                i += 1
-            print (('Anadido pais, %s' % pais))
-
-        os.remove(stockscsvf)
-
-    return ticketsanadidos
-
-
-def ticketsJstock():
-    """."""
-    descarga()
-    descomprime()
-    listtickets = tickets()
-    return listtickets
+# if __name__ == '__main__':
+#     pass
