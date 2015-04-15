@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-jstock.py - v0.01 2014-10-22 Antonio Caballero
+jstock.py - v0.01 2014-10-22 Antonio Caballero.
 
 Este modulo proporciona las herramientas necesarias para leer del repositorio de github de jstock las acciones que se han incorporado nuevas
 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+
 """
 
 __version__ = '0.01'
@@ -106,30 +107,29 @@ import urllib2
 
 ####################################################
 # modulos no estandar o propios
-from Cobo import CARPETAS, ARCHIVO_LOG, SUFIJOSEXCLUIDOS
+from settings import CARPETAS, ARCHIVO_LOG, SUFIJOSEXCLUIDOS
 from yahoofinance import webheaders, pausareconexion
 
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
-    level=logging.DEBUG)
+                    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+                    level=logging.DEBUG)
 
 
 def descarga():
     """
-    descargamos el archivo 
+    descargamos el archivo
     https://github.com/yccheok/jstock/archive/master.zip
     y lo descomprimimos
 
     """
-
     # descargamos el archivo master.zip de github para grabarlo en el directorio LOG
     url = 'https://github.com/yccheok/jstock/archive/master.zip'
     r = urllib2.Request(url, headers=webheaders)
     f = None
-    while f == None:
+    while f is None:
         try:
-            f = urllib2.urlopen(r)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
         except urllib2.HTTPError as e:
             print ('Conexion Perdida')
             print ((e.code))
@@ -166,16 +166,15 @@ def descarga():
 
 
 def descomprime():
-    """
-    """
+    """."""
     master = os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip")
     # Descomprimimos el archivo master zip
     unziped = ZipFile(master, 'r')
     for file_path in unziped.namelist():
         file_content = unziped.read(file_path)
         # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
-        if file_path[-1] == '/' and file_content =='' :
-            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'],file_path)
+        if file_path[-1] == '/' and file_content == '':
+            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
             if not os.path.exists(carpeta):
                 os.mkdir(carpeta)
         # solo descomprimimos los arvhivos que estan en esta carpeta
@@ -184,34 +183,31 @@ def descomprime():
             file_unzip.write(file_content)
             file_unzip.close()
     unziped.close()
+#    Borramos el archivo master zip
+#    os.remove(master)
 
-    #Borramos el archivo master zip
-    #os.remove(master)
 
-
-def ticketsdeJstock():
-    """
-
-    """
-    ticketsanadidos=[]
-    jstock = os.path.join(os.path.join(os.getcwd(), CARPETAS['Log'], 'jstock-master/appengine/jstock-static/war/stocks_information/'))
+def tickets():
+    """."""
+    ticketsanadidos = []
+    jstockdir = os.path.join(os.path.join(os.getcwd(), CARPETAS['Log'], 'jstock-master/appengine/jstock-static/war/stocks_information/'))
     # obtenemos una lista de paises
-    paises = os.listdir(jstock)
+    paises = os.listdir(jstockdir)
     paises.remove('stock-info-database-meta.json')
-    
+
     for pais in paises:
         # entramos en cada directorio que contiene un archivo stocks.zip
-        stocksZip = os.path.join( jstock, pais, 'stocks.zip')
-        unzipstocks = ZipFile (stocksZip, 'r')
+        stocksZip = os.path.join(jstockdir, pais, 'stocks.zip')
+        unzipstocks = ZipFile(stocksZip, 'r')
         # leemos el contenido del archivo stocks.csv que contiene cada archivo stocks.zip
         file_content = unzipstocks.read('stocks.csv')
-        
-        stockscsvf = os.path.join( jstock, pais, 'stocks.csv')
+
+        stockscsvf = os.path.join(jstockdir, pais, 'stocks.csv')
         if not os.path.exists(stockscsvf):
             stockscsv = open(stockscsvf, 'w')
             stockscsv.write(file_content)
             stockscsv.close()
-                    
+
         f = open(stockscsvf, "r")
         lineas = f.readlines()
         f.close()
@@ -223,8 +219,8 @@ def ticketsdeJstock():
                 naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
                 punto = naccion.find('.')
                 if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-                    naccion = (naccion,)
-                    #BBDD.ticketalta(naccion)
+#                    naccion = (naccion,)
+#                    BBDD.ticketalta(naccion)
                     ticketsanadidos.append(naccion)
                 i += 1
             print (('Anadido pais, %s' % pais))
@@ -233,6 +229,10 @@ def ticketsdeJstock():
 
     return ticketsanadidos
 
-if __name__ == '__main__':
-    main()
- 
+
+def ticketsJstock():
+    """."""
+    descarga()
+    descomprime()
+    listtickets = tickets()
+    return listtickets
