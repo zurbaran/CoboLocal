@@ -87,35 +87,6 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #     Creative Commons may be contacted at http://creativecommons.org/.
 
 
-#################################################
-# Constantes locales
-
-# setdefaultencoding = ('UTF-8')
-# sys.setdefaultencoding('UTF-8')
-# locale.setlocale(locale.LC_ALL, "")
-# SUFIJOSEXCLUIDOS = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
-#                    '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
-#                    '.KQ', '.KS', '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB',
-#                    '.NYM', '.NZ', '.SA', '.SG', '.SI', '.SN', '.SS', '.SZ',
-#                    '.TA', '.TW', '.TWO', '.VA', '.VX',)
-# MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
-#                     'OTC BB', 'IOB', 'CDNX', 'VTX', 'MDD', 'ENX', 'PSX', 'Madrid',
-#                     'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
-#                     'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
-#                     'FSI', 'EUX',)
-
-# CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
-#    'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
-# Expresa la diferencia entre los registros para hacer una actualizacion
-# DIFREGACTUALIZAR = {'historico': 10, 'cotizacion': 10, 'noActualizados': 120}
-# BACKTESTOPERACIONESSOSPECHOSAS = 1.50
-# FILTROSTOPLOSS = {'m': 0.04, 'w': 0.03, 'd': 0.02}
-# FILTROS = {'volumen': 20000000,
-#            'rentMinima': 0.35,
-#            'invMinima': 800,
-#            'riesgo': 200}
-
-
 ####################################################
 # modulos estandar importados
 
@@ -127,16 +98,8 @@ import glob
 import logging
 import os
 import ast
-# import winsound
-# from adodbapi.adodbapi import type
-# import traceback
-# from decimal import Decimal
-# import sys
-# import locale
 
 # import logging.config
-# ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
-
 # ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
 # logging.config.fileConfig(ARCHIVO_LOG)
 # logging.basicConfig(filename = ARCHIVO_LOG)
@@ -166,27 +129,6 @@ logging.debug('Inicio de Aplicacion')
 # comprobaciones especiales
 
 # assert
-
-# Buscar tickets duplicados en la BBDD
-# SELECT `tiket`, count(*)
-# FROM `Cobo_componentes`
-# GROUP BY `tiket` HAVING count(*) > 1
-
-# Lista de los distintos mercados a los que pertenecen los tickets y cantidad de tickets para cada uno de ellos
-# SELECT `mercado`, count(*) FROM `Cobo_componentes` GROUP BY `mercado` HAVING count(*) > 0
-
-# Buscar tikets a las que les falte relacion entre mercados y monedas
-# SELECT `tiket`,`mercado` FROM `Cobo_componentes` where `mercado` not in (SELECT `nombreUrl` FROM `Cobo_mercado_moneda`)
-
-# Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
-# SELECT * FROM `Cobo_nombreticket` WHERE `nombre` not in (SELECT `tiket` FROM `Cobo_componentes`)
-
-
-# Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
-# 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
-# rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
-# rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
-
 
 ############################################################
 # definicion de funciones
@@ -628,7 +570,11 @@ def analisisAlcistaAccion(naccion, **config):
             if i == (len(analisisalcista) - 1) and fecha < desdefecha:  # Ha llegado al final de analisisbajista sin encontrar una fecha de analisis mayor a desdefecha
                 analisisalcista = []
             i += 1
-        del resistencia, soporte, ruptura, LTi, LTf, salida, fecha, _apertura, _maximo, _minimo, _cierre, _volumen
+        try:
+        	del resistencia, soporte, ruptura, LTi, LTf, salida, fecha, _apertura, _maximo, _minimo, _cierre, _volumen
+        except UnboundLocalError as err:
+        	logging.debug('Error: %s al borrar bariables; Accion: %s;'
+                                          % (err, naccion.encode('UTF-8')))
 
     # ##mostramos en pantalla y creamos otro archivo no codificado con la tupla
     if len(analisisalcista) > 0 and txt:
@@ -1130,7 +1076,11 @@ def analisisBajistaAccion(naccion, **config):
 
 
 def creaMenu(sep, lmenu, cola=True):
-    """Le damos el separador de la opcion y una lista con las opciones del menu,
+    """
+    Crea un menu de opciones.
+
+
+    Le damos el separador de la opcion y una lista con las opciones del menu,
     nos devuelve una lista de tuplas con la cola de opciones y descripciones elegidas,
     anade al final de la lista una tupla mas que contiene (None,None)
 
@@ -1428,10 +1378,19 @@ def backtestMoneda(**config):
     resultado = cursor.fetchall()
     for mon in resultado:
         monedas.append(mon[0])
+
     # Comprobamos si la moneda es una moneda
     if moneda in monedas:
     # Si es una moneda, buscamos en la base de datos los componentes que pertenezcan a esa moneda
-        sql = "SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' and Cobo_componentes.tiket NOT LIKE '^%' and Cobo_componentes.mercado IN (SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?) and Cobo_componentes.mercado not IN " + str(MERCADOSEXCLUIDOS) + " ORDER BY Cobo_componentes.tiket ASC"
+        sql = ("""SELECT * FROM Cobo_componentes
+        	WHERE Cobo_componentes.tiket NOT LIKE '^%'
+        	AND Cobo_componentes.error IS NULL
+        	AND Cobo_componentes.mercado IN
+        	(SELECT Cobo_mercado_moneda.nombreUrl
+        		FROM Cobo_mercado_moneda
+        		WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?)
+            AND Cobo_componentes.mercado not IN """
+            + str(MERCADOSEXCLUIDOS) + "ORDER BY Cobo_componentes.tiket ASC")
     else:
     # Si no es una moneda comprobamos si es un mercado
         cursor.execute("SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda ORDER BY Cobo_mercado_moneda.nombreUrl ASC")
@@ -1440,7 +1399,11 @@ def backtestMoneda(**config):
         for mon in resultado:
             monedas.append(mon[0])
         if moneda in monedas:
-            sql = "SELECT * FROM Cobo_componentes WHERE Cobo_componentes.error LIKE 'N/A' AND Cobo_componentes.tiket NOT LIKE '^%' AND Cobo_componentes.mercado LIKE ? ORDER BY Cobo_componentes.tiket ASC"
+            sql = ("""SELECT * FROM Cobo_componentes
+            	WHERE Cobo_componentes.tiket NOT LIKE '^%'
+            	AND Cobo_componentes.error IS NULL
+            	AND Cobo_componentes.mercado LIKE ?
+            	ORDER BY Cobo_componentes.tiket ASC""")
 
     cursor.execute(sql, (moneda,))
     # consulta en la tabla componentes que pertenecen a los mercados de una moneda
@@ -2367,9 +2330,9 @@ def main():
 
                 if len(ticketscomponentesmercados) == 0:
                     print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
-                    BBDD.mercadosdeshabilita(mercado)
+                    # BBDD.mercadosdeshabilita(mercado)
             print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
-            del ticketscomponentesmercados
+            ticketscomponentesmercados = []
 
             print('Se estan anadiendo IPOs del mercado americano')
             ticketsanadidos = 0
@@ -2445,7 +2408,7 @@ def main():
             # Q) Analizar Datos de todos los Tickets',
             print(seleccion)
             cursor, db = BBDD.conexion()
-            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` LIKE 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
+            sql = "SELECT `tiket` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` IS NULL ORDER BY `Cobo_componentes`.`tiket` ASC"
             cursor.execute(sql)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0]) for ticket in listatickets)
@@ -2648,10 +2611,10 @@ def main():
             del archivosticket
             moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
             if moneda == '' or moneda is None:
-                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC")
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` IS NULL ORDER BY `Cobo_componentes`.`tiket` ASC")
             else:
                 moneda = (moneda,)
-                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' AND `Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE ?) ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
+                cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` IS NULL AND `Cobo_componentes`.`mercado` IN (SELECT `nombreUrl` FROM `Cobo_mercado_moneda` WHERE `abrevMoneda` LIKE ?) ORDER BY `Cobo_componentes`.`tiket` ASC", moneda)
             listatickets = cursor.fetchall()
             listatickets = ((ticket[0], ticket[1], ticket[2]) for ticket in listatickets)
             listatickets = deque(list(listatickets))
@@ -2727,7 +2690,6 @@ def main():
                 i = 1
                 if (raw_input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (n, len(lineas) - 1))).upper() == 'Y':
                     while i < len(lineas):
-                    # for naccion in lineas:
                         # naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
                         # incluir = True
                         linea = lineas[i].split(',', 3)
@@ -2739,7 +2701,7 @@ def main():
                             # cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
                             #numeroResultado = len(cursor.fetchall())
                             #f numeroResultado == 0:
-                                #cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
+                                # cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                                 # print(naccion[0] + ' anadido a la base de datos')
                                 incluidos += 1
                         i += 1

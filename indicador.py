@@ -90,23 +90,34 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 Ejemplos de datos tomados en la accion ticket MSG
 
 """
+
 from datetime import date
 
 
 def _test():
-    """."""
+    """
+    prueba doctest.
+
+    ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
+    Externalizar los test
+    doctest.testfile('test.py')
+
+    """
     import doctest
     doctest.testmod()
-    # pruebas doctest
-    # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
-    # Externalizar los test
-    # doctest.testfile('example2.txt')
 
 
 def MME(datos, **config):
     """
-    devuelve de la lista, datos, el indicadorMME calculado
-    indicedatos, es el valor del indice de las tuplas de datos al que se utiliza para calcular el indicador, por defecto 4 que corresponde al precio de cierre.
+    Media Movil Exponencial de una lista de datos compuesta por tuplas cuyo patron es (fecha, apertura, maximo, minimo, cierre, volumen)
+
+    Parametros:
+        datos, tipo lista, compuesta por tuplas de datos cuyo patron es (fecha, apertura, maximo, minimo, cierre, volumen) que se utilizaran para calcular la MME
+        MME, tipo entero, por defecto 30. Al tratarse de un tipo de media acumulativa, es la cantidad de periodos que se utilizan para calcularla, los primero periodos hasta llegar al que corresponde esta cantidad, les sera asignado el valor de la media hasta ese indice, que no se vera completado hasta llegar al valor del MME.
+        numberound, tipo booleano. En el caso de True, redondea el resultado a 3 decimales. Si es False, no los redondea, utilizado normalmente para no perder precision al pasar esta funcion como argumento de otra.
+        indicedatos, tipo string, es el valor del indice de las tuplas de datos al que se utiliza para calcular el indicador, como posibles valores: 'fecha', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen'. Utilizado para calcular la MME de uno de esos valores, por defecto del 'cierre'.
+
+    return, una lista que contiene las tuplas cuyo patron es (fecha, MME). La cantidad de tuplas que contiene el resultado es exactamente la misma que la dada en 'datos'
 
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     >>> MME(datos)
@@ -139,12 +150,21 @@ def MME(datos, **config):
             else:
                 resultado.append((fechaMME, puntoMME))
 
+    assert len(resultado) == len(datos)
     return (resultado)
 
 
 def TR(datos, **config):
     """
-    True Range.
+    True Range o Rango Verdadero.
+
+    El TR corresponde al resultado del valor maximo obtenido como absoluto en las diferencias entre (maximo - minimo), (maximo - cierreanterior), (minimo - cierreanterior), la mayor de todas las diferencias es el TR
+
+    Parametros:
+        datos, tipo lista, compuesta por tuplas de datos cuyo patron es (fecha, apertura, maximo, minimo, cierre, volumen)
+        numberound, tipo booleano. En el caso de True, redondea el resultado a 3 decimales. Si es False, no los redondea, utilizado normalmente para no perder precision al pasar esta funcion como argumento de otra.
+
+    return, una lista que contiene las tuplas cuyo patron es (fecha, TR). La cantidad de tuplas que contiene el resultado es exactamente la misma que la dada en 'datos'
 
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     >>> TR(datos)
@@ -174,8 +194,14 @@ def TR(datos, **config):
 
 def TAR(datos, **config):
     """
-    True Averange Range
-    TAR = Entero
+    True Averange Range o Media del Valor Verdadero.
+
+     Parametros:
+        datos, tipo lista, compuesta por tuplas de datos cuyo patron es (fecha, apertura, maximo, minimo, cierre, volumen)
+        TAR, tipo entero, por defecto 14. Al tratarse de un tipo de media acumulativa, es la cantidad de periodos que se utilizan para calcularla, los primero periodos hasta llegar al que corresponde esta cantidad, les sera asignado el valor de la media hasta ese indice, que no se vera completado hasta llegar al valor del TAR.
+        numberound, tipo booleano. En el caso de True, redondea el resultado a 3 decimales. Si es False, no los redondea, utilizado normalmente para no perder precision al pasar esta funcion como argumento de otra.
+
+    return, una lista que contiene las tuplas cuyo patron es (fecha, TAR). La cantidad de tuplas que contiene el resultado es exactamente la misma que la dada en 'datos'
 
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     >>> TAR(datos)
@@ -213,10 +239,14 @@ def TAR(datos, **config):
 
 def DM(datos, **config):
     """
-    Directional Move Indicator
-    Formato (fecha,DM+,DM-)
+    Directional Move Indicator o indicador de direccion de movimiento.
 
-    datos de prorealtime
+    Parametros:
+        datos, tipo lista, compuesta por tuplas de datos cuyo patron es (fecha, apertura, maximo, minimo, cierre, volumen)
+        numberound, tipo booleano. En el caso de True, redondea el resultado a 3 decimales. Si es False, no los redondea, utilizado normalmente para no perder precision al pasar esta funcion como argumento de otra.
+
+    return, una lista que contiene las tuplas cuyo patron es (fecha, DM+, DM-). La cantidad de tuplas que contiene el resultado es exactamente la misma que la dada en 'datos'
+
     >>> datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     >>> DM(datos)
     [('2010-01-25', 0.0, 0.0), ('2010-02-01', 0, 3.15), ('2010-03-01', 1.33, 0), ('2010-04-01', 0.62, 0), ('2010-05-03', 0, 1.84), ('2010-06-01', 0, 0), ('2010-07-01', 0, 0.54), ('2010-08-02', 0, 0), ('2010-09-01', 0.11, 0), ('2010-10-01', 0.74, 0), ('2010-11-01', 1.5, 0), ('2010-12-01', 2.42, 0), ('2011-01-03', 0.21, 0), ('2011-02-01', 3.9, 0), ('2011-03-01', 0, 0), ('2011-04-01', 0.5, 0), ('2011-05-02', 0, 1.07), ('2011-06-01', 0.41, 0), ('2011-07-01', 0, 0), ('2011-08-01', 0, 4.6), ('2011-09-01', 0, 0), ('2011-10-03', 2.48, 0), ('2011-11-01', 2.51, 0), ('2011-12-01', 0.58, 0), ('2012-01-03', 0, 0.34), ('2012-02-01', 3.49, 0), ('2012-03-01', 1.16, 0), ('2012-04-02', 1.53, 0), ('2012-05-01', 2.72, 0), ('2012-06-01', 0, 0.38), ('2012-07-02', 1.84, 0)]
@@ -300,20 +330,20 @@ def ADM(datos, **config):
             valorADMas = valorADMas - (valorADMas / n) + valorDMas
             valorADMenos = valorADMenos - (valorADMenos / n) + valorDMenos
 
-# #        valorADMas = (sum(valoresDMas[inicio:])) / (len(valoresDMas[inicio:]))
-# #        valorADMenos = (sum(valoresDMenso[inicio:])) / (len(valoresDMenso[inicio:]))
+            # valorADMas = (sum(valoresDMas[inicio:])) / (len(valoresDMas[inicio:]))
+            # valorADMenos = (sum(valoresDMenso[inicio:])) / (len(valoresDMenso[inicio:]))
 
         if numberound is True:
             listaADM.append((fecha, round(valorADMas, 3), round(valorADMenos, 3)))
         else:
             listaADM.append((fecha, valorADMas, valorADMenos))
-# #        if i <= n:
-# #            listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
-# #        else:
-# #            listaADMultimo=listaADM[-1]
-# #            listaADM.append((fecha,
-# #                             (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
-# #                             (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
+       # if i <= n:
+       #     listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
+       # else:
+       #     listaADMultimo=listaADM[-1]
+       #     listaADM.append((fecha,
+       #                      (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
+       #                      (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
 
     assert len(datos) == len(listaADM)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaADM)
@@ -681,7 +711,6 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
 
     >>> puntocurvaexponencial('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-04-18')
     76.958
-    20.01
     >>> puntocurvaexponencial('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-04-25')
     80.01
     >>> puntocurvaexponencial('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-05-02')
@@ -719,7 +748,7 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
     diffechas = (date(ltdatefin[0], ltdatefin[1], ltdatefin[2]) - date(ltdateini[0], ltdateini[1], ltdateini[2])).days
     diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(ltdatefin[0], ltdatefin[1], ltdatefin[2])).days
 
-#    _rentaanual = (((1.0 + (ltpricefin - ltpriceini) / ltpriceini) ** (365.0 / diffechas)) - 1.0)
+    # rentaanual = (((1.0 + (ltpricefin - ltpriceini) / ltpriceini) ** (365.0 / diffechas)) - 1.0)
     # Calculos de entrada obtenidos apartir de la hoja Excel, Analisis y reducida ecuacion con Maple
     if timming == 'd':
         entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 365.0)) ** (diffechas2 + incremperiod + 0.0)
@@ -742,8 +771,12 @@ def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
         # evitando que la division de mas abajo sea por 0
         if precioinicial == 0.0:
             precioinicial = 0.001
-    #                        if entrada > stoploss:#Alcista
+        # if entrada > stoploss:#Alcista
         rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+        # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
+        # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
+        # rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
+        # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
     return rentabilidad
 
 

@@ -222,7 +222,9 @@ def ticketsdeMercado(mercado):
     mercado = mercado.strip()
     while pagina <= ultimapagina:
         print('')
-        url = 'http://finance.yahoo.com/q/cp?s=' + mercado + '&c=' + str(pagina)
+        url = 'https://es.finance.yahoo.com/q/cp?s=' + mercado + '&c=' + str(pagina)
+        # TODO
+        # url = 'https://finance.yahoo.com/quote/' + mercado + '/components?p=' + mercado + '&ltr=1'
         print(url)
 
         web = None
@@ -240,7 +242,7 @@ def ticketsdeMercado(mercado):
                 else:
                     web = None
                     sleep(pausareconexion)
-                    #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+                    # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
             except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
                 print ('Conexion Erronea')
                 # print(e.reason)
@@ -251,13 +253,13 @@ def ticketsdeMercado(mercado):
                 sleep(pausareconexion)
 
         if ultimapagina == 0:
-            busqueda = 'Next</a> | <a href="/q/cp?s=' + (mercado.upper().replace('^', '%5E')) + '&amp;c='
+            busqueda = 'Siguiente</a> | <a href="/q/cp?s=' + (mercado.upper().replace('^', '%5E')) + '&amp;c='
             ultimapaginainicio = web.find(busqueda)
             if ultimapaginainicio == -1:
                 ultimapagina = 0
             else:
                 ultimapaginainicio = ultimapaginainicio + len(busqueda)
-                ultimapaginafinal = web.find('">Last</a></div>', ultimapaginainicio)
+                ultimapaginafinal = web.find('">', ultimapaginainicio)
                 ultimapagina = int(web[ultimapaginainicio:ultimapaginafinal])
 
         print (("Mercado %s Pagina %d de %d" % (mercado, pagina, ultimapagina)))
@@ -285,7 +287,7 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
-def ticketsIPO(meses=5, columna=1):
+def ticketsIPO(meses=6, columna=1):
     """."""
     ticketsanadidos = []
     pagina = 'prc_cal.html'
@@ -421,13 +423,13 @@ def descargaHistoricoAccion(naccion, **config):
     # comprobandodividendo=False
     if fechaini is None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
         actualizar = False
-        url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
+        url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
     else:
         fechaini = fechaini.split("-")
         anoini, mesini, diaini = fechaini
         mesini = str(int(mesini) - 1)
         actualizar = True
-        url = "http://ichart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
+        url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
     f = None
     r = urllib2.Request(url, headers=webheaders)
 
@@ -459,7 +461,7 @@ def descargaHistoricoAccion(naccion, **config):
         print((e.code))
         print('Url invalida, accion no disponible')
         print(preurl)
-    except (KeyboardInterrupt, urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
+    except (KeyboardInterrupt, urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout, urllib2.httplib.IncompleteRead) as e:
         print('Conexion Perdida')
         # print(e.reason)
         print((preurl, e))
@@ -658,11 +660,17 @@ def cotizacionesTicket(nombreticket):
 #            sleep (pausareconexion)
 #            print ('Pausa de %d segundos' % pausareconexion)
 #            #raw_input( 'Pulsa una tecla cuando este reestablecida la conexion para continuar' )
+        except UnicodeDecodeError:
+            print ('Error en la decodificacion de los caracteres del ticket %s'%nombreticket)
+            logging.debug('Error: decodificacion de caracteres; Ticket: %s ' % (nombreticket.encode('UTF-8')))
+            # raw_input('Pulse para recontinuar')
+            datosurl = cotizacionesTicketWeb(nombreticket)
+            print (datosurl)
+
     # crearda exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
     # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",nul,nul,nul,nul,0.00,0,nul,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
     # print datosurl
-    if sufijo in mercadosfail and \
-       'null,null,null,null,null,null,null,null,null' in datosurl: #and  __name__ != '__main__':
+    if sufijo in mercadosfail and 'null,null,null,null,null,null,null,null,null' in datosurl: # and  __name__ != '__main__':
         datosurl = cotizacionesTicketWeb(nombreticket)
 
     if __name__ != '__main__':
