@@ -222,7 +222,7 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     if cola_resultado is None:
         print(('Tickets a los que les falta relacion entre mercado y moneda : %d' % numero_resultado))
         if numero_resultado >= 1:
-            print listatickets
+            print (listatickets)
 
     # Tickets con errores
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` is not null"
@@ -281,6 +281,13 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     numero_resultado = len(cursor.fetchall())
     if cola_resultado is None:
         print(('Tickets necesitan de actualizar completamente : %d' % numero_resultado))
+
+   # Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
+    sql = "SELECT * FROM `Cobo_nombreticket_borrados`"
+    cursor.execute(sql)
+    numero_resultado = len(cursor.fetchall())
+    if cola_resultado is None:
+        print(('Tickets borrados de la base de datos y almacenados en la papelera: %d' % numero_resultado))
 
     db.close()
 
@@ -494,7 +501,7 @@ def ticketcambia(ticketviejo, ticketnuevo):
             # sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticketviejo + "' "
             # cursor.execute(sql)
 
-    #Borramos el ticketviejo de 'Cobo_nombreticket'
+    # Borramos el ticketviejo de 'Cobo_nombreticket'
     sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticketviejo + "'"
     cursor.execute(sql)
     db.commit()
@@ -595,7 +602,11 @@ def ticketcotizaciones(nombreticket, datosurl):
     # datosurl=datosurl.replace('ñ','n')
     cursor, db = conexion()
     # datosurl2 = datosurl.rsplit(',', 10)
-    datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl.rsplit(',', 10)
+    try:
+        datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl.rsplit(',', 10)
+    except ValueError:
+        datosurl = 'No such ticker symbol'
+        datoticket = nombreticket
     # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl2
     datoticket = datoticket.strip('"')
 
@@ -729,7 +740,7 @@ def ticketlistacodigo(ticket=None):
         sql = "SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` ORDER BY `Cobo_componentes`.`tiket` ASC"
     else:
         sql = ("SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '%s') ORDER BY `Cobo_componentes`.`tiket` ASC" % ticket)
-       # sql="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
+        # sql ="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE  `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
     tickets = {}
     cursor.execute(sql)
     resultado = cursor.fetchall()
@@ -1055,6 +1066,10 @@ def listacciones(**config):
     """
     vol = config.get('volumen', FILTROS['volumen'])
     rentMinima = config.get('rentMinima', FILTROS['rentMinima'])
+    # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
+    # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
+    # rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
+    # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
     inv = config.get('inversion', FILTROS['invMinima'])
     riesgo = config.get('riesgo', FILTROS['riesgo'])
     filtroM = config.get('filtroM', FILTROSTOPLOSS['m'])
@@ -1064,49 +1079,49 @@ def listacciones(**config):
     timmings = config.get('timmings', ('m', 'w', 'd'))
 
     cursor, db = conexion()
-    sql = ("SELECT Cobo_componentes.tiket AS Ticket,\
-       Cobo_componentes.nombre,\
-       Cobo_componentes.mercado,\
-       Cobo_monedas.descripcion,\
-       Cobo_monedas.valor,\
-       Cobo_params_operaciones.timing,\
-       Cobo_params_operaciones.entrada,\
-       Cobo_params_operaciones.salida,\
-       Cobo_params_operaciones.fecha_ini,\
-       Cobo_params_operaciones.precio_ini,\
-       Cobo_params_operaciones.fecha_fin,\
-       Cobo_params_operaciones.precio_fin\
-  FROM Cobo_componentes,\
-       Cobo_mercado_moneda,\
-       Cobo_monedas,\
-       Cobo_params_operaciones\
- WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl\
-       AND\
-       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo\
-       AND\
-       Cobo_componentes.codigo = Cobo_params_operaciones.codigo\
-       AND\
-        (  (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )\
-           OR\
-        (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
-       AND\
-           ( Cobo_params_operaciones.rentabilidad >= %f\
-           OR\
-       Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) )\
-           OR\
-       Cobo_params_operaciones.rentabilidad = 0.0 )\
-       # AND\
-       # NOT ( Cobo_componentes.mercado = 'Other OTC'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'PCX'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'IOB'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'PSX'\
-       #     OR\
-       # Cobo_componentes.mercado = 'NGM' )\
- ORDER BY Cobo_monedas.descripcion DESC,\
-        Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rentMinima, rentMinima, rentMinima))
+    sql = ("""SELECT Cobo_componentes.tiket AS Ticket,
+       Cobo_componentes.nombre,
+       Cobo_componentes.mercado,
+       Cobo_monedas.descripcion,
+       Cobo_monedas.valor,
+       Cobo_params_operaciones.timing,
+       Cobo_params_operaciones.entrada,
+       Cobo_params_operaciones.salida,
+       Cobo_params_operaciones.fecha_ini,
+       Cobo_params_operaciones.precio_ini,
+       Cobo_params_operaciones.fecha_fin,
+       Cobo_params_operaciones.precio_fin
+  FROM Cobo_componentes,
+       Cobo_mercado_moneda,
+       Cobo_monedas,
+       Cobo_params_operaciones
+ WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl
+       AND
+       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo
+       AND
+       Cobo_componentes.codigo = Cobo_params_operaciones.codigo
+       AND
+        (  (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )
+           OR
+        (  ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )
+       AND
+           ( Cobo_params_operaciones.rentabilidad >= %f
+           OR
+       Cobo_params_operaciones.rentabilidad <= -(%f/(1+%f) )
+           OR
+       Cobo_params_operaciones.rentabilidad = 0.0 )
+       --AND
+       --NOT ( Cobo_componentes.mercado = 'Other OTC'
+       --   OR
+       --    Cobo_componentes.mercado = 'PCX'
+       --    OR
+       --    Cobo_componentes.mercado = 'IOB'
+       --    OR
+       --    Cobo_componentes.mercado = 'PSX'
+       --    OR
+       --Cobo_componentes.mercado = 'NGM' )
+ ORDER BY Cobo_monedas.descripcion DESC,
+        Cobo_params_operaciones.rentabilidad DESC""" % (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
@@ -1171,6 +1186,10 @@ def listaccionesLT(**config):
     """
     vol = config.get('volumen', FILTROS['volumen'])
     rentMinima = config.get('rentMinima', FILTROS['rentMinima'])
+    # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
+    # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
+    # rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
+    # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))    inv = config.get('inversion', FILTROS['invMinima'])
     inv = config.get('inversion', FILTROS['invMinima'])
     riesgo = config.get('riesgo', FILTROS['riesgo'])
     filtroM = config.get('filtroM', FILTROSTOPLOSS['m'])
@@ -1182,55 +1201,55 @@ def listaccionesLT(**config):
     incremperiod = config.get('incremperiod', 0)
 
     cursor, db = conexion()
-    sql = ("SELECT Cobo_componentes.tiket,\
-       Cobo_componentes.nombre,\
-       Cobo_componentes.mercado,\
-       Cobo_monedas.descripcion,\
-       Cobo_monedas.valor,\
-       Cobo_params_operaciones.timing,\
-       Cobo_params_operaciones.precio_salida,\
-       Cobo_params_operaciones.fecha_ini,\
-       Cobo_params_operaciones.precio_ini,\
-       Cobo_params_operaciones.fecha_fin,\
-       Cobo_params_operaciones.precio_fin,\
-       Cobo_componentes.maxDia AS MaxDia,\
-       Cobo_componentes.minDia AS MinDia,\
-       Cobo_componentes.valorActual AS ValorActual\
-  FROM Cobo_componentes,\
-       Cobo_mercado_moneda,\
-       Cobo_monedas,\
-       Cobo_params_operaciones\
- WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl\
-       AND\
-       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo \
-       AND\
-       Cobo_componentes.codigo = Cobo_params_operaciones.codigo\
-       AND\
-       ( ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )\
-           OR\
-       ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )\
-       AND\
-         ( Cobo_params_operaciones.rentabilidad >= %f\
-           OR\
-           Cobo_params_operaciones.rentabilidad <=-( %f /( 1 + %f )  )\
-           OR\
-       Cobo_params_operaciones.rentabilidad = 0.0 )\
-       AND\
-           (Cobo_params_operaciones.precio_ini > 0.0\
-           AND\
-           Cobo_params_operaciones.precio_fin > 0.0)\
-       # AND\
-       # NOT( Cobo_componentes.mercado = 'Other OTC'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'PCX'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'IOB'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'PSX'\
-       #     OR\
-       #     Cobo_componentes.mercado = 'NGM' )\
- ORDER BY Cobo_monedas.descripcion DESC,\
-        Cobo_params_operaciones.rentabilidad DESC" % (vol, vol, rentMinima, rentMinima, rentMinima))
+    sql = ("""SELECT Cobo_componentes.tiket,
+       Cobo_componentes.nombre,
+       Cobo_componentes.mercado,
+       Cobo_monedas.descripcion,
+       Cobo_monedas.valor,
+       Cobo_params_operaciones.timing,
+       Cobo_params_operaciones.precio_salida,
+       Cobo_params_operaciones.fecha_ini,
+       Cobo_params_operaciones.precio_ini,
+       Cobo_params_operaciones.fecha_fin,
+       Cobo_params_operaciones.precio_fin,
+       Cobo_componentes.maxDia AS MaxDia,
+       Cobo_componentes.minDia AS MinDia,
+       Cobo_componentes.valorActual AS ValorActual
+  FROM Cobo_componentes,
+       Cobo_mercado_moneda,
+       Cobo_monedas,
+       Cobo_params_operaciones
+ WHERE Cobo_componentes.mercado = Cobo_mercado_moneda.nombreUrl
+       AND
+       Cobo_mercado_moneda.abrevMoneda = Cobo_monedas.codigo
+       AND
+       Cobo_componentes.codigo = Cobo_params_operaciones.codigo
+       AND
+       ( ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumenMedio * 21 >= %d )
+           OR
+       ( ( Cobo_componentes.valorActual / Cobo_monedas.valor ) * Cobo_componentes.volumen * 21 >= %d )  )
+       AND
+         ( Cobo_params_operaciones.rentabilidad >= %f
+           OR
+           Cobo_params_operaciones.rentabilidad <=-( %f /( 1 + %f )  )
+           OR
+       Cobo_params_operaciones.rentabilidad = 0.0 )
+       AND
+           (Cobo_params_operaciones.precio_ini > 0.0
+           AND
+           Cobo_params_operaciones.precio_fin > 0.0)
+       --AND
+       --NOT( Cobo_componentes.mercado = 'Other OTC'
+       --    OR
+       --    Cobo_componentes.mercado = 'PCX'
+       --    OR
+       --    Cobo_componentes.mercado = 'IOB'
+       --    OR
+       --    Cobo_componentes.mercado = 'PSX'
+       --    OR
+       --    Cobo_componentes.mercado = 'NGM' )
+ ORDER BY Cobo_monedas.descripcion DESC,
+        Cobo_params_operaciones.rentabilidad DESC""" % (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
