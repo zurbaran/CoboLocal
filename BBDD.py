@@ -95,6 +95,7 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 import os
 import glob
+import logging
 from datetime import date, datetime, timedelta
 from random import choice
 
@@ -114,8 +115,12 @@ except ImportError:
 
 ####################################################
 # modulos no estandar o propios
-from settings import CARPETAS, DIFREGACTUALIZAR, FILTROSTOPLOSS, FILTROS
+from settings import CARPETAS, DIFREGACTUALIZAR, FILTROSTOPLOSS, FILTROS, ARCHIVO_LOG
 from indicador import puntocurvaexponencial, curvexprent
+
+logging.basicConfig(filename=ARCHIVO_LOG,
+    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+    level=logging.DEBUG)
 
 
 def conexion(archivo=None):
@@ -906,7 +911,12 @@ def datoshistoricosgraba(naccion, historico):
     for n in historico:
         fecha, apertura, maximo, minimo, cierre, volumen = n
         sql = ("INSERT INTO Ticket_%s (`fecha`,`apertura`,`maximo`,`minimo`,`cierre`,`volumen`) VALUES ('%s',%f,%f,%f,%f,%d)" % (tabla, fecha, apertura, maximo, minimo, cierre, volumen))
-        cursor2.execute(sql)
+        try:
+            cursor2.execute(sql)
+        except Exception as e:
+            logging.debug('Error grabando datos libreria BBDD funcion datoshistoricosgraba, error: %s; Ticket: %s; datos: %s' % (e, naccion, n))
+            # IntegrityError: este error lo suele dar por datos duplicados en la fecha
+
     db2.commit()
     db2.close()
     if len(historico) > 0:

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-Cobo.py - v0.03 2013-07-26 Antonio Caballero, Paco Corbi.
+Cobo.py - v0.05 2017-07-16 Antonio Caballero, Paco Corbi.
 
 Este modulo proporciona las herramientas necesarias para el analisis, gestion y backtest de acciones
 
@@ -10,9 +10,9 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.05'
-__date__ = '2014-05-20'
-__author__ = ('Antonio Caballero', 'Paco Corbi')
-__mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
+__date__    = '2017-07-16'
+__author__  = ('Antonio Caballero', 'Paco Corbi')
+__mail__    = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -113,6 +113,7 @@ import indicador
 import BBDD
 import yahoofinance
 from jstock import ticketsJstock
+from yahooticket import ticketsYahooD
 import HTML
 
 from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST
@@ -2066,7 +2067,7 @@ def main():
             #     print((naccion[0] + ' anadido a la base de datos'))
 
             # Actualizamos las cotizaciones
-            yahoofinance.cotizacionesTicket(naccion)
+            yahoofinance.cotizacionesTicketWeb(naccion)
 
             # Descargamos/Actualizamos el historico
             historicoTicket(naccion)
@@ -2317,31 +2318,41 @@ def main():
 #        'M) Actualizar Tickets componentes de Mercados',
         elif opcion == 'm':
             print(seleccion)
-            ticketsanadidos = 0
-            mercados = BBDD.mercadoslista()
-            for mercado in mercados:
-                mercado = mercado.replace('@%5E', '^')
-                mercado = mercado.replace('@%5e', '^')
-                mercado = mercado.upper()
-                ticketscomponentesmercados = yahoofinance.ticketsdeMercado(mercado)
-                for ticket in ticketscomponentesmercados:
-                    if BBDD.ticketalta(ticket):
-                        ticketsanadidos += 1
+##            ticketsanadidos = 0
+##            mercados = BBDD.mercadoslista()
+##            for mercado in mercados:
+##                mercado = mercado.replace('@%5E', '^')
+##                mercado = mercado.replace('@%5e', '^')
+##                mercado = mercado.upper()
+##                ticketscomponentesmercados = yahoofinance.ticketsdeMercado(mercado)
+##                for ticket in ticketscomponentesmercados:
+##                    if BBDD.ticketalta(ticket):
+##                        ticketsanadidos += 1
+##
+##                if len(ticketscomponentesmercados) == 0:
+##                    print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
+##                    # BBDD.mercadosdeshabilita(mercado)
+##            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
+##            ticketscomponentesmercados = []
 
-                if len(ticketscomponentesmercados) == 0:
-                    print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
-                    # BBDD.mercadosdeshabilita(mercado)
-            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
-            ticketscomponentesmercados = []
+##            print('Se estan anadiendo IPOs del mercado americano')
+##            ticketsanadidos = 0
+##            tickets = yahoofinance.ticketsIPO()
+##            for ticket in tickets:
+##                if BBDD.ticketalta(ticket):
+##                    ticketsanadidos += 1
+##            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
+##            del tickets
 
-            print('Se estan anadiendo IPOs del mercado americano')
+            print('Se estan anadiendo Criptomonedas')
             ticketsanadidos = 0
-            tickets = yahoofinance.ticketsIPO()
+            tickets = yahoofinance.ticketsCriptoIPO()
             for ticket in tickets:
                 if BBDD.ticketalta(ticket):
                     ticketsanadidos += 1
-            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
+            print(('Se han anadido un total de : %d Criptomonedas' % ticketsanadidos))
             del tickets
+
 
             print('Se estan anadiendo acciones de JStock')
             if raw_input('Quieres iniciar el proceso de JStock (Y/....) ?') == 'Y':
@@ -2353,6 +2364,16 @@ def main():
                 print(('Se han anadido un total de : %d acciones de JStock' % ticketsanadidos))
                 del tickets
 
+            print('Se estan anadiendo acciones de yahoo-ticker-downloader ')
+            if raw_input('Quieres leer archivo generado por yahoo-downloader (Y/....) ?') == 'Y':
+                ticketsanadidos = 0
+                tickets = ticketsYahooD()
+                for ticket in tickets:
+                    if BBDD.ticketalta(ticket):
+                        ticketsanadidos += 1
+                print(('Se han anadido un total de : %d acciones de yahoo-ticker-downloader' % ticketsanadidos))
+                del tickets
+
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
@@ -2362,13 +2383,13 @@ def main():
 
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
-                yahoofinance.cotizacionesTicket(ticket)
+                yahoofinance.cotizacionesTicketWeb(ticket)
 
                 print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
 ##                threads = list()
 ##                for i in (0, MULTIHILO):
 ##                    ticket = listatickets.popleft()
-##                    t = threading.Thread(target=yahoofinance.cotizacionesTicket(ticket))
+##                    t = threading.Thread(target=yahoofinance.cotizacionesTicketWeb(ticket))
 ##                    threads.append(t)
 ##                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
 ##                t.setDaemon(True)
@@ -2663,7 +2684,7 @@ def main():
                             BBDD.ticketerror(ticket)
                             ticketsnodescargados.append(ticket)
                 else:  # no existe el archivo
-                    # cotizacionesTicket(naccion)
+                    # cotizacionesTicketWeb(naccion)
                     BBDD.ticketerror(ticket)
                     ticketsnodescargados.append(ticket)
 
