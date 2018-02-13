@@ -1,17 +1,17 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 """
-yahoofinance.py - v0.02 2013-07-16 Antonio Caballero.
+yahoofinance.py - v0.05 2017-07-16 Antonio Caballero.
 
 Este modulo proporciona las herramientas necesarias la descarga de datos de yahoo finance
 
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
-__version__ = '0.03'
-__date__ = '2013-07-26'
-__author__ = ('Antonio Caballero',)
-__mail__ = ('zurbaran79@hotmail.com',)
+__version__ = '0.05'
+__date__    = '2017-07-16'
+__author__  = ('Antonio Caballero',)
+__mail__    = ('zurbaran79@hotmail.com',)
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -161,20 +161,20 @@ prefijo = {'': '',
            '.VX': '',
            }
 # # Lista que contiene los mercados que estan fallando al descargar las cotizaciones del csv, leyendo la web para obtener la informacion
-mercadosfail = ('.MC',)
+# mercadosfail = ('.MC',)
 
 ####################################################
 # modulos estandar importados
 
-from time import sleep, strftime, strptime
+from time import sleep, strftime, strptime, mktime
 from datetime import date, timedelta
 from random import randint
 import logging
 import os
 import urllib2
+import cookielib
 import socket
 import csv
-
 
 ####################################################
 # modulos no estandar o propios
@@ -184,16 +184,30 @@ import BBDD
 
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
-    level=logging.DEBUG)
+                                 format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+                                 level=logging.DEBUG)
 
 socket.setdefaulttimeout(pausareconexion)
 
 
 # TODO: Utilizando la red TOR para descargar la informacion de yahoo
+#proxy_support = urllib2.ProxyHandler({"http" : "127.0.0.1:8118"})
+#opener = urllib2.build_opener(proxy_support)
+#opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 proxy_handler = urllib2.ProxyHandler({"tcp": "http://127.0.0.1:9050"})
 opener = urllib2.build_opener(proxy_handler)
 urllib2.install_opener(opener)
+
+# Gestion de las cookies
+cookie_j = cookielib.CookieJar()
+cookie_h = urllib2.HTTPCookieProcessor(cookie_j)
+opener2 = urllib2.build_opener(cookie_h)
+urllib2.install_opener(opener2)
+    #for num, cookie in enumerate(cookie_j):
+    #    print num, cookie.name
+    #    print cookie.value
+    #    print
+
 
 
 def _test():
@@ -216,6 +230,14 @@ def ticketsdeMercado(mercado):
     # <a href="/q/cp?s=%5EDJA&amp;c=1">Last< donde c=1 indica el final de la pagina
     # en los casos donde solo hay una pagina, no encontrariamos cadena dando valor -1
     # los tickets se encuentan en detras de la cadena <b><a href="/q?s= y como final ">
+
+    # TODO: utilizar la libreria yahoo-ticker-downloader
+    # arhcivo resultante stocks.pickle
+    # ./ YahooTickerDownloader.py stocks - e
+    # exportado a un csv con la cabecera
+    # Ticker, Name, Exchange, categoryName
+
+
     ticketsanadidos = []
     ultimapagina = 0
     pagina = 0
@@ -223,8 +245,6 @@ def ticketsdeMercado(mercado):
     while pagina <= ultimapagina:
         print('')
         url = 'https://es.finance.yahoo.com/q/cp?s=' + mercado + '&c=' + str(pagina)
-        # TODO
-        # url = 'https://finance.yahoo.com/quote/' + mercado + '/components?p=' + mercado + '&ltr=1'
         print(url)
 
         web = None
@@ -289,6 +309,10 @@ def ticketsdeMercado(mercado):
 
 def ticketsIPO(meses=6, columna=1):
     """."""
+
+    # TODO: modificar url por https://finance.yahoo.com/calendar/ipo
+
+
     ticketsanadidos = []
     pagina = 'prc_cal.html'
     i = 0
@@ -364,6 +388,64 @@ def ticketsIPO(meses=6, columna=1):
 
     return ticketsanadidos
 
+def ticketsCriptoIPO():
+    """."""
+
+    ticketsanadidos = []
+
+    print('')
+    url = 'https://es.finance.yahoo.com/criptomonedas?offset=0&count=200'
+    print(url)
+
+    web = None
+    while web is None:
+        try:
+            r = urllib2.Request(url, headers=webheaders)
+            f = urllib2.urlopen(r, timeout=pausareconexion)
+            web = (f.read()).decode('UTF-8')
+            f.close()
+        except urllib2.HTTPError as e:
+            print ('Conexion Perdida')
+            print ((e.code))
+            if e.code == 500:
+                return ticketsanadidos
+            else:
+                web = None
+                sleep(pausareconexion)
+                # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
+            print ('Conexion Erronea')
+            # print(e.reason)
+            print ((url, e))
+            web = None
+            #logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('UTF-8'), url.encode('UTF-8')))
+            print (('Pausa de %d segundos' % pausareconexion))
+            sleep(pausareconexion)
+
+        ticketinicio = 0
+        ticketfin = 0
+    while True:
+        ticketinicio = web.find('<a href="/quote/', ticketfin)
+        if ticketinicio == -1:
+            break
+        else:
+            ticketinicio = ticketinicio + len('<a href="/quote/')
+
+        ticketfin = web.find('?p=', ticketinicio)
+        if ticketfin == -1:
+            break
+
+        ticket = (web[ticketinicio:ticketfin].strip())
+        ticket = ticket.upper()
+
+        if (ticket not in ticketsanadidos) and ('%20' not in ticket):
+            ticketsanadidos.append(ticket)
+
+    print('')
+    print(("%d CriptoMonedas añadidas" % (len(ticketsanadidos))))
+    print('')
+
+    return ticketsanadidos
 
 def descargaHistoricoAccion(naccion, **config):
     # global webheaders
@@ -376,6 +458,9 @@ def descargaHistoricoAccion(naccion, **config):
                 timming - timming
                 actualizar - False/True
     el formato del las fecha debe ser AAAA-MM-DD
+    Modificado desde Mayo 2017
+    el formato de las fechas es en segundos, considerando la fecha 1 de enero de 1970 como el punto 0,
+    apartir de ahi en segundos desde esa fecha en adelante
 
     las posiblidades del timming son:   d - 1 -diario
                                         w - 2 - semanal
@@ -404,73 +489,93 @@ def descargaHistoricoAccion(naccion, **config):
 #        timming ='m'
 
     if fechafin is None:
-        fechafin = ((date.today().timetuple()))
-        anofin = str(fechafin[0])
-        mesfin = str(fechafin[1])
-        diafin = str(fechafin[2])
+        fechafin = int(mktime ((date.today().timetuple())))
+        #anofin = str(fechafin[0])
+        #mesfin = str(fechafin[1])
+        #diafin = str(fechafin[2])
 
     else:
-        fechafin = fechafin.split('-')
-        anofin = (fechafin[0])
-        mesfin = (fechafin[1])
-        diafin = (fechafin[2])
 
-    mesfin = str(int(mesfin) - 1)
+        fechafin = int(mktime((strptime(fechafin, "%Y-%m-%d"))))
+        #anofin = (fechafin[0])
+        #mesfin = (fechafin[1])
+        #diafin = (fechafin[2])
+
+    # la funcion necesaria para convertir en segundos es time.mktime
+
+##    convertir un string de fecha en un formato determinado en una time.timetuple manejable por time.mktime para convertirla en segundos
+##
+##    >>> time.strptime("2017-05-25", "%Y-%m-%d")
+##    time.struct_time(tm_year=2017, tm_mon=5, tm_mday=25, tm_hour=0, tm_min=0, tm_sec=0, tm_wday=3, tm_yday=145, tm_isdst=-1)
+##    >>> hoy = time.strptime("2017-05-25", "%Y-%m-%d")
+##
+##    >>> time.mktime(hoy)
+##    1495663200.0
+##    >>> hoy = time.strptime("2017-05-26", "%Y-%m-%d")
+##    >>> time.mktime(hoy)
+##    1495749600.0
+
+    #mesfin = str(int(mesfin) - 1)
     # La barra de hoy no puede estar "acabada" por eso no se descarga.
     # Si la guardamos y efectivamente no esta acabada, cuando vuelva a descargar los datos
     # y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
-    diafin = str(int(diafin) - 1)
+    #diafin = str(int(diafin) - 1)
+    # le restamos un dia completo
+    fechafin = str(fechafin - 86400)
     # comprobandodividendo=False
-    if fechaini is None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
-        actualizar = False
-        url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
-    else:
-        fechaini = fechaini.split("-")
-        anoini, mesini, diaini = fechaini
-        mesini = str(int(mesini) - 1)
-        actualizar = True
-        url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
-    f = None
-    r = urllib2.Request(url, headers=webheaders)
 
-    punto = naccion.find('.')
-    if punto == -1:
-        sufijo = ''
-    else:
-        sufijo = naccion[punto:]
+    if fechaini is not None:
+        fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
 
-    if sufijo in prefijo:
+    #punto = naccion.find('.')
+    #if punto == -1:
+     #   sufijo = ''
+    #else:
+     #   sufijo = naccion[punto:]
+
+    #if sufijo in prefijo:
     # if prefijo.has_key(sufijo):
-        preurl = "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + naccion
-    else:
-        preurl = "http://finance.yahoo.com/q/hp?s=" + naccion
-        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
+ #                    https://                                   finance.yahoo.com/quote/  BC8.DE         /history?period1=                     &period2=                      &interval=1d&filter=history&frequency=1d
+  #      preurl = "https://finance.yahoo.com/quote/"+ naccion +"/history?period1=0&period2="+fechafin+"&interval=1d&filter=history&frequency=1d"
+ #       preurl = "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + naccion
+ #   else:
+    preurl = "https://finance.yahoo.com/quote/"+ naccion +"/history?period1=0&period2="+fechafin+"&interval=1d&filter=history&frequency=1d"
+#        preurl = "http://finance.yahoo.com/q/hp?s=" + naccion
+ #       logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
 
-    r.add_header('Referer', preurl)
+##    # Gestion de las cookies
+##    cookie_j = cookielib.CookieJar()
+##    cookie_h = urllib2.HTTPCookieProcessor(cookie_j)
+##    opener = urllib2.build_opener(cookie_h)
+##    urllib2.install_opener(opener)
+##    #for num, cookie in enumerate(cookie_j):
+##    #    print num, cookie.name
+##    #    print cookie.value
+##    #    print
+
 
     # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
     # la abrimos para hacerle creer que venimos de aqui
     # hemos observado casos donde hasta que no entrabamos en esta pagina no actualizaba correctamente la informacion en el archivo que nos descargamos posteriormente
-    r1 = urllib2.Request(preurl, headers=webheaders)
+    crumb = yahoocrumb( naccion, fechaini = config.get('fechaini', None), fechafin =  config.get('fechafin', None))
 
-    try:
-        f1 = urllib2.urlopen(r1, timeout=pausareconexion)
-        f1.read()
-        f1.close()
-    except urllib2.HTTPError as e:
-        print((e.code))
-        print('Url invalida, accion no disponible')
-        print(preurl)
-    except (KeyboardInterrupt, urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout, urllib2.httplib.IncompleteRead) as e:
-        print('Conexion Perdida')
-        # print(e.reason)
-        print((preurl, e))
-        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
-#    except:
-#        logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
-    finally:
-        print ('Pausa de 1 segundo')
-        duerme(tiempo=1000)
+    if fechaini is None:# hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
+        actualizar = False
+#        url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
+        url = "https://query1.finance.yahoo.com/v7/finance/download/"+naccion+"?period1=0&period2="+fechafin+"&interval=1d&events=history&crumb=" + crumb #.decode('UTF-8')
+    else:
+ #       fechaini = fechaini.split("-")
+ #       anoini, mesini, diaini = fechaini
+ #       mesini = str(int(mesini) - 1)
+        actualizar = True
+        url = "https://query1.finance.yahoo.com/v7/finance/download/"+naccion+"?period1="+fechaini+"&period2="+fechafin+"&interval=1d&events=history&crumb=" + crumb #.decode('UTF-8')
+ #       url = "http://real-chart.finance.yahoo.com/table.csv?s=" + naccion + "&a=" + mesini + "&b=" + diaini + "&c=" + anoini + "&d=" + mesfin + "&e=" + diafin + "&f=" + anofin + "&g=" + timming + "&ignore=.csv"
+    f = None
+    r = urllib2.Request(url, headers=webheaders)
+
+    r.add_header('Referer', preurl)
+
+    reintento = False
 
     while f is None:
         try:
@@ -483,7 +588,12 @@ def descargaHistoricoAccion(naccion, **config):
             print('Url invalida, accion no disponible')
             print(url)
             f = None
-            return 'URL invalida'
+            crumb = yahoocrumb( naccion, renew = True, fechaini = config.get('fechaini', None), fechafin =  config.get('fechafin', None))
+            if (reintento and not (e.code == 401)) or (e.code == 404):
+                return 'URL invalida'
+            elif e.code == 401:
+                logging.debug('Error: %s; Ticket: %s; crumb: %s' % (e, naccion.encode('UTF-8'), crumb))
+            reintento = True
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Perdida')
             # print(e.reason)
@@ -520,7 +630,7 @@ def descargaHistoricoAccion(naccion, **config):
 #         status = status + chr(8) * (len(status) + 1)
 #         print status,
 
-    if not (lineas[0] == "Date,Open,High,Low,Close,Volume,Adj Close\n"):
+    if not (lineas[0] == "Date,Open,High,Low,Close,Adj Close,Volume\n"):
         print('Informacion invalida, accion no disponible')
         return 'URL invalida'
 # en la mayoria de los casos, en la web el historico existe, pero la descarga del archivo no, la accion ha desaparecido y yahoo elimina el archivo sin eliminar en la web el historico
@@ -533,36 +643,69 @@ def descargaHistoricoAccion(naccion, **config):
     else:
         datosaccion = []
 
-    i = len(lineas) - 1
-    print(('%d Registros de la accion' % i))
-    while i > 0:
+    i = 1
+    print(('%d Registros de la accion' % (len(lineas)-1)))
+    while i < len(lineas):
         linea_datos = lineas[i]
         columnas = linea_datos.split(",")
         # tengo que probar a sustituir los float por la funcion Decimal
         fecha = str(columnas[0])
-        apertura = float(columnas[1])
-        maximo = float(columnas[2])
-        minimo = float(columnas[3])
-        cierre = float(columnas[4])
-        volumen = int(columnas[5])
-        cierreajustado = float(columnas[6])
+
+        try:
+            apertura = float(columnas[1])
+        except ValueError:
+            apertura = 0.0
+
+        try:
+            maximo = float(columnas[2])
+        except ValueError:
+            maximo = 0.0
+
+        try:
+            minimo = float(columnas[3])
+        except ValueError:
+            minimo = 0.0
+
+        try:
+            cierre = float(columnas[4])
+        except ValueError:
+            cierre = 0.0
+
+        try:# en ocasiones los datos vienen con todos los valores en 0 y el volumen null
+            volumen = int(columnas[6])
+        except ValueError:
+        # if 'null' in columnas[6]
+            volumen = 0
+
+        try:
+            cierreajustado = float(columnas[5])
+        except ValueError:
+            cierreajustado = 0.0
 
         if cierre == 0.0 or apertura == 0.0 or cierreajustado == 0.0:  # tenemos en cuenta que cierre sea 0 en ese caso no podriamos hacer la division de ajuste
             aperturaajustado = 0.0
         else:
             aperturaajustado = round(apertura * (cierreajustado / cierre), 3)
+            if aperturaajustado < 0.0:
+                aperturaajustado = 0.0
 
         if cierre == 0.0 or maximo == 0.0 or cierreajustado == 0.0:
             maximoajustado = 0.0
         else:
             maximoajustado = round(maximo * (cierreajustado / cierre), 3)
+            if maximoajustado < 0.0:
+                maximoajustado = 0.0
 
         if cierre == 0.0 or minimo == 0.0 or cierreajustado == 0.0:
             minimoajustado = 0.0
         else:
             minimoajustado = round(minimo * (cierreajustado / cierre), 3)
+            if minimoajustado < 0.0:
+                minimoajustado = 0.0
 
         cierreajustado = round(cierreajustado, 3)
+        if cierreajustado < 0.0:
+            cierreajustado = 0.0
 
         # hacemos esto para que no hayan datos a cero, eliminando en el caso de que algun dato llege a cero todo la lista de datos anterior al dato donde es cero
 # #        if aperturaajustado == 0.0 or maximoajustado == 0.0 or minimoajustado == 0.0 or cierreajustado == 0.0:
@@ -586,7 +729,7 @@ def descargaHistoricoAccion(naccion, **config):
         else:
             datosaccion.append((fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado, volumen))
 
-        i -= 1
+        i += 1
 
     BBDD.datoshistoricosgraba(naccion, datosaccion)
 
@@ -622,16 +765,16 @@ def cotizacionesTicket(nombreticket):
     datosurl = None
     r = urllib2.Request(urldatos, headers=webheaders)
 
-    punto = nombreticket.find('.')
-    if punto == -1:
-        sufijo = ''
-    else:
-        sufijo = nombreticket[punto:]
-    if sufijo in prefijo:
-    # if prefijo.has_key(sufijo):
-        r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
-    else:
-        logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
+    # punto = nombreticket.find('.')
+    # if punto == -1:
+    #     sufijo = ''
+    # else:
+    #     sufijo = nombreticket[punto:]
+    # if sufijo in prefijo:
+    # # if prefijo.has_key(sufijo):
+    r.add_header('Referer', "https://finance.yahoo.com/quote/" + nombreticket)
+    # else:
+    #     logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
 
     while datosurl is None:
         try:
@@ -670,7 +813,7 @@ def cotizacionesTicket(nombreticket):
     # crearda exclusion con una condicion para los tickets .MC que ademas contengan en la informacion descargada "No such ticker symbol.", leyendo la informacion de la web
     # los tickets con sufijo .MC estan contestando asi u'"BBVA.MC","BBVA.MC","N/A",nul,nul,nul,nul,0.00,0,nul,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=BBVA.MC">BBVA.MC</a>)"'
     # print datosurl
-    if sufijo in mercadosfail and 'null,null,null,null,null,null,null,null,null' in datosurl: # and  __name__ != '__main__':
+    if 'null,null,null,null,null,null,null,null,null' in datosurl:# and sufijo in mercadosfail : # and  __name__ != '__main__':
         datosurl = cotizacionesTicketWeb(nombreticket)
 
     if __name__ != '__main__':
@@ -681,27 +824,24 @@ def cotizacionesTicket(nombreticket):
 
 def cotizacionesTicketWeb(nombreticket):
     """
-    >>> nombreticket='AAPL'
-    >>> len(cotizacionesTicketWeb(nombreticket))==len(cotizacionesTicket(nombreticket))
-    True
+
     """
     nombreticket = nombreticket.upper()
     # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
+    urldatos = "https://finance.yahoo.com/quote/" + nombreticket
     web = None
     error = 'null'
-    punto = nombreticket.find('.')
-    if punto == -1:
-        sufijo = ''
-    else:
-        sufijo = nombreticket[punto:]
-    if sufijo in prefijo:
+    #punto = nombreticket.find('.')
+    #if punto == -1:
+     #   sufijo = ''
+    #else:
+     #   sufijo = nombreticket[punto:]
+    #if sufijo in prefijo:
     # if prefijo.has_key(sufijo):
-        urldatos = "http://" + prefijo[sufijo] + "finance.yahoo.com/q?s=" + nombreticket
-    else:
-        urldatos = "http://finance.yahoo.com/q?s=" + nombreticket
-
+     #   urldatos = "https://" + prefijo[sufijo] + "finance.yahoo.com/quote/" + nombreticket
+    #else:
     r = urllib2.Request(urldatos, headers=webheaders)
 
     while web is None:
@@ -722,77 +862,111 @@ def cotizacionesTicketWeb(nombreticket):
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
+        except UnicodeDecodeError:
+            print (f.read())
+            print nombreticket
     # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
     # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,"N/A"
 
-    inicio = web.find('"yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>') + len('"yfi_rt_quote_summary"><div class="hd"><div class="title"><h2>')
-    fin = web.find('</h2> <span class="rtq_exch">', inicio) - len(nombreticket) - 2
+    inicio = web.find('"longName":') + len('"longName":')
+    fin = web.find(',"', inicio)# - len(nombreticket) - 2
     datonombre = web[inicio:fin].strip()
+    datonombre = datonombre.strip('"')
+    datonombre = datonombre.replace('"', '')
 
-    inicio = web.find('<span class="rtq_dash">-</span>', fin) + len('<span class="rtq_dash">-</span>')
-    fin = web.find(' ', inicio)
-    datomercado = web[inicio:fin].strip()
 
-    inicio = web.find('<span id="yfs_l84_' + nombreticket.lower() + '">') + len('<span id="yfs_l84_' + nombreticket.lower() + '">')
-    fin = web.find('</span></span>', inicio)
+    #campos = ('"postMarketPrice":{"raw":', '"currentPrice":{"raw":')
+    inicio = web.find('"currentPrice":{"raw":') + len('"currentPrice":{"raw":')
+    #inicio = web.find('"fmt":"',inicio) + len ('"fmt":"')
+    fin = web.find(',', inicio)
     try:
         datoValorActual = float(web[inicio:fin].replace(',', '.'))
     except ValueError:
-        datoValorActual = 'null'
-        error = 'No such ticker symbol.'
+        # Esta busqueda se debe a que el mercado al que pertenece el valor esta cerrado o aun no cotiza
+        inicio = web.find('"regularMarketOpen":{"raw":') + len('"regularMarketOpen":{"raw":')
+        fin = web.find(',', inicio)
+        try:
+            datoValorActual = float(web[inicio:fin].replace(',', '.'))
+        except ValueError:
+            datoValorActual = 'null'
+        #error = 'No such ticker symbol.'
 
     # Con el mercado abierto este datos es correcto buscarlo asi
-    # FIXME: Con el mercado cerrado este datos es <td class="yfnc_tabledata1"><span>N/A</span> - <span>N/A</span>
-    inicio = web.find('<span id="yfs_g53_' + nombreticket.lower() + '">') + len('<span id="yfs_g53_' + nombreticket.lower() + '">')
-    fin = web.find('</span></span>', inicio)
+    inicio = web.find('"regularMarketDayLow":{"raw":') + len('"regularMarketDayLow":{"raw":')
+    #inicio = web.find(',"fmt":"', inicio) + len(',"fmt":"')
+    fin = web.find(',', inicio)
     try:
         datominDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
         datominDia = 'null'
-    inicio = web.find('<span id="yfs_h53_' + nombreticket.lower() + '">') + len('<span id="yfs_h53_' + nombreticket.lower() + '">')
-    fin = web.find('</span></span>', inicio)
+
+    inicio = web.find('"regularMarketDayHigh":{"raw":') + len('"regularMarketDayHigh":{"raw":')
+    #inicio = web.find(',"fmt":"', inicio) + len(',"fmt":"')
+    fin = web.find(',', inicio)
     try:
         datomaxDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
     except ValueError:
         datomaxDia = 'null'
-        inicio = web.find('</th><td class="yfnc_tabledata1"><span>') + len('</th><td class="yfnc_tabledata1"><span>')
 
-    inicio = web.find('<td class="yfnc_tabledata1"><span>', inicio) + len('<td class="yfnc_tabledata1"><span>')
-    fin = web.find('</span> - <span>', inicio)
+    inicio = web.find('"fiftyTwoWeekLow":{"raw":') + len('"fiftyTwoWeekLow":{"raw":')
+    #inicio = web.find(',"fmt":"', inicio) + len(',"fmt":"')
+    fin = web.find(',', inicio)
+
     try:
         datomin52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
         datomin52 = 'null'
-    inicio = fin + len('</span> - <span>')
-    fin = web.find('</span></td></tr><tr><th scope="row" width="48%">', inicio)
+
+    inicio = web.find('"fiftyTwoWeekHigh":{"raw":') + len('"fiftyTwoWeekHigh":{"raw":')
+    #inicio = web.find(',"fmt":"', inicio) + len(',"fmt":"')
+    fin = web.find(',', inicio)
     try:
         datomax52 = round(float(web[inicio:fin].replace(',', '.')), 3)
     except ValueError:
         datomax52 = 'null'
 
-    inicio = web.find('<span id="yfs_v53_' + nombreticket.lower() + '">') + len('<span id="yfs_v53_' + nombreticket.lower() + '">')
-    fin = web.find('</span></td></tr><tr><th', inicio)
+    inicio = web.find('"regularMarketVolume":{"raw":') + len('"regularMarketVolume":{"raw":')
+    fin = web.find(',', inicio)
     try:
         datovolumen = int((web[inicio:fin].replace(',', '')).replace('.', ''))
     except ValueError:
         datovolumen = 'null'
 
-    inicio = web.find('(3m)</span>:</th><td class="yfnc_tabledata1">') + len('(3m)</span>:</th><td class="yfnc_tabledata1">')
-    fin = web.find('</td></tr><tr><th scope="row" width="48%">', inicio)
+    inicio = web.find('"averageDailyVolume3Month":{"raw":') + len('"averageDailyVolume3Month":{"raw":')
+    fin = web.find(',', inicio)
     try:
         datovolumenMedio = int((web[inicio:fin].replace(',', '')).replace('.', ''))
     except ValueError:
         datovolumenMedio = 'null'
 
-    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre, nombreticket, datomercado, str(datomax52), str(datomaxDia), str(datomin52), str(datominDia), str(datoValorActual), str(datovolumenMedio), str(datovolumen), error)
+    inicio = web.find('"exchange":"', inicio) + len('"exchange":"')
+    fin = web.find('"', inicio)
+    datomercado = web[inicio:fin].strip()
+
+    datosurl = u'"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre,
+                                                            nombreticket,
+                                                            datomercado,
+                                                            str(datomax52),
+                                                            str(datomaxDia),
+                                                            str(datomin52),
+                                                            str(datominDia),
+                                                            str(datoValorActual),
+                                                            str(datovolumenMedio),
+                                                            str(datovolumen),
+                                                            error)
+    #print datosurl
+    if __name__ != '__main__':
+        BBDD.ticketcotizaciones(nombreticket, datosurl)
+
     return datosurl
 
 
 def cotizacionesMoneda(nombreticket):
     """."""
     nombreticket = nombreticket.upper()
-    urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=sl1e1&e=.csv"
-    datosurl = None
+    #urldatos = "http://download.finance.yahoo.com/d/quotes.csv?s=" + nombreticket + "&f=sl1e1&e=.csv"
+    urldatos = "https://finance.yahoo.com/quote/"+nombreticket.replace("=", "%3D")+"?p="+nombreticket.replace("=", "%3D")
+    web = None
     r = urllib2.Request(urldatos, headers=webheaders)
 
 # #    punto = nombreticket.find('.')
@@ -802,29 +976,47 @@ def cotizacionesMoneda(nombreticket):
 # #        sufijo = nombreticket[punto:]
 # #    r.add_header('Referer', "http://" + prefijo[sufijo] + "finance.yahoo.com/q/hp?s=" + nombreticket)
 
-    while datosurl is None:
+    while web is None:
         try:
             f = urllib2.urlopen(r, timeout=pausareconexion)
-            # f= urllib.urlopen (urldatos)
-            datosurl = ((f.read().strip()).replace(',N/A', ',null')).decode('UTF-8')  # UTF-16le
+            web = f.read().decode('UTF-8')
             f.close()
         except urllib2.HTTPError as e:
             print('Conexion Perdida')
             print((e.code))
-            datosurl = None
+            web = None
             sleep(pausareconexion)
             #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
             print('Conexion Erronea')
-            # print(e.reason)
             print(e)
-            datosurl = None
+            web = None
             logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('UTF-8'), urldatos.encode('UTF-8')))
             print (('Pausa de %d segundos' % pausareconexion))
             sleep(pausareconexion)
+        except UnicodeDecodeError:
+            print (f.read())
+            print nombreticket
 
-    BBDD.monedacotizaciones(nombreticket, datosurl)
-    return datosurl
+    inicio = web.find('"ask":{"raw":') + len('"ask":{"raw":')
+    fin = web.find(',', inicio)
+    try:
+        datoValorActual = float(web[inicio:fin].replace(',', '.'))
+    except ValueError:
+        # Esta busqueda se debe a que el mercado al que pertenece el valor esta cerrado o aun no cotiza
+        inicio = web.find('"regularMarketDayLow":{"raw":') + len('"regularMarketDayLow":{"raw":')
+        fin = web.find(',', inicio)
+        try:
+            datoValorActual = float(web[inicio:fin].replace(',', '.'))
+        except ValueError:
+            datoValorActual = 'null'
+
+
+    datos = "%s,%s"%( nombreticket, datoValorActual)
+
+
+    BBDD.monedacotizaciones(nombreticket, datos)
+    return datos
 
 
 def subirtimming(datos, **config):
@@ -874,7 +1066,7 @@ def subirtimming(datos, **config):
             fecha = datos[i][fechadatos]
             fecha = strptime(fecha, '%Y-%m-%d')
 # FIXME : en mensual es correcto, cuando cambia de ANO y MES, pero en semanal hay que acumular de domingo a domingo, siendo el corte el domingo siguiente
-            if (timming == 'm' and fechaagr != strftime('%Y, %m', fecha)) or (timming == 'w' and datos[i][fechadatos] >= str(fechaagr)):
+            if ((timming == 'm' and fechaagr != strftime('%Y, %m', fecha)) or (timming == 'w' and datos[i][fechadatos] >= str(fechaagr))) and i<>inicio:
                 if timming == 'm':
                     fechaagr = strftime('%Y, %m', fecha)
                 elif timming == 'w':
@@ -899,6 +1091,111 @@ def subirtimming(datos, **config):
 
     return datostimming
 
+def yahoocrumb(naccion, **config):
+    # global webheaders
+    """
+    Funcion para la descarga de la cookie o campo crumb
+
+    Parametros : naccion - nombre de la accion
+                fechaini - fecha de inicio
+                fechafin - fecha fin
+                timming - timming
+                actualizar - False/True
+    el formato del las fecha debe ser AAAA-MM-DD
+    Modificado desde Mayo 2017
+    el formato de las fechas es en segundos, considerando la fecha 1 de enero de 1970 como el punto 0,
+    apartir de ahi en segundos desde esa fecha en adelante
+
+    el return devuelve valor de crumb
+
+    """
+    naccion = naccion.upper()
+    fechaini = config.get('fechaini', None)
+    fechafin = config.get('fechafin', None)
+    renew    = config.get('fechafin', False)
+
+    if fechafin is None:
+        fechafin = int(mktime ((date.today().timetuple())))
+
+    else:
+
+        fechafin = int(mktime((strptime(fechafin, "%Y-%m-%d"))))
+    fechafin = str(fechafin - 86400)
+
+
+    if fechaini is not None:
+        fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
+
+    # punto = naccion.find('.')
+    # if punto == -1:
+    #     sufijo = ''
+    # else:
+    #     sufijo = naccion[punto:]
+
+    # if sufijo in prefijo:
+    #     preurl = "https://finance.yahoo.com/quote/"+ naccion +"/history?period1=0&period2="+fechafin+"&interval=1d&filter=history&frequency=1d"
+    # else:
+    preurl = "https://finance.yahoo.com/quote/"+ naccion +"/history?period1=0&period2="+fechafin+"&interval=1d&filter=history&frequency=1d"
+    #     logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
+
+##    # Gestion de las cookie
+    # TODO : renovar cookie
+    if renew:
+        cookie_j = cookielib.CookieJar()
+        cookie_J = File
+        cookie_h = urllib2.HTTPCookieProcessor(cookie_j)
+        opener = urllib2.build_opener(cookie_h)
+        urllib2.install_opener(opener)
+##    #for num, cookie in enumerate(cookie_j):
+##    #    print num, cookie.name
+##    #    print cookie.value
+##    #    print
+
+    r1 = urllib2.Request(preurl, headers=webheaders)
+
+    cookie = None
+    while cookie is None:
+        try:
+            f1 = urllib2.urlopen(r1, timeout=pausareconexion)
+            cookie = f1.read()
+            f1.close()
+        except urllib2.HTTPError as e:
+            print((e.code))
+            print('Url invalida, accion no disponible')
+            print(preurl)
+            cookie = None
+        except (KeyboardInterrupt, urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout, urllib2.httplib.IncompleteRead) as e:
+            print('Conexion Perdida')
+            # print(e.reason)
+            print((preurl, e))
+            logging.debug('Error: %s; Ticket: %s; PreUrl: %s' % (e, naccion.encode('UTF-8'), preurl.encode('UTF-8')))
+            cookie = None
+        finally:
+            print ('Pausa de 1 segundo')
+            duerme(tiempo=1000)
+
+
+    crumbinweb = (('"CrumbStore":{"crumb":"','"}'),
+                  ('"],"crumb":"','","'),
+                  (':{"user":{"crumb":"','","'),
+                  ('&crumb=','&')
+                  )
+
+    crumbOK = False
+    while crumbOK == False:
+        # TODO: limitar el len(crumb) a la longitud que debe de tener hasta que localice y encuentre el verdadero crumb, utilizando los distintos formatos de busqueda
+        for (ini,fin) in crumbinweb:
+            crumbini = cookie.find(ini) + len(ini)
+            crumbfin = cookie.find(fin, crumbini)
+            crumb = cookie[crumbini:crumbfin].strip()
+            #crumb = crumb.decode('unicode_escape','ignore')
+            crumb = crumb.encode('UTF-8')
+            crumb = crumb.replace('\u002F','/')
+            if len (crumb)<=12:
+                crumbOK = True
+                break
+
+    return crumb
 
 if __name__ == '__main__':
     _test()
