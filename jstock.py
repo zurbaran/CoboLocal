@@ -112,7 +112,7 @@ from yahoofinance import webheaders, pausareconexion
 
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
                     level=logging.DEBUG)
 
 
@@ -193,12 +193,20 @@ def tickets():
     jstockdir = os.path.join(os.path.join(os.getcwd(), CARPETAS['Log'], 'jstock-master/appengine/jstock-static/war/stocks_information/'))
     # obtenemos una lista de paises
     paises = os.listdir(jstockdir)
+    paises.remove('google-code-database-meta.json')
     paises.remove('stock-info-database-meta.json')
+    paises.remove('stock-info-sqlite-meta.json')
+    paises.remove('sqlite')
 
     for pais in paises:
         # entramos en cada directorio que contiene un archivo stocks.zip
         stocksZip = os.path.join(jstockdir, pais, 'stocks.zip')
-        unzipstocks = ZipFile(stocksZip, 'r')
+        try:
+            unzipstocks = ZipFile(stocksZip, 'r')
+        except IOError:
+            print ('Archivo erro' % stocksZip)
+            ticketsanadidos = []
+            break
         # leemos el contenido del archivo stocks.csv que contiene cada archivo stocks.zip
         file_content = unzipstocks.read('stocks.csv')
 
