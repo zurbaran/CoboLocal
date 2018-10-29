@@ -105,13 +105,16 @@ from random import choice
 # from sql.conditionals import *
 # TODO: implementar la libreria python-sql para generar el codigo sql
 
-try:
-    from pysqlite2 import dbapi2 as sqlite3
-except ImportError:
-    print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
-    from setuptools.command.easy_install import main as install
-    import sqlite3  # lint:ok
-    install(['-v', 'pysqlite'])
+import sqlite3
+##try:
+##    from pysqlite2 import dbapi2 as sqlite3
+##except ImportError:
+##    print ('Modulo de pysqlite2 deshabilitado. Cargando sqlite3 nativo')
+##    from setuptools.command.easy_install import main as install
+##    import sqlite3  # lint:ok
+##    # from subprocess import call
+##    # call('sudo apt install python-pysqlite2')
+##    install(['-v','--user', 'pysqlite'])
 
 ####################################################
 # modulos no estandar o propios
@@ -119,8 +122,8 @@ from settings import CARPETAS, DIFREGACTUALIZAR, FILTROSTOPLOSS, FILTROS, ARCHIV
 from indicador import puntocurvaexponencial, curvexprent
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
-    level=logging.DEBUG)
+                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+                    level=logging.DEBUG)
 
 
 def conexion(archivo=None):
@@ -408,6 +411,7 @@ def ticketborra(ticket, **config):
             ticket2 = ticket.replace('.', '_')
             ticket2 = ticket2.replace('-', '_')
             ticket2 = ticket2.replace('^', 'Indice')
+            ticket2 = ticket2.replace('&', 'and')
             sql = "Drop Table IF EXISTS `Ticket_" + ticket2 + "`"
             cursor.execute(sql)
 
@@ -790,6 +794,7 @@ def datoshistoricosexisten(naccion):
         naccion2 = naccion.replace('.', '_')
         naccion2 = naccion2.replace('-', '_')
         naccion2 = naccion2.replace('^', 'Indice')
+        naccion2 = naccion2.replace('&', 'and')
         sql = ("SELECT name FROM sqlite_master WHERE type='table' and name = 'Ticket_%s'" % naccion2)
         cursor2.execute(sql)
         if len(cursor2.fetchall()) > 0:
@@ -823,6 +828,7 @@ def datoshistoricoscreatabla(naccion):
     naccion2 = naccion.replace('.', '_')
     naccion2 = naccion2.replace('-', '_')
     naccion2 = naccion2.replace('^', 'Indice')
+    naccion2 = naccion2.replace('&', 'and')
     sql = ("CREATE TABLE IF NOT EXISTS Ticket_%s ( \
     `fecha` DATE PRIMARY KEY NOT null UNIQUE, \
     `apertura` FLOAT( 0, 0 ) NOT null, \
@@ -855,6 +861,7 @@ def datoshistoricoslee(naccion):
     naccion2 = naccion.replace('.', '_')
     naccion2 = naccion2.replace('-', '_')
     naccion2 = naccion2.replace('^', 'Indice')
+    naccion2 = naccion2.replace('&', 'and')
     historico = []
     if datoshistoricosexisten(naccion):
         sql = ("SELECT * From `Ticket_%s` ORDER BY fecha ASC" % naccion2)
@@ -889,6 +896,7 @@ def datoshistoricosgraba(naccion, historico):
     tabla = naccion.replace('.', '_')
     tabla = tabla.replace('-', '_')
     tabla = tabla.replace('^', 'Indice')
+    tabla = tabla.replace('&', 'and')
 
     cursor2.execute("DELETE FROM Ticket_%s" % tabla)
     # FIXME:
@@ -962,7 +970,7 @@ def datoshistoricosactualizacion(naccion):
 
     if (desdeultimaactualizacion > DIFREGACTUALIZAR['historico']):  # and (desdeultimaactualizacionarchivo>difregistros):
         print(('Registro pendiente de una actualizacion desde %s' % (historico[-2][0])))
-        return (str(historico[-3][0]), True)
+        return (str(historico[-2][0]), True)
     else:
         print('Registro actualizado')
         print('')
@@ -1030,6 +1038,9 @@ def monedacotizaciones(nombreticket, datosurl):
     if nombreticket == 'EURGBP=X':
         print ('Caso especial, libra Esterlina convertida en peniques')
         datoprecio = str(float(datoprecio) * 100)
+    if nombreticket == 'EUREUR=X':
+        print ('Caso especial, euro')
+        datoprecio = str(1.0)
 
     if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
         print(('La Moneda %s no existe' % nombreticket))
@@ -1051,7 +1062,8 @@ def monedacotizaciones(nombreticket, datosurl):
         db.close()
 
         print(('Actualizando cotizaciones de : %s' % nombreticket))
-        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
+        print(('Actualizando %s con datos %s' % (nombreticket, datoprecio)))
+        print('')
 
 
 def listacciones(**config):

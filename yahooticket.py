@@ -108,7 +108,7 @@ import csv
 from settings import CARPETAS, ARCHIVO_LOG #, SUFIJOSEXCLUIDOS
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
                     level=logging.DEBUG)
 
 

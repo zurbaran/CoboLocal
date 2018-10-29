@@ -93,7 +93,6 @@ Ejemplos de datos tomados en la accion ticket MSG
 
 from datetime import date
 
-
 def _test():
     """
     prueba doctest.
@@ -761,9 +760,11 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
 
 
 def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
-    """."""
+    """
+    formato de las fechas "Ano-Mes-Dia"
+    ."""
     if fechainicial == '0-0-0' or fechafinal == '0-0-0':  # or precioinicial== 0.0 or preciofinal== 0.0:
-        rentabilidad = 0.00
+        rentab = 0.00
     else:
         fechainicial = list(map(int, (fechainicial.split('-'))))
         fechafinal = list(map(int, (fechafinal.split('-'))))
@@ -772,12 +773,22 @@ def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
         if precioinicial == 0.0:
             precioinicial = 0.001
         # if entrada > stoploss:#Alcista
-        rentabilidad = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+        try:
+            rentab = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+     
         # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
         # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
         # rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
         # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
-    return rentabilidad
+        except OverflowError:
+            print (fechainicial, precioinicial, fechafinal, preciofinal, diffechas)
+            import decimal
+            rentab = ((((decimal.Decimal(1) + ((decimal.Decimal(preciofinal) - decimal.Decimal(precioinicial)) / decimal.Decimal(precioinicial))) ** (decimal.Decimal(365.0) / decimal.Decimal(diffechas))) - decimal.Decimal(1.0)) * decimal.Decimal(100.0)) / decimal.Decimal(100.0)
+            if rentab > 0:
+                rentab = 1000.0
+            elif rentab < 0:
+                rentab = -1000.0
+    return rentab
 
 
 if __name__ == '__main__':

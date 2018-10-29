@@ -184,8 +184,8 @@ import BBDD
 
 
 logging.basicConfig(filename=ARCHIVO_LOG,
-                                 format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
-                                 level=logging.DEBUG)
+                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+                    level=logging.DEBUG)
 
 socket.setdefaulttimeout(pausareconexion)
 
@@ -589,12 +589,13 @@ def descargaHistoricoAccion(naccion, **config):
             print(url)
             f = None
             crumb = yahoocrumb( naccion, renew = True, fechaini = config.get('fechaini', None), fechafin =  config.get('fechafin', None))
-            if (reintento and not (e.code == 401)) or (e.code == 404):
+            # si ha reintentado y error http 401, sin autorizacion, o error 404, no encontrado, o error 301, movido
+            if (reintento and not (e.code == 401)) or (e.code == 404) or (e.code == 301):
                 return 'URL invalida'
             elif e.code == 401:
                 logging.debug('Error: %s; Ticket: %s; crumb: %s' % (e, naccion.encode('UTF-8'), crumb))
             reintento = True
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
+        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout, urllib2.httplib.IncompleteRead) as e:
             print('Conexion Perdida')
             # print(e.reason)
             print((url, e))
@@ -720,8 +721,11 @@ def descargaHistoricoAccion(naccion, **config):
                 registroalmacenadoultimo = ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
 
             actualizar = False
-            if (registroalmacenadoultimo != registrodescargadoprimero):
+            if (registroalmacenadoultimo != registrodescargadoprimero): # and (registroalmacenadoultimo[0] == registrodescargadoprimero[0]):
                 print('El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
+                logging.debug('Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s ' % (naccion, str(config), str(registroalmacenadoultimo), str(registrodescargadoprimero)))
+                # print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
+                # print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
                 # print 'Borrando todos los datos almacenados'
                 # borraTicket(naccion, BBDD=False)
                 return 'Pago Dividendos'
@@ -830,7 +834,7 @@ def cotizacionesTicketWeb(nombreticket):
     # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
     # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
-    urldatos = "https://finance.yahoo.com/quote/" + nombreticket
+    urldatos = "https://finance.yahoo.com/quote/" + nombreticket + "?p=" + nombreticket
     web = None
     error = 'null'
     #punto = nombreticket.find('.')
@@ -853,6 +857,9 @@ def cotizacionesTicketWeb(nombreticket):
             print('Conexion Perdida')
             print((e.code))
             web = None
+            if e.code == 301 or e.code == 404:
+                error = 'No such ticker symbol'
+                web = ""
             sleep(pausareconexion)
             #raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
         except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine, socket.timeout) as e:
@@ -873,6 +880,9 @@ def cotizacionesTicketWeb(nombreticket):
     datonombre = web[inicio:fin].strip()
     datonombre = datonombre.strip('"')
     datonombre = datonombre.replace('"', '')
+
+    if len(datonombre) > 300:
+        error = 'No such ticker symbol'
 
 
     #campos = ('"postMarketPrice":{"raw":', '"currentPrice":{"raw":')

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 """
 Cobo.py - v0.05 2017-07-16 Antonio Caballero, Paco Corbi.
@@ -92,12 +92,14 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # import urllib
 from collections import deque
-from datetime import date, datetime  # , timedelta
+from datetime import date, datetime
+# , timedelta
 import csv
 import glob
 import logging
 import os
 import ast
+import sys
 
 # import logging.config
 # ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
@@ -118,9 +120,16 @@ import HTML
 
 from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST
 
+try:
+    if os.path.getsize(ARCHIVO_LOG) >= 524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
+        os.remove(ARCHIVO_LOG)
+except:
+    pass
+
 borranoactualizados = False
+# 2018-02-02 15:45:52
 logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)sZ; nivel: %(levelname)s; modulo: %(module)s; Funcion : %(funcName)s; %(message)s',
+                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
                     level=logging.DEBUG)
 logging.debug(os.linesep)
 logging.debug('Inicio de Aplicacion')
@@ -439,7 +448,7 @@ def analisisAlcistaAccion(naccion, **config):
                 LTf = r
                 # LTfrepetido = False
                 while localizaLTf:
-                    #print "LTf, i =", LTf, i
+                    # print "LTf, i =", LTf, i
                     if LTf <= i:
                         fechaLTf, _aperturaLTf, _maximoLTf, minimoLTf, _cierreLTf, _volumenLTf = datoshistoricos[LTf]
                     else:
@@ -452,14 +461,14 @@ def analisisAlcistaAccion(naccion, **config):
 
                         fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
 
-                        # esto lo he anadido porque se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
+                        # se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
                             LTf += 1
                             break
                         try:
-                            # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
+                            # TODO:  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
                             # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
-
+                            # TODO: analisis de GAWK, se queda en bucle aqui parado
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
                             logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s'
@@ -537,7 +546,7 @@ def analisisAlcistaAccion(naccion, **config):
 
             # Si la misma barra que rompe la resistencia abre arriba para cerrar por abajo del stoploss, esa barra nos saca del mercado
             if stoploss >= minimo and apertura > cierre and len(analisisalcista) > 0:
-#                if maximo >= stoploss >= minimo:# El stoploss esta entre el maximo y el minimo
+                # if maximo >= stoploss >= minimo:# El stoploss esta entre el maximo y el minimo
                 salidaoperaciones = (fecha, stoploss)
 #                elif maximo < stoploss:# El stoploss esta por encima del maximo, lo que significa que puede haber un split
 #                    salidaoperaciones = ( fecha, maximo )
@@ -572,10 +581,9 @@ def analisisAlcistaAccion(naccion, **config):
                 analisisalcista = []
             i += 1
         try:
-        	del resistencia, soporte, ruptura, LTi, LTf, salida, fecha, _apertura, _maximo, _minimo, _cierre, _volumen
+            del resistencia, soporte, ruptura, LTi, LTf, salida, fecha, _apertura, _maximo, _minimo, _cierre, _volumen
         except UnboundLocalError as err:
-        	logging.debug('Error: %s al borrar bariables; Accion: %s;'
-                                          % (err, naccion.encode('UTF-8')))
+            logging.debug('Error: %s al borrar bariables; Accion: %s;' % (err, naccion.encode('UTF-8')))
 
     # ##mostramos en pantalla y creamos otro archivo no codificado con la tupla
     if len(analisisalcista) > 0 and txt:
@@ -770,8 +778,7 @@ def analisisBajistaAccion(naccion, **config):
                     soporte = True
                     resistencia = False
                 # if puntoMME < minimo:# Media Movil Exponencial bajo grafica, no buscamos soportes ni resistencias, y consideramos la barra actual como soporte
-                elif puntoMME < minimo and (MME2 is False or (MME2 is not False and puntoMME2 <= puntoMME)):
-#                elif puntoMME2 <= puntoMME < minimo:
+                elif puntoMME < minimo and (MME2 is False or (MME2 is not False and puntoMME2 <= puntoMME)):  # elif puntoMME2 <= puntoMME < minimo:
                     s = i
                     _fechasoporte, aperturasoporte, _maximosoporte, minimosoporte, cierresoporte, _volumensoporte = datoshistoricos[s]
                     soporte = False
@@ -845,8 +852,7 @@ def analisisBajistaAccion(naccion, **config):
             _fecha, apertura, maximo, minimo, cierre, _volumen = datoshistoricos[i]
 
     # resistencia bajista
-        if resistencia and maximo > maximoresisten and not ((minimo < minimosoporte) and (apertura < cierre)):  # No actualizamos la resistencia, si es la misma barra que rompe el soporte y ademas la apertura es menor que el cierre
-        # if soporte and minimo<minimosoporte:
+        if resistencia and maximo > maximoresisten and not ((minimo < minimosoporte) and (apertura < cierre)):  # if soporte and minimo<minimosoporte: # No actualizamos la resistencia, si es la misma barra que rompe el soporte y ademas la apertura es menor que el cierre
             r = i
             _fecharesisten, _aperturaresisten, maximoresisten, _minimoresisten, _cierreresisten, _volumenresisten = datoshistoricos[r]
 
@@ -911,8 +917,7 @@ def analisisBajistaAccion(naccion, **config):
                 # LTf=r-1# Anadido el 23/01/2011
                 # j=r
                 while localizaLTf:
-
-    #                print "LTf, i =", LTf, i
+                    # print "LTf, i =", LTf, i
                     if LTf <= i:
                         _fechaLTf, _aperturaLTf, maximoLTf, _minimoLTf, _cierreLTf, _volumenLTf = datoshistoricos[LTf]
                     else:
@@ -1094,7 +1099,13 @@ def creaMenu(sep, lmenu, cola=True):
         control.append(n[0:n.find(sep)].lower())
 
     while True:
-        resp = ((raw_input('Opcion?')).lower()).strip()
+        # print sys.argv
+        if sys.argv == ['./Cobo.py'] or '/Cobo.py' in sys.argv[0]:
+            resp = ((raw_input('Opcion?')).lower()).strip()
+        else:
+            resp = sys.argv.pop(1)
+            print ('Automatico, opciones: %s ' % resp)
+            # sys.argv.pop() # = ['./Cobo.py']
 
         if len(resp) == 1:
             if resp in control:
@@ -1381,19 +1392,17 @@ def backtestMoneda(**config):
         monedas.append(mon[0])
 
     # Comprobamos si la moneda es una moneda
-    if moneda in monedas:
-    # Si es una moneda, buscamos en la base de datos los componentes que pertenezcan a esa moneda
+    if moneda in monedas:  # Si es una moneda, buscamos en la base de datos los componentes que pertenezcan a esa moneda
         sql = ("""SELECT * FROM Cobo_componentes
-        	WHERE Cobo_componentes.tiket NOT LIKE '^%'
-        	AND Cobo_componentes.error IS NULL
-        	AND Cobo_componentes.mercado IN
-        	(SELECT Cobo_mercado_moneda.nombreUrl
-        		FROM Cobo_mercado_moneda
-        		WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?)
-            AND Cobo_componentes.mercado not IN """
-            + str(MERCADOSEXCLUIDOS) + "ORDER BY Cobo_componentes.tiket ASC")
-    else:
-    # Si no es una moneda comprobamos si es un mercado
+            WHERE Cobo_componentes.tiket NOT LIKE '^%'
+            AND Cobo_componentes.error IS NULL
+            AND Cobo_componentes.mercado IN
+            (SELECT Cobo_mercado_moneda.nombreUrl
+                FROM Cobo_mercado_moneda
+                WHERE Cobo_mercado_moneda.abrevMoneda LIKE ?)
+            AND Cobo_componentes.mercado not IN """ + str(MERCADOSEXCLUIDOS) + "ORDER BY Cobo_componentes.tiket ASC")
+
+    else:  # Si no es una moneda comprobamos si es un mercado
         cursor.execute("SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda ORDER BY Cobo_mercado_moneda.nombreUrl ASC")
         resultado = cursor.fetchall()
         monedas = []
@@ -1401,10 +1410,10 @@ def backtestMoneda(**config):
             monedas.append(mon[0])
         if moneda in monedas:
             sql = ("""SELECT * FROM Cobo_componentes
-            	WHERE Cobo_componentes.tiket NOT LIKE '^%'
-            	AND Cobo_componentes.error IS NULL
-            	AND Cobo_componentes.mercado LIKE ?
-            	ORDER BY Cobo_componentes.tiket ASC""")
+                WHERE Cobo_componentes.tiket NOT LIKE '^%'
+                AND Cobo_componentes.error IS NULL
+                AND Cobo_componentes.mercado LIKE ?
+                ORDER BY Cobo_componentes.tiket ASC""")
 
     cursor.execute(sql, (moneda,))
     # consulta en la tabla componentes que pertenecen a los mercados de una moneda
@@ -1504,8 +1513,7 @@ def backtestMoneda(**config):
             # preciosalida = 0
             invertido = False
             p = 0
-            while p < len(backtestaccion):
-            # for operacion in backtestaccion:
+            while p < len(backtestaccion):  # for operacion in backtestaccion:
 
                 if estrategia == 'Alcista':
                     resistencia, soporte, ruptura, LTi, LTf, salida, timming, indicadores = backtestaccion[p]
@@ -1663,18 +1671,17 @@ def backtestMoneda(**config):
                         #    balance = inversion - inversionrecuperada
 
                     elif fechasalida <= fecharuptura:
-                    # elif fechasalida <= fecharuptura:
-#                                if -(riesgo) * BACKTESTOPERACIONESSOSPECHOSAS > balance:
-#                                    if estrategia == 'Alcista':
-#                                        print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
-#                                        print(('%6s %13s %15.3f %8.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, soporteentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
-#
-#                                    elif estrategia == 'Bajista':
-#                                        print('ticket  fechaentrada  precionentrada  resistencia  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
-#                                        print(('%6s %13s %15.3f %12.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, resistenciaentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
-#                                        #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
-#
-#                                    raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
+                               # if -(riesgo) * BACKTESTOPERACIONESSOSPECHOSAS > balance:
+                               #     if estrategia == 'Alcista':
+                               #         print('ticket  fechaentrada  precionentrada  soporte  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
+                               #         print(('%6s %13s %15.3f %8.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, soporteentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
+
+                               #     elif estrategia == 'Bajista':
+                               #         print('ticket  fechaentrada  precionentrada  resistencia  timmingentrada  numeroaccionesoperacion  fechasalida  preciosalida  timming  inversionoperacion  inversionrecuperada  balance')
+                               #         print(('%6s %13s %15.3f %12.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, resistenciaentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
+                               #         #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
+
+                               #     raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
                         if fechasalida != fecharuptura:  # Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                             p -= 1  # Puede que el ciclo que me saca, no impida que vuelva a entrar
                         # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
@@ -1886,10 +1893,10 @@ def backtestMoneda(**config):
                    abs((len(negativas) * 1.0 / len(backtest) * 1.0) * (sum(negativas) / len(negativas) * 1.0)))))
             j.write((('Ratio profit/lost : %.2f' + os.linesep) % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))).replace('.', ','))
             print ((('Ratio profit/lost :  %.2f' + os.linesep) % ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0)))))
-            j.write((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                    / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)).replace('.', ','))
-            print ((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) / (len(negativas) * 1.0))))
-                   / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)))
+            j.write((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) /
+                    (len(negativas) * 1.0)))) / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)).replace('.', ','))
+            print ((('minimo de porcentaje aciertos para no perder con el sistema : %.2f' + os.linesep) % (((1.0 + (comision / abs(sum(negativas) /
+                    (len(negativas) * 1.0)))) / (1.0 + ((sum(positivas) / (len(positivas) * 1.0)) / abs(sum(negativas) / (len(negativas) * 1.0))))) * 100)))
         j.write((('factor ruina : %.2f' + os.linesep) % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)).replace('.', ','))
         print ((('factor ruina : %.2f' + os.linesep) % (((1.0 - (len(positivas) * 1.0 / len(backtest) * 1.0)) / (len(positivas) * 1.0 / len(backtest) * 1.0)) ** 2.0)))
         j.close()
@@ -1973,12 +1980,13 @@ def stonicks(listatikets):
     Crea un enlace en la columna dada con el ticket algrafico de la pagina de stonicks.com
     <a href="http://www.stonicks.com/?s=G1A.DE" title="Grafico" target="_blank">G1A.DE</a>.
     """
-    listatickets2=[]
-    for ticket, nombre, mercado, moneda, timming, rentabilidad, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin in listatikets :
-        ticket = ('<a href="http://www.stonicks.com/?s=%s" title="Grafico" target="_blank">%s</a>' % (ticket,ticket))
+    listatickets2 = []
+    for ticket, nombre, mercado, moneda, timming, rentabilidad, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin in listatikets:
+        ticket = ('<a href="http://www.stonicks.com/?s=%s" title="Grafico" target="_blank">%s</a>' % (ticket, ticket))
         listatickets2.append((ticket, nombre, mercado, moneda, timming, rentabilidad, inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
 
     return tuple(listatickets2)
+
 
 def main():
     """."""
@@ -1989,6 +1997,7 @@ def main():
             # os.path.dirname
 
     opcion = None
+
     while True:
 
         # cursor, db = BBDD.conexion()
@@ -2318,31 +2327,31 @@ def main():
 #        'M) Actualizar Tickets componentes de Mercados',
         elif opcion == 'm':
             print(seleccion)
-##            ticketsanadidos = 0
-##            mercados = BBDD.mercadoslista()
-##            for mercado in mercados:
-##                mercado = mercado.replace('@%5E', '^')
-##                mercado = mercado.replace('@%5e', '^')
-##                mercado = mercado.upper()
-##                ticketscomponentesmercados = yahoofinance.ticketsdeMercado(mercado)
-##                for ticket in ticketscomponentesmercados:
-##                    if BBDD.ticketalta(ticket):
-##                        ticketsanadidos += 1
-##
-##                if len(ticketscomponentesmercados) == 0:
-##                    print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
-##                    # BBDD.mercadosdeshabilita(mercado)
-##            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
-##            ticketscomponentesmercados = []
+#            ticketsanadidos = 0
+#            mercados = BBDD.mercadoslista()
+#            for mercado in mercados:
+#                mercado = mercado.replace('@%5E', '^')
+#                mercado = mercado.replace('@%5e', '^')
+#                mercado = mercado.upper()
+#                ticketscomponentesmercados = yahoofinance.ticketsdeMercado(mercado)
+#                for ticket in ticketscomponentesmercados:
+#                    if BBDD.ticketalta(ticket):
+#                        ticketsanadidos += 1
+#
+#                if len(ticketscomponentesmercados) == 0:
+#                    print (('Mercado sin ticket, Deshabilitando el Mercado %s' % mercado))
+#                    # BBDD.mercadosdeshabilita(mercado)
+#            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
+#            ticketscomponentesmercados = []
 
-##            print('Se estan anadiendo IPOs del mercado americano')
-##            ticketsanadidos = 0
-##            tickets = yahoofinance.ticketsIPO()
-##            for ticket in tickets:
-##                if BBDD.ticketalta(ticket):
-##                    ticketsanadidos += 1
-##            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
-##            del tickets
+#            print('Se estan anadiendo IPOs del mercado americano')
+#            ticketsanadidos = 0
+#            tickets = yahoofinance.ticketsIPO()
+#            for ticket in tickets:
+#                if BBDD.ticketalta(ticket):
+#                    ticketsanadidos += 1
+#            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
+#            del tickets
 
             print('Se estan anadiendo Criptomonedas')
             ticketsanadidos = 0
@@ -2352,7 +2361,6 @@ def main():
                     ticketsanadidos += 1
             print(('Se han anadido un total de : %d Criptomonedas' % ticketsanadidos))
             del tickets
-
 
             print('Se estan anadiendo acciones de JStock')
             if raw_input('Quieres iniciar el proceso de JStock (Y/....) ?') == 'Y':
@@ -2386,14 +2394,14 @@ def main():
                 yahoofinance.cotizacionesTicketWeb(ticket)
 
                 print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
-##                threads = list()
-##                for i in (0, MULTIHILO):
-##                    ticket = listatickets.popleft()
-##                    t = threading.Thread(target=yahoofinance.cotizacionesTicketWeb(ticket))
-##                    threads.append(t)
-##                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
-##                t.setDaemon(True)
-##                t.start()
+#                threads = list()
+#                for i in (0, MULTIHILO):
+#                    ticket = listatickets.popleft()
+#                    t = threading.Thread(target=yahoofinance.cotizacionesTicketWeb(ticket))
+#                    threads.append(t)
+#                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
+#                t.setDaemon(True)
+#                t.start()
                 yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
@@ -2719,18 +2727,18 @@ def main():
                         if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
                             naccion = (naccion,)
                             if BBDD.ticketalta(naccion):
-                            # cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
-                            #numeroResultado = len(cursor.fetchall())
-                            #f numeroResultado == 0:
+                                # cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
+                                # numeroResultado = len(cursor.fetchall())
+                                # f numeroResultado == 0:
                                 # cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
                                 # print(naccion[0] + ' anadido a la base de datos')
                                 incluidos += 1
                         i += 1
                     print (('Anadido pais, %s' % n))
 
-            #if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
-            #   db.commit()
-            #db.close()
+            # if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
+            #    db.commit()
+            # db.close()
 
         # x) Generar lista de acciones
         elif opcion == 'x':
@@ -2814,19 +2822,19 @@ def main():
 
             for res in (resultado, resultado2, resultado3):
                 htmlcode = HTML.table(res, header_row=['Ticket',
-                                      'Nombre',
-                                      'Mercado',
-                                      'Moneda',
-                                      'Timming',
-                                      'Rentabilidad',
-                                      'Inversion en Euros',
-                                      'Entrada',
-                                      'Salida',
-                                      'Numero Acciones',
-                                      'LT Fecha Ini',
-                                      'LT Precio Ini',
-                                      'LT Fecha Fin',
-                                      'LT Precio Fin'])
+                                                       'Nombre',
+                                                       'Mercado',
+                                                       'Moneda',
+                                                       'Timming',
+                                                       'Rentabilidad',
+                                                       'Inversion en Euros',
+                                                       'Entrada',
+                                                       'Salida',
+                                                       'Numero Acciones',
+                                                       'LT Fecha Ini',
+                                                       'LT Precio Ini',
+                                                       'LT Fecha Fin',
+                                                       'LT Precio Fin'])
                 f.write(htmlcode)
                 f.write('<br>Calculos para entradas en Linea de Tendencia<br><p><br></p>')
 #             for n in resultado:
@@ -2860,5 +2868,7 @@ def main():
 
 ############################################################
 # programa principal
+
+
 if __name__ == '__main__':
     main()
