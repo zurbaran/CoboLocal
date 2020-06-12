@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 """
 bbdd.py - v0.02 2013-07-16 Antonio Caballero.
@@ -8,8 +8,8 @@ Este modulo proporciona las herramientas necesarias para junto con Cobo o Cooper
 License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
-__version__ = '0.03'
-__date__ = '2013-07-26'
+__version__ = '0.06'
+__date__    = '2020-03-09'
 __author__ = ('Antonio Caballero',)
 __mail__ = ('zurbaran79@hotmail.com',)
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -167,7 +167,7 @@ def conexion(archivo=None):
     #         funcion que crea la estructura completa de la bbdd, incorporandola del archivo CoboBBDDInicio.sql
 
     except:
-        raw_input('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
+        input('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
         quit()
     else:
         return cursor, db
@@ -611,6 +611,7 @@ def ticketcotizaciones(nombreticket, datosurl):
     # datosurl=datosurl.replace('ñ','n')
     cursor, db = conexion()
     # datosurl2 = datosurl.rsplit(',', 10)
+    # print (datosurl)
     try:
         datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl.rsplit(',', 10)
     except ValueError:
@@ -653,14 +654,14 @@ def ticketcotizaciones(nombreticket, datosurl):
         numero_resultado = len(datosBBDDcomponentes)
         if numero_resultado == 0:
             sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (null , " + datosurl + ",'" + str(date.today()) + "')"
-            # print (sql)
+            # print(sql)
             cursor.execute(sql)
 
         elif numero_resultado == 1:
             codigo = datosBBDDcomponentes[0][0]
             sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror, date.today(), nombreticket)
             # sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
-            #print sql
+            # print(sql)
             cursor.execute(sql)
             sql = "SELECT * FROM `Cobo_params_operaciones` WHERE `Cobo_params_operaciones`.`codigo` = %s" % codigo
             cursor.execute(sql)
@@ -671,23 +672,23 @@ def ticketcotizaciones(nombreticket, datosurl):
 
                 if salida is None or salida == '':
                     salida = 0.0
-                elif type(salida) == unicode or type(salida) == str:
+                elif type(salida) == str:  # or type(salida) == unicode:
                     # Corregimos un posible fallo. Cuando en un analisis introducimos datos manualmente, posteriormente cuando recuperamos esa informacion
-                    # lo que recuperamos es un valor unicode con con coma y no punto u'48,760'
+                    # lo que recuperamos es un valor unicode con coma y no punto u'48,760'
                     salida = float(salida.replace(',', '.'))
 
                 if entrada is None or salida == '':
                     entrada = 0.0
-                elif type(entrada) == unicode or type(salida) == str:
+                elif type(salida) == str:  # or type(entrada) == unicode:
                     entrada = float(entrada.replace(',', '.'))
 
                 if precio_ini <= precio_fin:  # datos de una accion alcista
-                    if (datomax52 != u'null' and datomax52 > entrada) or (datomaxDia != u'null' and datomaxDia > entrada) or (datoValorActual != u'null' and datoValorActual > entrada):  # si true, analisis ya cumplido, obsoleto y lo actualizamos
+                    if (datomax52 != u'null' and float(datomax52) > entrada) or (datomaxDia != u'null' and float(datomaxDia) > entrada) or (datoValorActual != u'null' and float(datoValorActual) > entrada):  # si true, analisis ya cumplido, obsoleto y lo actualizamos
                         sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
                         cursor.execute(sql)
 
                 if precio_ini > precio_fin:  # datos de una accion bajista
-                    if (datomin52 != u'null' and datomin52 < entrada) or (datominDia != u'null' and datominDia < entrada) or (datoValorActual != u'null' and datoValorActual < entrada):
+                    if (datomin52 != u'null' and float(datomin52) < entrada) or (datominDia != u'null' and float(datominDia) < entrada) or (datoValorActual != u'null' and float(datoValorActual) < entrada):
                         sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
                         cursor.execute(sql)
             # en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
@@ -1152,8 +1153,8 @@ def listacciones(**config):
     for ticket, nombre, mercado, moneda, divisa, timming, entrada, salida, ltdateini, ltpriceini, ltdatefin, ltpricefin in resultado:
         if nombre is None:
             nombre = ''
-        else:
-            nombre = nombre.encode('UTF-8')
+        # else:
+        #     nombre = nombre.encode('UTF-8')
         rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin, ltpricefin)
         if entrada is None:
             entrada = 0.0

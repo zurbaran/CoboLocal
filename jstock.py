@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 """
 jstock.py - v0.01 2014-10-22 Antonio Caballero.
@@ -9,8 +9,8 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 
-__version__ = '0.01'
-__date__ = '2014-10-22'
+__version__ = '0.06'
+__date__    = '2020-03-09'
 __author__ = ('Antonio Caballero',)
 __mail__ = ('zurbaran79@hotmail.com',)
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -102,7 +102,7 @@ from time import sleep
 from zipfile import ZipFile
 import logging
 import os
-import urllib2
+import urllib.request, urllib.error
 
 
 ####################################################
@@ -125,17 +125,17 @@ def descarga():
     """
     # descargamos el archivo master.zip de github para grabarlo en el directorio LOG
     url = 'https://github.com/yccheok/jstock/archive/master.zip'
-    r = urllib2.Request(url, headers=webheaders)
+    r = urllib.request.Request(url, headers=webheaders)
     f = None
     while f is None:
         try:
-            f = urllib2.urlopen(r, timeout=pausareconexion)
-        except urllib2.HTTPError as e:
+            f = urllib.request.urlopen(r, timeout=pausareconexion)
+        except urllib.error.HTTPError as e:
             print ('Conexion Perdida')
             print ((e.code))
             f = None
             sleep(pausareconexion)
-        except (urllib2.URLError, IOError, urllib2.httplib.BadStatusLine) as e:
+        except (urllib.error.URLError, IOError, urllib.error.httplib.BadStatusLine) as e:
             print ('Conexion Erronea')
             print ((url, e))
             f = None
