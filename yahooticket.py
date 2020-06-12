@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 """
 yahooticket.py - v0.01 2017-07-01 Antonio Caballero.
@@ -9,8 +9,8 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 
-__version__ = '0.01'
-__date__    = '2017-07-01'
+__version__ = '0.06'
+__date__    = '2020-03-09'
 __author__  = ('Antonio Caballero',)
 __mail__    = ('zurbaran79@hotmail.com',)
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'

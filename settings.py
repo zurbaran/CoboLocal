@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 """
 Cobo.py - v0.03 2013-07-26 Antonio Caballero, Paco Corbi.
@@ -9,8 +9,8 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 
-__version__ = '0.05'
-__date__ = '2014-05-20'
+__version__ = '0.06'
+__date__    = '2020-03-09'
 __author__ = ('Antonio Caballero', 'Paco Corbi')
 __mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
