@@ -167,7 +167,7 @@ prefijo = {'': '',
 # modulos estandar importados
 
 from time import sleep, strftime, strptime, mktime
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from random import randint
 import logging
 import os
@@ -299,16 +299,18 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
-def ticketsIPO(meses=6, columna=1):
+def ticketsIPO(diasatras=6):
     """."""
     # TODO: modificar url por https://finance.yahoo.com/calendar/ipo
 
     ticketsanadidos = []
-    pagina = 'prc_cal.html'
-    i = 0
-    while i <= meses:
-        print('')
-        url = 'http://biz.yahoo.com/ipo/' + pagina
+    hoy = datetime.today()
+    fechas=[]
+    for n in range(diasatras):
+        fechas.append((hoy - timedelta(days=n)).strftime('%Y-%m-%d'))
+    
+    for fecha in fechas:
+        url = 'https://finance.yahoo.com/calendar/ipo?day=' + fecha
         print(url)
 
         web = None
@@ -336,44 +338,35 @@ def ticketsIPO(meses=6, columna=1):
                 print('Pausa de %d segundos' % pausareconexion)
                 sleep(pausareconexion)
 
-        # Buscamos '<table><tr><th><a href="'
-        paginainicio = web.find('<table><tr><th><a href="') + len('<table><tr><th><a href="')
-        # Buscamos '">Prev. Month</a></th>'
-        paginafin = web.find('">Prev. Month</a></th>', paginainicio)
-        # obtenemos la pagina previa que contiene mas IPOs a añadir
-        pagina = web[paginainicio:paginafin]
+            ticketfin = 0
 
-        ticketfin = paginafin
-        while True:
-            ticketinicio = web.find('<tr><td align=right>', ticketfin)
-            if ticketinicio == -1:
-                break
-            else:
-                ticketinicio = ticketinicio + len('<tr><td align=right>')
+            while True:
+                ticketinicio = web.find('<a href="/quote/', ticketfin)
+                if ticketinicio == -1:
+                    break
+                else:
+                    ticketinicio = ticketinicio + len('<a href="/quote/')
 
-            for _i2_ in (0, columna):
-                ticketinicio = web.find('</td><td>', ticketinicio) + len('</td><td>')
+                ticketfin = web.find('?p=', ticketinicio)
+                if ticketfin == -1:
+                    break
 
-            ticketfin = web.find('</a><td align=right>', ticketinicio)
-            if ticketfin == -1:
-                break
-
-            ticket = (web[ticketinicio:ticketfin].strip())
-
-            # En ocasiones la cerda ticket contiene el ticket y un enlace, comprobamos que no existe este enlace:
-            if '<a href="http://finance.yahoo.com/q?s=' in ticket:  # Si que existe este enlace
-                ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len('<a href="http://finance.yahoo.com/q?s=')
-                ticketinicio = web.find('&d=t">', ticketinicio) + len('&d=t">')
                 ticket = (web[ticketinicio:ticketfin].strip())
-            ticket = ticket.upper()
 
-            if (ticket not in ticketsanadidos) and ('%20' not in ticket):
-                ticketsanadidos.append(ticket)
+##                # En ocasiones la cerda ticket contiene el ticket y un enlace, comprobamos que no existe este enlace:
+##                if '<a href="http://finance.yahoo.com/q?s=' in ticket:  # Si que existe este enlace
+##                    ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len('<a href="http://finance.yahoo.com/q?s=')
+##                    ticketinicio = web.find('&d=t">', ticketinicio) + len('&d=t">')
+##                    ticket = (web[ticketinicio:ticketfin].strip())
+                ticket = ticket.upper()
 
+                if (ticket not in ticketsanadidos) and ('%20' not in ticket):
+                    ticketsanadidos.append(ticket)
+
+        print(("%8d Tickets IPO añadidas" % (len(ticketsanadidos))))
         duerme()
-        i += 1
     print('')
-    print(("%8d Tickets IPO añadidas" % (len(ticketsanadidos))))
+    print(("Total %8d Tickets IPO añadidas" % (len(ticketsanadidos))))
     print('')
 
     return ticketsanadidos
@@ -384,52 +377,54 @@ def ticketsCriptoIPO():
     ticketsanadidos = []
 
     print('')
-    url = 'https://es.finance.yahoo.com/criptomonedas?offset=0&count=200'
-    print(url)
+    n = 0
+    for n in range (16):
+        url = 'https://es.finance.yahoo.com/criptomonedas?count=25&offset=' + str(25*n)
+        print(url)
 
-    web = None
-    while web is None:
-        try:
-            r = urllib.request.Request(url, headers=webheaders)
-            f = urllib.request.urlopen(r, timeout=pausareconexion)
-            web = (f.read()).decode('utf-8')
-            f.close()
-        except urllib.error.HTTPError as e:
-            print('Conexion Perdida')
-            print(e.code)
-            if e.code == 500:
-                return ticketsanadidos
-            else:
+        web = None
+        while web is None:
+            try:
+                r = urllib.request.Request(url, headers=webheaders)
+                f = urllib.request.urlopen(r, timeout=pausareconexion)
+                web = (f.read()).decode('utf-8')
+                f.close()
+            except urllib.error.HTTPError as e:
+                print('Conexion Perdida')
+                print(e.code)
+                if e.code == 500:
+                    return ticketsanadidos
+                else:
+                    web = None
+                    sleep(pausareconexion)
+                    # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
+            except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
+                print('Conexion Erronea')
+                # print(e.reason)
+                print(url, e)
                 web = None
+                # logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('utf-8'), url.encode('utf-8')))
+                print('Pausa de %d segundos' % pausareconexion)
                 sleep(pausareconexion)
-                # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
-            print('Conexion Erronea')
-            # print(e.reason)
-            print(url, e)
-            web = None
-            # logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('utf-8'), url.encode('utf-8')))
-            print('Pausa de %d segundos' % pausareconexion)
-            sleep(pausareconexion)
 
-        ticketinicio = 0
-        ticketfin = 0
-    while True:
-        ticketinicio = web.find('<a href="/quote/', ticketfin)
-        if ticketinicio == -1:
-            break
-        else:
-            ticketinicio = ticketinicio + len('<a href="/quote/')
+            ticketinicio = 0
+            ticketfin = 0
+        while True:
+            ticketinicio = web.find('<a href="/quote/', ticketfin)
+            if ticketinicio == -1:
+                break
+            else:
+                ticketinicio = ticketinicio + len('<a href="/quote/')
 
-        ticketfin = web.find('?p=', ticketinicio)
-        if ticketfin == -1:
-            break
+            ticketfin = web.find('?p=', ticketinicio)
+            if ticketfin == -1:
+                break
 
-        ticket = (web[ticketinicio:ticketfin].strip())
-        ticket = ticket.upper()
+            ticket = (web[ticketinicio:ticketfin].strip())
+            ticket = ticket.upper()
 
-        if (ticket not in ticketsanadidos) and ('%20' not in ticket):
-            ticketsanadidos.append(ticket)
+            if (ticket not in ticketsanadidos) and ('%20' not in ticket):
+                ticketsanadidos.append(ticket)
 
     print('')
     print("%d CriptoMonedas añadidas" % (len(ticketsanadidos)))
