@@ -9,8 +9,8 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 
-__version__ = '0.05'
-__date__    = '2017-07-16'
+__version__ = '0.06'
+__date__    = '2020-03-09'
 __author__  = ('Antonio Caballero', 'Paco Corbi')
 __mail__    = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -1099,12 +1099,12 @@ def creaMenu(sep, lmenu, cola=True):
         control.append(n[0:n.find(sep)].lower())
 
     while True:
-        # print sys.argv
-        if sys.argv == ['./Cobo.py'] or '/Cobo.py' in sys.argv[0]:
-            resp = ((raw_input('Opcion?')).lower()).strip()
+        # print (sys.argv)
+        if len(sys.argv) == 1:
+            resp = (input('Opcion?').lower()).strip()
         else:
             resp = sys.argv.pop(1)
-            print ('Automatico, opciones: %s ' % resp)
+            print(('Automatico, opciones: %s ' % resp))
             # sys.argv.pop() # = ['./Cobo.py']
 
         if len(resp) == 1:
@@ -1681,7 +1681,7 @@ def backtestMoneda(**config):
                                #         print(('%6s %13s %15.3f %12.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, resistenciaentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
                                #         #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 
-                               #     raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
+                               #     input('Operacion Dudosa, compruebala y pulsa una tecla')
                         if fechasalida != fecharuptura:  # Eliminada la posibilidad porque en el caso de que fechasalida == fecharuptura sea en una LT, nos saca y volvemos a entrar en la LT
                             p -= 1  # Puede que el ciclo que me saca, no impida que vuelva a entrar
                         # almaceno aqui la informacion del backtes porque puede que entre en un timming pero salga en otro
@@ -1726,7 +1726,7 @@ def backtestMoneda(**config):
 #                                    print(('%6s %13s %15.3f %12.3f %15s %24d %12s %13.3f %8s %19.3f %20.3f %8.3f' % (ticket, fechaentrada, precionentrada, resistenciaentrada, timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance)))
 #                                    #print ( '   %s,           %s,           %.3f,    %.3f,             %s,                      %d,          %s,         %.3f,      %s,               %.3f,                %.3f,    %.3f' % ( ticket, fechaentrada, precionentrada, ( soporte[3] ), timmingentrada, numeroaccionesoperacion, fechasalida, preciosalida, timming, inversionoperacion, inversionrecuperada, balance ) )
 #
-#                                raw_input('Operacion Dudosa, compruebala y pulsa una tecla')
+#                                input('Operacion Dudosa, compruebala y pulsa una tecla')
                     fechainicial = list(map(int, (fechaentrada.split('-'))))
                     fechafinal = list(map(int, (fechasalida.split('-'))))
                     diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
@@ -1902,7 +1902,7 @@ def backtestMoneda(**config):
         j.close()
         print('')
     else:
-        raw_input('Backtest no realizado')
+        input('Backtest no realizado')
         # winsound.PlaySound("*", winsound.SND_ALIAS)
 
 
@@ -1913,7 +1913,7 @@ def pidedato(texto, tipodato):
     valor por defecto
 
     """
-    entrada = raw_input(texto)
+    entrada = eval(input(texto))
 
     # falta o bien comprobar que el dato introducido es correcto y si no, bucle para volver a introducirlo, o hacer un try para controlar el error en la conversiones
     if tipodato == 'int':
@@ -1929,7 +1929,7 @@ def pidedato(texto, tipodato):
 def pidefecha():
     """."""
     while True:
-        fecha = raw_input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
+        fecha = eval(input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): '))
 
         if fecha == '':
             return False
@@ -2061,7 +2061,7 @@ def main():
         if opcion == 'a':
             print(seleccion)
             # cursor, db = BBDD.conexion()
-            naccion = raw_input('Introduce ticket de la accion : ').upper()
+            naccion = input('Introduce ticket de la accion : ').upper()
             # naccion = (naccion,)
             # Primero lo borramos
             BBDD.ticketborra(naccion, BBDD=False)
@@ -2089,7 +2089,7 @@ def main():
         elif opcion == 'c':
             print(seleccion)
             while True:
-                naccion = raw_input('Introduce ticket de la accion : ').upper()
+                naccion = input('Introduce ticket de la accion : ').upper()
                 if BBDD.datoshistoricosexisten(naccion):
                     break
                 else:
@@ -2097,27 +2097,27 @@ def main():
                     BBDD.ticketerror(naccion)
 
             analizardesde = pidefecha()
-            MMe = raw_input('Media Movil Exponencial (Sin MME): ')
+            MMe = input('Media Movil Exponencial (Sin MME): ')
             if MMe == '':
                 MMe = False
             else:
                 MMe = int(MMe)
-            EntradaLT = raw_input('Entradas en Linea de Tendencia (Sin Entradas): ')
+            EntradaLT = input('Entradas en Linea de Tendencia (Sin Entradas): ')
             if EntradaLT == '':
                 EntradaLT = False
             else:
                 EntradaLT = True
-            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
+            filtrosalidamensual = input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
             if filtrosalidamensual == '':
                 filtrosalidamensual = FILTROSTOPLOSS['m']
             else:
                 filtrosalidamensual = float(filtrosalidamensual)
-            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion,(%.2f): ' % (FILTROSTOPLOSS['w']))
+            filtrosalidasemanal = input('Filtro de salida Semanal por operacion,(%.2f): ' % (FILTROSTOPLOSS['w']))
             if filtrosalidasemanal == '':
                 filtrosalidasemanal = FILTROSTOPLOSS['w']
             else:
                 filtrosalidasemanal = float(filtrosalidasemanal)
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
+            filtrosalidadiario = input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
             if filtrosalidadiario == '':
                 filtrosalidadiario = FILTROSTOPLOSS['d']
             else:
@@ -2141,7 +2141,7 @@ def main():
 #        'D) Eliminar 1 Ticket',
         elif opcion == 'd':
             print(seleccion)
-            naccion = raw_input('Introduce nombre de la accion : ').upper()
+            naccion = input('Introduce nombre de la accion : ').upper()
             BBDD.ticketborra(naccion)
 
 #        'E) Generar Archivos Grafico'
@@ -2149,7 +2149,7 @@ def main():
             print(seleccion)
             cursor, db = BBDD.conexion()
             while True:
-                ticket = raw_input('Introduce ticket de la accion : ').upper()
+                ticket = input('Introduce ticket de la accion : ').upper()
                 if BBDD.datoshistoricosexisten(ticket):
                     break
             datos = BBDD.datoshistoricoslee(ticket)
@@ -2163,7 +2163,7 @@ def main():
             print(' 3 - Mensual')
             timming = 'None'
             while timming not in ('123 '):
-                timming = raw_input('Introduce Timming de los Datos a Generar (Mensual):')
+                timming = input('Introduce Timming de los Datos a Generar (Mensual):')
 
             if timming == '1':
                 datos = datos
@@ -2204,7 +2204,7 @@ def main():
                 writercsv.writerow((ticket, nombre, timming, fecha, '000000', apertura, maximo, minimo, cierre, volumen, '0'))
             j.close()
 
-            MMEdatos = raw_input('Introduce Catidad de periodos para el indicador.MME (30):')
+            MMEdatos = eval(input('Introduce Catidad de periodos para el indicador.MME (30):'))
 
             if MMEdatos == '30' or MMEdatos == '' or MMEdatos == ' ':
                 MMEdatos = 30
@@ -2220,7 +2220,7 @@ def main():
                 writercsv.writerow(n)
             j.close()
 
-            TARdatos = raw_input('Introduce Catidad de periodos para el indicador.TAR (10):')
+            TARdatos = eval(input('Introduce Catidad de periodos para el indicador.TAR (10):'))
 
             if TARdatos == '10' or TARdatos == '' or TARdatos == ' ':
                 TARdatos = 10
@@ -2247,7 +2247,7 @@ def main():
         # G) Anadir Ticket Mercado',
         elif opcion == 'g':
             print(seleccion)
-            mercado = raw_input('Introduce ticket del mercado a anadir : ').upper()
+            mercado = input('Introduce ticket del mercado a anadir : ').upper()
             mercado = mercado.replace('@%5E', '^')
             mercado = (mercado,)
             # TODO : anadir un mercado o dehabilitar y hacerlo directamente en la BBDD
@@ -2258,7 +2258,7 @@ def main():
 #                print(resultadoM)
 #                m = None
 #                while m in resultadoM:
-#                    m = raw_input('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
+#                    m = input('Del los conjuntos anteriores, Introduce donde quieres anadir el mercado :').upper()
 #                m = (m,)
 #                cursor.execute("SELECT `Cobo_configuracion`.`valor` FROM `Cobo_configuracion` WHERE (`Cobo_configuracion`.`codigo`  = ?)", m)
 #                mercadosvalidos = cursor.fetchall()
@@ -2284,7 +2284,7 @@ def main():
 #        'H) Eliminar Ticket Mercado',
         elif opcion == 'h':
             print(seleccion)
-            mercado = raw_input('Introduce ticket del mercado a borrar : ').upper()
+            mercado = input('Introduce ticket del mercado a borrar : ').upper()
             mercado = mercado.replace('@%5E', '^')
             # TODO : anadir un mercado o dehabilitar y hacerlo directamente en la BBDD
 #            if not (mercado in mercados):
@@ -2344,26 +2344,28 @@ def main():
 #            print(('Se han anadido un total de : %d tickets' % ticketsanadidos))
 #            ticketscomponentesmercados = []
 
-#            print('Se estan anadiendo IPOs del mercado americano')
-#            ticketsanadidos = 0
-#            tickets = yahoofinance.ticketsIPO()
-#            for ticket in tickets:
-#                if BBDD.ticketalta(ticket):
-#                    ticketsanadidos += 1
-#            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
-#            del tickets
-
-            print('Se estan anadiendo Criptomonedas')
+            print('Se estan anadiendo IPOs del mercado americano')
             ticketsanadidos = 0
-            tickets = yahoofinance.ticketsCriptoIPO()
+            diasatras = int(input('Dias atras para retroceder desde hoy para buscar Ipos? '))
+            tickets = yahoofinance.ticketsIPO(diasatras = diasatras)
             for ticket in tickets:
                 if BBDD.ticketalta(ticket):
                     ticketsanadidos += 1
-            print(('Se han anadido un total de : %d Criptomonedas' % ticketsanadidos))
+            print(('Se han anadido un total de : %d IPOs del mercado americano' % ticketsanadidos))
             del tickets
 
+            print('Se estan anadiendo Criptomonedas')
+            if input('Quieres anadir Criptomonedas (Y/....) ?') == 'Y':
+                ticketsanadidos = 0
+                tickets = yahoofinance.ticketsCriptoIPO()
+                for ticket in tickets:
+                    if BBDD.ticketalta(ticket):
+                        ticketsanadidos += 1
+                print(('Se han anadido un total de : %d Criptomonedas' % ticketsanadidos))
+                del tickets
+
             print('Se estan anadiendo acciones de JStock')
-            if raw_input('Quieres iniciar el proceso de JStock (Y/....) ?') == 'Y':
+            if input('Quieres iniciar el proceso de JStock (Y/....) ?') == 'Y':
                 ticketsanadidos = 0
                 tickets = ticketsJstock()
                 for ticket in tickets:
@@ -2373,7 +2375,7 @@ def main():
                 del tickets
 
             print('Se estan anadiendo acciones de yahoo-ticker-downloader ')
-            if raw_input('Quieres leer archivo generado por yahoo-downloader (Y/....) ?') == 'Y':
+            if input('Quieres leer archivo generado por yahoo-downloader (Y/....) ?') == 'Y':
                 ticketsanadidos = 0
                 tickets = ticketsYahooD()
                 for ticket in tickets:
@@ -2393,7 +2395,7 @@ def main():
                 ticket = listatickets.popleft()
                 yahoofinance.cotizacionesTicketWeb(ticket)
 
-                print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
+                print((((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets))))
 #                threads = list()
 #                for i in (0, MULTIHILO):
 #                    ticket = listatickets.popleft()
@@ -2412,7 +2414,7 @@ def main():
             listatickets = BBDD.comprobaciones(cola_resultado='Historico', aleatorio=True)
             listatickets = deque(listatickets)
 
-# #            borranoactualizados = raw_input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
+# #            borranoactualizados = input('Despues de una actualizacion del historico de una accion que ya existia, se vuelve a comprobar si se ha actualizado, si no es asi normalmente es porque la accion dejo de cotizar. Quieres borrar estas acciones? (No)')
 # #            if borranoactualizados == '':
 # #            borranoactualizados = False
 # #            else:
@@ -2423,7 +2425,7 @@ def main():
                 ticket = listatickets.popleft()
                 # accioninvalida=''
                 print ('')
-                print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Tickets pendientes de comprobar %d' % len(listatickets)))
+                print((((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Tickets pendientes de comprobar %d' % len(listatickets))))
                 # if naccion in tickets:
                 # TODO: cuando actualizo con multiples ventanas, a veces se encuentra que una de las ventanas borro la accion de la BBDD
                 # para que no se detenga, habria que comprobar si la accion existe en la BBDD
@@ -2461,101 +2463,101 @@ def main():
             # config['comision'] = 25.0
 
             print('Parametros del backtest, entre parentesis valor por defecto: ')
-#            analizardesde=raw_input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
+#            analizardesde=input('Backtest a analizar desde la fecha AAAA-MM-DD (sin fecha inicio): ')
 #            if analizardesde=='':
 #                analizardesde=False
-            if raw_input('Estrategia del backtest (Alcista): ') != '':
+            if eval(input('Estrategia del backtest (Alcista): ')) != '':
                 config['estrategia'] = 'Bajista'
 
             analizardesde = pidefecha()
             if analizardesde is not False:
                 config['analizardesde'] = analizardesde
-                if raw_input('Utilizamos todo el historico para el analisis, (Si): ') != '':
+                if eval(input('Utilizamos todo el historico para el analisis, (Si): ')) != '':
                     config['todohistorico'] = False
 
-            riesgo = raw_input('Riesgo por operacion (%d): ' % (FILTROS['riesgo']))
+            riesgo = eval(input('Riesgo por operacion (%d): ' % (FILTROS['riesgo'])))
             if riesgo != '':
                 config['riesgo'] = int(riesgo)
 
-            volumenminimo = raw_input('Volumen Minimo por operacion (%d): ' % (FILTROS['volumen']))
+            volumenminimo = eval(input('Volumen Minimo por operacion (%d): ' % (FILTROS['volumen'])))
             if volumenminimo != '':
                 config['volumenminimo'] = int(volumenminimo)
 
-            filtrosalidamensual = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
+            filtrosalidamensual = eval(input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m'])))
             if filtrosalidamensual != '':
                 config['filtrosalidamensual'] = float(filtrosalidamensual)
 
-            filtrosalidasemanal = raw_input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w']))
+            filtrosalidasemanal = eval(input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w'])))
             if filtrosalidasemanal != '':
                 config['filtrosalidasemanal'] = float(filtrosalidasemanal)
 
-            filtrosalidadiario = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
+            filtrosalidadiario = eval(input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d'])))
             if filtrosalidadiario != '':
                 config['filtrosalidadiario'] = float(filtrosalidadiario)
 
-            rentabilidadminima = raw_input('Rentabilidad minima por operacion, (%.2f): ' % (FILTROS['rentMinima']))
+            rentabilidadminima = eval(input('Rentabilidad minima por operacion, (%.2f): ' % (FILTROS['rentMinima'])))
             if rentabilidadminima != '':
                 config['rentabilidadminima'] = float(rentabilidadminima)
 
-            if raw_input('Consideramos Rentabilidad 0 igual a la rentabilidad minima, (Si): ') != '':
+            if eval(input('Consideramos Rentabilidad 0 igual a la rentabilidad minima, (Si): ')) != '':
                 config['rentabilidad0'] = False
 
-            inversionminima = raw_input('Inversion minima por operacion (%d): ' % (FILTROS['invMinima']))
+            inversionminima = eval(input('Inversion minima por operacion (%d): ' % (FILTROS['invMinima'])))
             if inversionminima != '':
                 config['inversionminima'] = int(inversionminima)
 
-            inversionmaxima = raw_input('Inversion maxima por operacion (Sin limite): ')
+            inversionmaxima = eval(input('Inversion maxima por operacion (Sin limite): '))
             if inversionmaxima != '':
                 config['inversionmaxima'] = int(inversionmaxima)
 
-            if raw_input('Media Movil Exponencial (Sin MME en todos los timmings): ') != '':
+            if eval(input('Media Movil Exponencial (Sin MME en todos los timmings): ')) != '':
 
-                MMediario = raw_input('Media Movil Exponencial diario (Sin MME): ')
+                MMediario = eval(input('Media Movil Exponencial diario (Sin MME): '))
                 if MMediario != '':
                     config['MMediario'] = int(MMediario)
-                    MMe2diario = raw_input('2A Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2diario = eval(input('2A Media Movil Exponencial diario para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): '))
                     if MMe2diario != '':
                         config['MMe2diario'] = int(MMe2diario)
 
-                MMesemanal = raw_input('Media Movil Exponencial semanal (Sin MME): ')
+                MMesemanal = eval(input('Media Movil Exponencial semanal (Sin MME): '))
                 if MMesemanal != '':
                     config['MMesemanal'] = int(MMesemanal)
-                    MMe2semanal = raw_input('2A Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2semanal = eval(input('2A Media Movil Exponencial semanal para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): '))
                     if MMe2semanal != '':
                         config['MMe2semanal'] = int(MMe2semanal)
 
-                MMemensual = raw_input('Media Movil Exponencial mensual (Sin MME): ')
+                MMemensual = eval(input('Media Movil Exponencial mensual (Sin MME): '))
                 if MMemensual != '':
                     config['MMemensual'] = int(MMemensual)
-                    MMe2mensual = raw_input('2A Media Movil Exponencial mensual para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): ')
+                    MMe2mensual = eval(input('2A Media Movil Exponencial mensual para el cruce de medias. Mismo formato que la MME (Sin MME2, sin cruce de medias): '))
                     if MMe2mensual != '':
                         config['MMe2mensual'] = int(MMe2mensual)
 
-            if raw_input('True Avenrange xrange (Sin TAR en todos los timmings): ') != '':
-                TARmensual = raw_input('True Avenrange xrange Mensual (Sin TAR): ')
+            if eval(input('True Avenrange xrange (Sin TAR en todos los timmings): ')) != '':
+                TARmensual = eval(input('True Avenrange xrange Mensual (Sin TAR): '))
                 if TARmensual != '':
                     config['TARmensual'] = float(TARmensual)
-                TARsemanal = raw_input('True Avenrange xrange Semanal (Sin TAR): ')
+                TARsemanal = eval(input('True Avenrange xrange Semanal (Sin TAR): '))
                 if TARsemanal != '':
                     config['TARsemanal'] = float(TARsemanal)
-                TARdiario = raw_input('True Avenrange xrange Diario (Sin TAR): ')
+                TARdiario = eval(input('True Avenrange xrange Diario (Sin TAR): '))
                 if TARdiario != '':
                     config['TARdiario'] = float(TARdiario)
 
-            ADXobjetivo = raw_input('Average Directional Movement Index, introduce entero, excluir entradas que no lleguen a (deja en blanco pulsando intro para Sin ADX en todos los timmings): ')
+            ADXobjetivo = eval(input('Average Directional Movement Index, introduce entero, excluir entradas que no lleguen a (deja en blanco pulsando intro para Sin ADX en todos los timmings): '))
             if ADXobjetivo != '':
                 config['ADXobjetivo'] = int(ADXobjetivo)
-                ADXmensual = raw_input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): ')
+                ADXmensual = eval(input('Average Directional Movement Index Mensual (deja en blanco pulsando intro para Sin ADX): '))
                 if ADXmensual != '':
                     config['ADXmensual'] = int(ADXmensual)
-                ADXsemanal = raw_input('Average Directional Movement Index Semanal (deja en blanco pulsando intro para Sin ADX): ')
+                ADXsemanal = eval(input('Average Directional Movement Index Semanal (deja en blanco pulsando intro para Sin ADX): '))
                 if ADXsemanal != '':
                     config['ADXsemanal'] = int(ADXsemanal)
-                ADXdiario = raw_input('Average Directional Movement Index Diario (deja en blanco pulsando intro para Sin ADX): ')
+                ADXdiario = eval(input('Average Directional Movement Index Diario (deja en blanco pulsando intro para Sin ADX): '))
                 if ADXdiario != '':
                     config['ADXdiario'] = int(ADXdiario)
 
-            if raw_input('Entradas en Linea de Tendencia (Sin Entradas): ') != '':
+            if eval(input('Entradas en Linea de Tendencia (Sin Entradas): ')) != '':
                 config['EntradaLT'] = True
 
             config['opcionbacktest'], config['seleccionbacktest'] = creaMenu(')', (
@@ -2581,7 +2583,7 @@ def main():
                 monedas.append(mon[0])
 
             while True:
-                moneda = raw_input('Lista de monedas. Introduce moneda en la que se hace el backtest, para hacerlo por mercado pulsa intro : ')
+                moneda = eval(input('Lista de monedas. Introduce moneda en la que se hace el backtest, para hacerlo por mercado pulsa intro : '))
                 if moneda == '' or moneda is None:
                     monedas = []
                     sql = "SELECT Cobo_mercado_moneda.nombreUrl FROM Cobo_mercado_moneda ORDER BY Cobo_mercado_moneda.nombreUrl ASC"
@@ -2593,7 +2595,7 @@ def main():
                         print((mon[0]))
                         monedas.append(mon[0])
                     while True:
-                        moneda = raw_input('Introduce nombre del mercado en la que se hace el backtest, recuerda escribirlo exactamente igual : ')
+                        moneda = eval(input('Introduce nombre del mercado en la que se hace el backtest, recuerda escribirlo exactamente igual : '))
                         if moneda in monedas:
                             config['moneda'] = moneda
                             break
@@ -2604,7 +2606,7 @@ def main():
 
             backtestMoneda(**config)
 
-            if raw_input('Deseas agregar esta configuracion de Backtest a la bateria de Backtest (Si): ') == '':
+            if eval(input('Deseas agregar esta configuracion de Backtest a la bateria de Backtest (Si): ')) == '':
                 j = open(ARCHIVOCONFIGBACKTEST, 'a')
                 j.write((str(config) + os.linesep))
                 j.close()
@@ -2638,7 +2640,7 @@ def main():
             for archivo in archivosticket:
                 os.remove(archivo)
             del archivosticket
-            moneda = (raw_input('Introduce sufijo de tickets del mercado a exportar (Todas): ')).upper()
+            moneda = (eval(input('Introduce sufijo de tickets del mercado a exportar (Todas): '))).upper()
             if moneda == '' or moneda is None:
                 cursor.execute("SELECT `tiket`, `codigo`, `nombre` FROM `Cobo_componentes` WHERE `Cobo_componentes`.`error` IS NULL ORDER BY `Cobo_componentes`.`tiket` ASC")
             else:
@@ -2717,7 +2719,7 @@ def main():
                 lineas = f.readlines()
                 f.close()
                 i = 1
-                if (raw_input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (n, len(lineas) - 1))).upper() == 'Y':
+                if (eval(input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (n, len(lineas) - 1)))).upper() == 'Y':
                     while i < len(lineas):
                         # naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
                         # incluir = True
@@ -2736,7 +2738,7 @@ def main():
                         i += 1
                     print (('Anadido pais, %s' % n))
 
-            # if raw_input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
+            # if input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
             #    db.commit()
             # db.close()
 
@@ -2745,50 +2747,50 @@ def main():
             print(seleccion)
             config = {}
 
-            vol = raw_input('Volumen minimo (%d)?' % (FILTROS['volumen']))
+            vol = input('Volumen minimo (%d)?' % (FILTROS['volumen']))
             if vol != '':
                 config['volumen'] = int(vol)
             else:
                 config['volumen'] = FILTROS['volumen']
 
-            rentMinima = raw_input('rentabilidad minima (%.2f)?' % (FILTROS['rentMinima']))
+            rentMinima = input('rentabilidad minima (%.2f)?' % (FILTROS['rentMinima']))
             if rentMinima != '':
                 config['rentMinima'] = float(rentMinima)
             else:
                 config['rentMinima'] = FILTROS['rentMinima']
 
-            inversion = raw_input('inversion minima (%dE)?' % (FILTROS['invMinima']))
+            inversion = input('inversion minima (%dE)?' % (FILTROS['invMinima']))
             if inversion != '':
                 config['inversion'] = int(inversion)
             else:
                 config['inversion'] = FILTROS['invMinima']
 
-            riesgo = raw_input('riesgo por operacion (%dE)?' % (FILTROS['riesgo']))
+            riesgo = input('riesgo por operacion (%dE)?' % (FILTROS['riesgo']))
             if riesgo != '':
                 config['riesgo'] = int(riesgo)
             else:
                 config['riesgo'] = FILTROS['riesgo']
 
-            filtroM = raw_input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
+            filtroM = input('Filtro de salida Mensual por operacion, (%.2f): ' % (FILTROSTOPLOSS['m']))
             if filtroM != '':
                 config['filtroM'] = float(filtroM)
             else:
                 config['filtroM'] = FILTROSTOPLOSS['m']
 
-            filtroW = raw_input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w']))
+            filtroW = input('Filtro de salida Semanal por operacion, (%.2f): ' % (FILTROSTOPLOSS['w']))
             if filtroW != '':
                 config['filtroW'] = float(filtroW)
             else:
                 config['filtroW'] = FILTROSTOPLOSS['w']
 
-            filtroD = raw_input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
+            filtroD = input('Filtro de salida Diario por operacion, (%.2f): ' % (FILTROSTOPLOSS['d']))
             if filtroD != '':
                 config['filtroD'] = float(filtroD)
             else:
                 config['filtroD'] = FILTROSTOPLOSS['d']
             timmings = []
             for n in ('m', 'w', 'd'):
-                if raw_input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n) == '':
+                if input('Anadir el timming %s (intro si/ cualquier otra tecla no) :' % n) == '':
                     timmings.append(n)
             config['timmings'] = tuple(timmings)
 

@@ -102,7 +102,10 @@ from time import sleep
 from zipfile import ZipFile
 import logging
 import os
+import shutil
 import urllib.request, urllib.error
+import requests
+import csv
 
 
 ####################################################
@@ -125,22 +128,22 @@ def descarga():
     """
     # descargamos el archivo master.zip de github para grabarlo en el directorio LOG
     url = 'https://github.com/yccheok/jstock/archive/master.zip'
-    r = urllib.request.Request(url, headers=webheaders)
+    #r = urllib.request.Request(url, headers=webheaders)
     f = None
     while f is None:
         try:
-            f = urllib.request.urlopen(r, timeout=pausareconexion)
-        except urllib.error.HTTPError as e:
+            f = requests.get(url, headers=webheaders, stream=True, timeout=pausareconexion)
+        except (requests.HTTPError, requests.ReadTimeout, requests.ConnectionError) as e:
             print ('Conexion Perdida')
             print ((e.code))
             f = None
             sleep(pausareconexion)
-        except (urllib.error.URLError, IOError, urllib.error.httplib.BadStatusLine) as e:
-            print ('Conexion Erronea')
-            print ((url, e))
-            f = None
-            print (('Pausa de %d segundos' % pausareconexion))
-            sleep(pausareconexion)
+##        except (urllib.error.URLError, IOError, urllib.error.httplib.BadStatusLine) as e:
+##            print ('Conexion Erronea')
+##            print ((url, e))
+##            f = None
+##            print (('Pausa de %d segundos' % pausareconexion))
+##            sleep(pausareconexion)
 ##
 ##    meta = f.info()
 ##    file_size = int(meta['content-length'])# Falla aqui porque no existe en el header del archivo
@@ -156,32 +159,33 @@ def descarga():
 ##        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
 ##        status = status + chr(8) * (len(status) + 1)
 ##        print status,
-
-    web = f.read()
+##
+##    open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "wb").write(f.content)
+##    f.close()
+    with open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "wb") as flocal:
+        for ch in f:
+            flocal.write(ch)
     f.close()
-
-    master = open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "w")
-    master.write(web)
-    master.close()
-
+    flocal.close()
 
 def descomprime():
     """."""
     master = os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip")
     # Descomprimimos el archivo master zip
-    unziped = ZipFile(master, 'r')
-    for file_path in unziped.namelist():
-        file_content = unziped.read(file_path)
-        # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
-        if file_path[-1] == '/' and file_content == '':
-            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
-            if not os.path.exists(carpeta):
-                os.mkdir(carpeta)
-        # solo descomprimimos los arvhivos que estan en esta carpeta
-        elif 'jstock-master/appengine/jstock-static/war/stocks_information/' in file_path:
-            file_unzip = open(os.path.join(os.getcwd(), CARPETAS['Log'], file_path), "w")
-            file_unzip.write(file_content)
-            file_unzip.close()
+    unziped = ZipFile(master)
+    unziped.extractall(os.path.join(os.getcwd(), CARPETAS['Log']))
+##    for file_path in unziped.namelist():
+##        file_content = unziped.read(file_path)
+##        # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
+##        if file_path[-1] == '/' and file_content == '':
+##            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
+##            if not os.path.exists(carpeta):
+##                os.mkdir(carpeta)
+##        # solo descomprimimos los arvhivos que estan en esta carpeta
+##        elif 'jstock-master/appengine/jstock-static/war/stocks_information/' in file_path:
+##            file_unzip = open(os.path.join(os.getcwd(), CARPETAS['Log'], file_path), "w")
+##            file_unzip.write(file_content)
+##            file_unzip.close()
     unziped.close()
 #    Borramos el archivo master zip
 #    os.remove(master)
@@ -200,47 +204,69 @@ def tickets():
 
     for pais in paises:
         # entramos en cada directorio que contiene un archivo stocks.zip
-        stocksZip = os.path.join(jstockdir, pais, 'stocks.zip')
+        stocksZip = ZipFile(os.path.join(jstockdir, pais, 'stocks.zip'))
         try:
-            unzipstocks = ZipFile(stocksZip, 'r')
+            #unzipstocks = ZipFile(stocksZip, 'r')
+            stocksZip.extractall(os.path.join(jstockdir, pais))
         except IOError:
             print ('Archivo erro' % stocksZip)
             ticketsanadidos = []
             break
         # leemos el contenido del archivo stocks.csv que contiene cada archivo stocks.zip
-        file_content = unzipstocks.read('stocks.csv')
+        #file_content = unzipstocks.read('stocks.csv')
 
         stockscsvf = os.path.join(jstockdir, pais, 'stocks.csv')
-        if not os.path.exists(stockscsvf):
-            stockscsv = open(stockscsvf, 'w')
-            stockscsv.write(file_content)
-            stockscsv.close()
+        if os.path.exists(stockscsvf):
+##            stockscsv = open(stockscsvf, 'wb')
+##            stockscsv.write(file_content)
+##            stockscsv.close()
 
-        f = open(stockscsvf, "r")
-        lineas = f.readlines()
-        f.close()
-        i = 1
-        if (raw_input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (pais, len(lineas) - 1))).upper() == 'Y':
-            while i < len(lineas):
+            with open(stockscsvf, newline='', encoding="ISO-8859-1") as f:
+                lineas = csv.reader(f, delimiter=',')
+                #if (input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (pais, len(lineas) - 1))).upper() == 'Y':
+                for linea in lineas:
+                    
+                    #linea = lineas[i].split(',', 3)
+                    naccion = ((linea[0].upper()).replace('@%5E', '^')).strip("'")
+                    punto = naccion.find('.')
+                    if naccion != "Code":# and (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):# and punto != -1:  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
+    #                    naccion = (naccion,)
+    #                    BBDD.ticketalta(naccion)
+                        ticketsanadidos.append(naccion)
+                    #i += 1
+                print (('Anadido pais, %s' % pais))
 
-                linea = lineas[i].split(',', 3)
-                naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
-                punto = naccion.find('.')
-                if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-#                    naccion = (naccion,)
-#                    BBDD.ticketalta(naccion)
-                    ticketsanadidos.append(naccion)
-                i += 1
-            print (('Anadido pais, %s' % pais))
-
-        os.remove(stockscsvf)
+            os.remove(stockscsvf)
 
     return ticketsanadidos
 
 
+def limpieza():
+    try:
+        os.remove (os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"))
+    except Exception as e:
+        print (e)
+    folder = os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master")
+    for the_file in os.listdir(folder):
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print (e)
+    try:
+        shutil.rmtree(folder)
+    except Exception as e:
+        print (e)
+
+
 def ticketsJstock():
     """."""
+    limpieza()
     descarga()
     descomprime()
     listtickets = tickets()
     return listtickets
+
+
