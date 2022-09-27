@@ -100,6 +100,7 @@ import logging
 import os
 import ast
 import sys
+import dropbox
 
 # import logging.config
 # ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
@@ -118,7 +119,7 @@ from jstock import ticketsJstock
 from yahooticket import ticketsYahooD
 import HTML
 
-from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST
+from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST, access_token
 
 try:
     if os.path.getsize(ARCHIVO_LOG) >= 524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
@@ -153,6 +154,19 @@ def _test():
     # Externalizar los test
     # doctest.testfile('example2.txt')
 
+
+class TransferData:
+    def __init__(self, access_token):
+        self.access_token = access_token
+
+    def upload_file(self, file_from, file_to):
+        """upload a file to Dropbox using API v2
+        """
+        dbx = dropbox.Dropbox(self.access_token)
+
+        with open(file_from, 'rb') as f:
+            dbx.files_upload(f.read(), file_to)
+            
 
 def analisisAlcistaAccion(naccion, **config):
     """
@@ -2798,7 +2812,9 @@ def main():
             resultado2 = stonicks(BBDD.listaccionesLT(**config))
             resultado3 = stonicks(BBDD.listaccionesLT(incremperiod=1, **config))
 
-            ficheroDatos = os.path.join(os.getcwd(), ((datetime.now()).strftime("%Y%m%d %H%M%S")) + '.html')
+            ficheroFecha = ((datetime.now()).strftime("%Y%m%d %H%M%S")) + '.html'
+            #ficheroDatos = os.path.join(os.getcwd(), ficheroFecha)
+            ficheroDatos = os.path.join("/home/antonio/Dropbox/Analisis/", ficheroFecha)
             f = open(ficheroDatos, "w")
             f.write('<!DOCTYPE html>' + os.linesep)
             f.write('<html>' + os.linesep)
@@ -2853,6 +2869,16 @@ def main():
             f.write('</body>' + os.linesep)
             f.write('</html>' + os.linesep)
             f.close()
+
+            transferData=TransferData(access_token)
+            file_to = (os.path.join("/Analisis", ficheroFecha))
+            # print (ficheroDatos)
+            # print (file_to)
+            try:
+                transferData.upload_file(ficheroDatos, file_to)
+            except:
+                print ("Token Expirado")
+            # os.remove(ficheroDatos)
 #
 #
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")

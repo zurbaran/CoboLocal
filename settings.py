@@ -121,6 +121,7 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
 
 ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
 
+access_token = 'sl.BJtfwAR6oVBr1j5Vu7YMKNd0GZmLjPVPbxUEtrdL0RZPoLJLmspf_HlNWTH9d_ti50Kt6fsR4I6_3PhdEafzDRgZqeGlJUOSU_Yrq8olLfXBayoh76Tmx2Kr0cNg1b90_27hZ_KN'
 
 ####################################################
 # modulos no estandar o propios
