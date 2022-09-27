@@ -301,8 +301,7 @@ def ticketsdeMercado(mercado):
 
 def ticketsIPO(diasatras=6):
     """."""
-    # TODO: modificar url por https://finance.yahoo.com/calendar/ipo
-
+    
     ticketsanadidos = []
     hoy = datetime.today()
     fechas=[]
@@ -341,11 +340,11 @@ def ticketsIPO(diasatras=6):
             ticketfin = 0
 
             while True:
-                ticketinicio = web.find('<a href="/quote/', ticketfin)
+                ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
                 if ticketinicio == -1:
                     break
                 else:
-                    ticketinicio = ticketinicio + len('<a href="/quote/')
+                    ticketinicio = ticketinicio + len('data-test="quoteLink" href="/quote/')
 
                 ticketfin = web.find('?p=', ticketinicio)
                 if ticketfin == -1:
@@ -378,8 +377,8 @@ def ticketsCriptoIPO():
 
     print('')
     n = 0
-    for n in range (16):
-        url = 'https://es.finance.yahoo.com/criptomonedas?count=25&offset=' + str(25*n)
+    for n in range (97):
+        url = 'https://finance.yahoo.com/cryptocurrencies?count=100&offset=' + str(100*n)
         print(url)
 
         web = None
@@ -410,11 +409,11 @@ def ticketsCriptoIPO():
             ticketinicio = 0
             ticketfin = 0
         while True:
-            ticketinicio = web.find('<a href="/quote/', ticketfin)
+            ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
             if ticketinicio == -1:
                 break
             else:
-                ticketinicio = ticketinicio + len('<a href="/quote/')
+                ticketinicio = ticketinicio + len('data-test="quoteLink" href="/quote/')
 
             ticketfin = web.find('?p=', ticketinicio)
             if ticketfin == -1:
@@ -514,7 +513,7 @@ def descargaHistoricoAccion(naccion, **config):
     if fechaini is not None:
         fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
 
-    preurl = "https://finance.yahoo.com/quote/" + naccion + "/history?period1=0&period2=" + fechafin + "&interval=1d&filter=history&frequency=1d"
+    preurl = "https://finance.yahoo.com/quote/" + naccion + "/history?period1=0&period2=" + fechafin + "&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
 
     # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
     # la abrimos para hacerle creer que venimos de aqui
@@ -524,10 +523,10 @@ def descargaHistoricoAccion(naccion, **config):
 
     if fechaini is None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
         actualizar = False
-        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&crumb=" + _crumb  # .decode('utf-8')
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true&crumb=" + _crumb  # .decode('utf-8')
     else:
         actualizar = True
-        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&crumb=" + _crumb  # .decode('utf-8')
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true&crumb=" + _crumb  # .decode('utf-8')
     f = None
     r = urllib.request.Request(url, headers=webheaders)
 
@@ -1039,7 +1038,7 @@ def yahoocrumb(naccion, **config):
     if fechaini is not None:
         fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
 
-    preurl = "https://finance.yahoo.com/quote/" + naccion + "/history?period1=0&period2=" + fechafin + "&interval=1d&filter=history&frequency=1d"
+    preurl = "https://finance.yahoo.com/quote/" + naccion + "/history?period1=0&period2=" + fechafin + "&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
     #     logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
 
     r1 = urllib.request.Request(preurl, headers=webheaders)
