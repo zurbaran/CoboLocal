@@ -6,6 +6,7 @@ Base de Datos contenida en Cobo.dat en sqlite3, no incluida.
 
 Librerias Requeridas:
 	python-pysqlite2
+	yahoofinancials
 
 Probar las librerias http://code.google.com/p/ultra-finance/
 					TA-Lib

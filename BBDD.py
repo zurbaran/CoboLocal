@@ -652,6 +652,10 @@ def ticketcotizaciones(nombreticket, datosurl):
         cursor.execute(sql)
         datosBBDDcomponentes = cursor.fetchall()
         numero_resultado = len(datosBBDDcomponentes)
+
+        print(('Actualizando cotizaciones de : %s' % nombreticket))
+        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
+
         if numero_resultado == 0:
             sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (null , " + datosurl + ",'" + str(date.today()) + "')"
             # print(sql)
@@ -693,8 +697,8 @@ def ticketcotizaciones(nombreticket, datosurl):
                         cursor.execute(sql)
             # en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
 
-        print(('Actualizando cotizaciones de : %s' % nombreticket))
-        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
+        #print(('Actualizando cotizaciones de : %s' % nombreticket))
+        #print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
         db.commit()
         db.close()
         ticketactualizado(nombreticket)

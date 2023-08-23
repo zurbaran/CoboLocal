@@ -100,7 +100,7 @@ import logging
 import os
 import ast
 import sys
-import dropbox
+# import dropbox
 
 # import logging.config
 # ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
@@ -119,10 +119,10 @@ from jstock import ticketsJstock
 from yahooticket import ticketsYahooD
 import HTML
 
-from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST, access_token
+from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST#, access_token
 
 try:
-    if os.path.getsize(ARCHIVO_LOG) >= 524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
+    if os.path.getsize(ARCHIVO_LOG) >= (100*1024*1024):#524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
         os.remove(ARCHIVO_LOG)
 except:
     pass
@@ -155,17 +155,17 @@ def _test():
     # doctest.testfile('example2.txt')
 
 
-class TransferData:
-    def __init__(self, access_token):
-        self.access_token = access_token
-
-    def upload_file(self, file_from, file_to):
-        """upload a file to Dropbox using API v2
-        """
-        dbx = dropbox.Dropbox(self.access_token)
-
-        with open(file_from, 'rb') as f:
-            dbx.files_upload(f.read(), file_to)
+##class TransferData:
+##    def __init__(self, access_token):
+##        self.access_token = access_token
+##
+##    def upload_file(self, file_from, file_to):
+##        """upload a file to Dropbox using API v2
+##        """
+##        dbx = dropbox.Dropbox(self.access_token)
+##
+##        with open(file_from, 'rb') as f:
+##            dbx.files_upload(f.read(), file_to)
             
 
 def analisisAlcistaAccion(naccion, **config):
@@ -2418,7 +2418,7 @@ def main():
 #                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
 #                t.setDaemon(True)
 #                t.start()
-                yahoofinance.duerme()
+                #yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
         elif opcion == 'o':
@@ -2870,14 +2870,14 @@ def main():
             f.write('</html>' + os.linesep)
             f.close()
 
-            transferData=TransferData(access_token)
-            file_to = (os.path.join("/Analisis", ficheroFecha))
+            #transferData=TransferData(access_token)
+            #file_to = (os.path.join("/Analisis", ficheroFecha))
             # print (ficheroDatos)
             # print (file_to)
-            try:
-                transferData.upload_file(ficheroDatos, file_to)
-            except:
-                print ("Token Expirado")
+            #try:
+            #    transferData.upload_file(ficheroDatos, file_to)
+            #except:
+            #    print ("Token Expirado")
             # os.remove(ficheroDatos)
 #
 #
