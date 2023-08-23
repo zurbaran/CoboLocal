@@ -103,14 +103,13 @@ from zipfile import ZipFile
 import logging
 import os
 import shutil
-import urllib.request, urllib.error
 import requests
 import csv
 
 
 ####################################################
 # modulos no estandar o propios
-from settings import CARPETAS, ARCHIVO_LOG, SUFIJOSEXCLUIDOS
+from settings import CARPETAS, ARCHIVO_LOG
 from yahoofinance import webheaders, pausareconexion
 
 

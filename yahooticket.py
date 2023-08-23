@@ -105,7 +105,7 @@ import csv
 
 ####################################################
 # modulos no estandar o propios
-from settings import CARPETAS, ARCHIVO_LOG #, SUFIJOSEXCLUIDOS
+from settings import ARCHIVO_LOG #, SUFIJOSEXCLUIDOS
 
 logging.basicConfig(filename=ARCHIVO_LOG,
                     format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',

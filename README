@@ -17,5 +17,7 @@ TODO:
 	Utilizar la libreria python-sql para generar el SQL
 	Utilizar la libreria HTML para generar informes en html
 	
+	utilizar yahoofinancials
+	
 	Crear relacion entre sufijo de ticket con el prefijo de yahoo.finance.com
 	ABE.MC	http://es.finance.yahoo.com
