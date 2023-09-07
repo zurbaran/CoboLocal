@@ -2062,7 +2062,7 @@ def main():
                                 '------------------------------',
                                 'T) Bateria de Backtest',
                                 'V) Exportar datos a arhivos csv',
-                                'W) Dar de alta acciones desde archivo',
+                                'W) Generar Bateria de Lista de acciones',
                                 'X) Generar Lista de acciones',
                                 '------------------------------',
                                 '',
@@ -2719,44 +2719,97 @@ def main():
                 print(ticket)
             print(('Un total de : ', len(ticketsnodescargados)))
 
-#        'W) Dar de alta acciones desde archivo',
+#        'W) Generar Bateria lista de acciones',
         elif opcion == 'w':
             print(seleccion)
-            incluidos = 0
-            jstock = os.path.join('C:\Program Files (x86)\JStock\database')
-            paises = os.listdir(jstock)
-            paises.remove('database.zip')
-            # cursor, db = BBDD.conexion()
-            for n in paises:
-                archivowtickers = os.path.join('C:\Program Files (x86)\JStock\database', n, 'database\stock-info-database.csv')
-                f = open(archivowtickers, "r")
-                lineas = f.readlines()
+
+            config1 = {}
+            config2 ={}
+
+            config2['volumen'] = FILTROS['volumen']
+            config1['volumen'] = FILTROS['volumen']
+
+            config2['rentMinima'] = FILTROS['rentMinima']
+            config1['rentMinima'] = FILTROS['rentMinima']
+
+            config2['inversion'] = FILTROS['invMinima']
+            config1['inversion'] = FILTROS['invMinima']
+
+            config2['riesgo'] = FILTROS['riesgo']
+            config1['riesgo'] = FILTROS['riesgo']
+
+            config2['filtroM'] = float(0.03)
+            config1['filtroM'] = FILTROSTOPLOSS['m']
+
+            config2['filtroW'] = float(0.02)
+            config1['filtroW'] = FILTROSTOPLOSS['w']
+
+            config2['filtroD'] = float(0.01)
+            config1['filtroD'] = FILTROSTOPLOSS['d']
+
+            config2['timmings'] = ('m', 'w', 'd')
+            config1['timmings'] = ('m', 'w', 'd')
+
+            for config in (config1, config2):
+
+                resultado = stonicks(BBDD.listacciones(**config))
+                resultado2 = stonicks(BBDD.listaccionesLT(**config))
+                resultado3 = stonicks(BBDD.listaccionesLT(incremperiod=1, **config))
+
+                ficheroFecha = ((datetime.now()).strftime("%Y%m%d %H%M%S")) + '.html'
+
+                ficheroDatos = os.path.join("/home/antonio/Dropbox/Analisis/", ficheroFecha)
+                f = open(ficheroDatos, "w")
+                f.write('<!DOCTYPE html>' + os.linesep)
+                f.write('<html>' + os.linesep)
+                f.write('<head>' + os.linesep)
+                f.write('<meta content="text/html; charset=windows-1252" http-equiv="content-type">' + os.linesep)
+                for name, content in (('author', __author__[0]),
+                                      ('mail', __mail__[0]),
+                                      ('license', 'http://creativecommons.org/licenses/by-sa/3.0/legalcode')):
+                    f.write('<meta name="' + name + '" content="' + content + '">' + os.linesep)
+                f.write('</head>' + os.linesep)
+                f.write('<body>' + os.linesep)
+                f.write('<p>Lista Generada Automaticamente. Parametros:</p>\n\
+                                        <ul>\n\
+                                          <li>Volumen: %d</li>\n\
+                                          <li>Rentabilidad: %.2f</li>\n\
+                                          <li>InversionMinima: %d</li>\n\
+                                          <li>Riesgo: %d</li>\n\
+                                          <li>FiltroMensual %.2f</li>\n\
+                                          <li>FiltroSemanal %.2f</li>\n\
+                                          <li>FiltroDiario %.2f</li>\n\
+                                </ul>\n' %
+                        (config['volumen'], config['rentMinima'], config['inversion'], config['riesgo'], config['filtroM'],
+                         config['filtroW'], config['filtroD']))
+
+                for res in (resultado, resultado2, resultado3):
+                    htmlcode = HTML.table(res, header_row=['Ticket',
+                                                           'Nombre',
+                                                           'Mercado',
+                                                           'Moneda',
+                                                           'Timming',
+                                                           'Rentabilidad',
+                                                           'Inversion en Euros',
+                                                           'Entrada',
+                                                           'Salida',
+                                                           'Numero Acciones',
+                                                           'LT Fecha Ini',
+                                                           'LT Precio Ini',
+                                                           'LT Fecha Fin',
+                                                           'LT Precio Fin'])
+                    f.write(htmlcode)
+                    f.write('<br>Calculos para entradas en Linea de Tendencia<br><p><br></p>')
+                f.write(
+                    '<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO"><img alt="Licencia Creative Commons" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/80x15.png" /></a><br />Este obra está bajo una <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.es_CO">Licencia Creative Commons Atribución-CompartirIgual 3.0 Unported</a>.')
+                f.write('</body>' + os.linesep)
+                f.write('</html>' + os.linesep)
                 f.close()
-                i = 1
-                if (eval(input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (n, len(lineas) - 1)))).upper() == 'Y':
-                    while i < len(lineas):
-                        # naccion = ((naccion.upper()).replace('@%5E', '^')).strip()
-                        # incluir = True
-                        linea = lineas[i].split(',', 3)
-                        naccion = ((linea[0].upper()).replace('@%5E', '^')).strip('"')
-                        punto = naccion.find('.')
-                        if punto != -1 and not (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-                            naccion = (naccion,)
-                            if BBDD.ticketalta(naccion):
-                                # cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", naccion)
-                                # numeroResultado = len(cursor.fetchall())
-                                # f numeroResultado == 0:
-                                # cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`) VALUES (?, '" + str(date.today()) + "', NULL, NULL)", naccion)
-                                # print(naccion[0] + ' anadido a la base de datos')
-                                incluidos += 1
-                        i += 1
-                    print (('Anadido pais, %s' % n))
 
-            # if input('Quieres anadir a la BBDD un total de : %d tickets (Y/Cualquier Tecla) ' % incluidos).upper() == 'Y':
-            #    db.commit()
-            # db.close()
+                yahoofinance.duerme(tiempo=20000)
 
-        # x) Generar lista de acciones
+
+         # x) Generar lista de acciones
         elif opcion == 'x':
             print(seleccion)
             config = {}
