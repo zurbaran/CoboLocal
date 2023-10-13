@@ -342,7 +342,10 @@ def ticketsIPO(diasatras=6):
             ticketfin = 0
 
             while True:
-                ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
+                try:
+                    ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
+                except AttributeError:
+                    break
                 if ticketinicio == -1:
                     break
                 else:
