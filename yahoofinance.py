@@ -704,13 +704,11 @@ def descargaHistoricoAccion(naccion, **config):
 def cotizacionesTicket(nombreticket):
     """."""
     nombreticket = nombreticket.upper()
-    # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
-    # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-    # Ejecutar las funciones en paralelo
-        resultado1 = executor.submit(cotizacionesTicketWeb,nombreticket)
-        resultado2 = executor.submit(cotizacionesTicketyfinance,nombreticket)
+        # Ejecutar las funciones en paralelo
+        resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
+        resultado2 = executor.submit(cotizacionesTicketyfinance, nombreticket)
         resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
 
         # Obtener el resultado de la primera función que termine
@@ -722,26 +720,12 @@ def cotizacionesTicket(nombreticket):
         # Obtener y comparar resultados
         for resultado_terminado in resultados_terminados:
             datosurl = resultado_terminado.result()
-        #    print(f"Resultado de la función terminada: {datosurl}")
+            print(f"Resultado de la función  :{datosurl}")
 
-        # Esperar un máximo de 2 segundos para ver si las otras funciones terminan
-        resultados_pendientes, _ = concurrent.futures.wait(
-            [resultado1, resultado2, resultado3],
-            timeout=2,
-            return_when=concurrent.futures.ALL_COMPLETED
-        )
-
-        # Obtener y comparar resultados de las funciones restantes
-        for resultado_pendiente in resultados_pendientes:
-            try:
-                # Intenta obtener el resultado, si la función está en bucle, esto lanzará una excepción
-                datosurl_pendiente = resultado_pendiente.result()
-                print(f"Resultado de la función pendiente: {datosurl_pendiente}")
-            except Exception as e:
-                # La función no ha terminado en el tiempo especificado, cancela la ejecución
-                print(f"La función pendiente no ha terminado a tiempo. Cancelando. Error: {e}")
-                resultado_pendiente.cancel()
-
+            # Cancelar las funciones restantes
+            for resultado_pendiente in [resultado2, resultado3]:
+                if not resultado_pendiente.done():
+                    resultado_pendiente.cancel()
 
     #print("Resultado General :" + datosurl)
 
