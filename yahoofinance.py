@@ -705,6 +705,8 @@ def cotizacionesTicket(nombreticket):
     """."""
     nombreticket = nombreticket.upper()
 
+    resultado_final = None
+
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Ejecutar las funciones en paralelo
         resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
@@ -722,10 +724,14 @@ def cotizacionesTicket(nombreticket):
             datosurl = resultado_terminado.result()
             print(f"Resultado de la función  :{datosurl}")
 
-            # Cancelar las funciones restantes
-            for resultado_pendiente in [resultado2, resultado3]:
-                if not resultado_pendiente.done():
+            # Almacenar el resultado y cancelar las funciones restantes
+            resultado_final = resultado_terminado
+            for resultado_pendiente in [resultado1, resultado2, resultado3]:
+                if resultado_pendiente != resultado_terminado and not resultado_pendiente.done():
                     resultado_pendiente.cancel()
+
+    if resultado_final is not None:
+        print("Resultado General :" + resultado_final.result())
 
     #print("Resultado General :" + datosurl)
 
