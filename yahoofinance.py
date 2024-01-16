@@ -711,11 +711,11 @@ def cotizacionesTicket(nombreticket):
         # Ejecutar las funciones en paralelo
         resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
         resultado2 = executor.submit(cotizacionesTicketyfinance, nombreticket)
-        resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
+        #resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
 
         # Obtener el resultado de la primera función que termine
         resultados_terminados, _ = concurrent.futures.wait(
-            [resultado1, resultado2, resultado3],
+            [resultado1, resultado2], #, resultado3],
             return_when=concurrent.futures.FIRST_COMPLETED
         )
 
@@ -726,7 +726,7 @@ def cotizacionesTicket(nombreticket):
 
             # Almacenar el resultado y cancelar las funciones restantes
             resultado_final = resultado_terminado
-            for resultado_pendiente in [resultado1, resultado2, resultado3]:
+            for resultado_pendiente in [resultado1, resultado2]:#, resultado3]:
                 if resultado_pendiente != resultado_terminado and not resultado_pendiente.done():
                     resultado_pendiente.cancel()
 
