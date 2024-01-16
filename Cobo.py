@@ -2091,7 +2091,7 @@ def main():
 
             # Actualizamos las cotizaciones
             
-            if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicketWeb(naccion):
+            if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(naccion):
                 BBDD.ticketborra(naccion)
             else:
                 # Descargamos/Actualizamos el historico
@@ -2409,14 +2409,15 @@ def main():
 
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
-                if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicketWeb(ticket):
-                    BBDD.ticketborra(ticket)
+                yahoofinance.cotizacionesTicket(ticket)
+                #if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(ticket):
+                #    BBDD.ticketborra(ticket)
 
                 print((((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets))))
 #                threads = list()
 #                for i in (0, MULTIHILO):
 #                    ticket = listatickets.popleft()
-#                    t = threading.Thread(target=yahoofinance.cotizacionesTicketWeb(ticket))
+#                    t = threading.Thread(target=yahoofinance.cotizacionesTicket(ticket))
 #                    threads.append(t)
 #                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
 #                t.setDaemon(True)
@@ -2711,7 +2712,7 @@ def main():
                             BBDD.ticketerror(ticket)
                             ticketsnodescargados.append(ticket)
                 else:  # no existe el archivo
-                    # cotizacionesTicketWeb(naccion)
+                    # cotizacionesTicket(naccion)
                     BBDD.ticketerror(ticket)
                     ticketsnodescargados.append(ticket)
 
