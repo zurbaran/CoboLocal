@@ -2090,14 +2090,16 @@ def main():
             #     print((naccion[0] + ' anadido a la base de datos'))
 
             # Actualizamos las cotizaciones
-            yahoofinance.cotizacionesTicketWeb(naccion)
+            
+            if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicketWeb(naccion):
+                BBDD.ticketborra(naccion)
+            else:
+                # Descargamos/Actualizamos el historico
+                historicoTicket(naccion)
 
-            # Descargamos/Actualizamos el historico
-            historicoTicket(naccion)
-
-            # Analizamos la accion
-            analisisTicket(naccion)
-            # db.close()
+                # Analizamos la accion
+                analisisTicket(naccion)
+                # db.close()
 
 #        'C) Analizar Datos de 1 Ticket',
         elif opcion == 'c':
@@ -2407,7 +2409,8 @@ def main():
 
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
-                yahoofinance.cotizacionesTicketWeb(ticket)
+                if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicketWeb(ticket):
+                    BBDD.ticketborra(ticket)
 
                 print((((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets))))
 #                threads = list()

@@ -342,7 +342,10 @@ def ticketsIPO(diasatras=6):
             ticketfin = 0
 
             while True:
-                ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
+                try:
+                    ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
+                except AttributeError:
+                    break
                 if ticketinicio == -1:
                     break
                 else:
@@ -773,7 +776,7 @@ def cotizacionesTicketWeb(nombreticket):
     #while (datos == None or datos2 == None) and reintentos <= 1:
     try:
         datos = yahoo.get_summary_data()
-        dato2 = yahoo.get_stock_quote_type_data()
+        datos2 = yahoo.get_stock_quote_type_data()
     except Exception as e:
         #duerme()
         logging.debug('Error: %s; Ticket: %s' % (e, nombreticket.encode('utf-8')))
@@ -814,7 +817,7 @@ def cotizacionesTicketWeb(nombreticket):
 
 
     if not (datos == None and datos2 == None) and 'longName' in datos[nombreticket]:
-        datonombre = dato2[nombreticket]['longName']
+        datonombre = datos2[nombreticket]['longName']
     elif not (web == None):
         inicio = web.find('h1 class="') + len('h1 class="')
         inicio = web.find('>',inicio) + len('>')
@@ -830,8 +833,8 @@ def cotizacionesTicketWeb(nombreticket):
         error = 'No such ticker symbol'
         
     if not (datos == None and datos2 == None) and 'exchange' in datos[nombreticket]:
-        #datomercado = dato2[nombreticket]['market']
-        datomercado = dato2[nombreticket]['exchange']
+        #datomercado = datos2[nombreticket]['market']
+        datomercado = datos2[nombreticket]['exchange']
     elif not (web == None):
         inicio = fin
         inicio = web.find('<span>', inicio) + len('<span>')
