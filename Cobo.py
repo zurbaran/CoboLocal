@@ -2422,7 +2422,7 @@ def main():
 #                    print(((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets)))
 #                t.setDaemon(True)
 #                t.start()
-                #yahoofinance.duerme()
+                yahoofinance.duerme()
 
 #        'O) Actualizar/Descargar Datos Cotizaciones Historicos todos los Tickets',
         elif opcion == 'o':
