@@ -1016,7 +1016,7 @@ def cotizacionesTicketyfinance(nombreticket):
 
 
     if not (datos == None) and 'longName' in datos:
-        datonombre = datos['longName']
+        datonombre = datos['longName'].replace('"', "'")
     else:
         datonombre = 'null'
         error = 'No such ticker symbol'
