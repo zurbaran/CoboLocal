@@ -1018,7 +1018,7 @@ def cotizacionesTicketyfinance(nombreticket):
 
 
     if not (datos == None) and 'longName' in datos:
-        datonombre = datos[nombreticket]['longName']
+        datonombre = datos['longName']
         datonombre = datonombre.strip('"')
         datonombre = datonombre.replace('"', '')
     else:
