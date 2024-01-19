@@ -929,6 +929,8 @@ def cotizacionesTicketYahooFinancials(nombreticket):
 
     if not (datos == None and datos2 == None) and 'longName' in datos[nombreticket]:
         datonombre = datos2[nombreticket]['longName']
+        datonombre = datonombre.strip('"')
+        datonombre = datonombre.replace('"', '')
     else:
         datonombre = 'null'
         error = 'No such ticker symbol'
@@ -1016,7 +1018,9 @@ def cotizacionesTicketyfinance(nombreticket):
 
 
     if not (datos == None) and 'longName' in datos:
-        datonombre = datos['longName'].replace('"', "'")
+        datonombre = datos[nombreticket]['longName']
+        datonombre = datonombre.strip('"')
+        datonombre = datonombre.replace('"', '')
     else:
         datonombre = 'null'
         error = 'No such ticker symbol'
