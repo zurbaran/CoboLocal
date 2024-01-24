@@ -1310,18 +1310,20 @@ def listaccionesLT(**config):
         # Comprobamos la rentabilidad minima
         # en alcista el precio de entrada se encuenta por debajo de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por encima de la salida sin ser igual
         # en bajista el precio de entrada se encuenta por encima de los precios de maximo diario, minimo diario, cotizacion actual y la entrada esta por debajo de la salida sin ser igual
-
-        if not ((-1.0 * inv) <= inve <= inv) and \
-           (rentabilidad >= rentMinima or
-           rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or
-           rentabilidad == 0.0) and\
-            ((rentabilidad >= 0.0 and
-              (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or
-             (rentabilidad < 0.0 and
-              (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))) and\
-           timming in timmings:
-            resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
-
+        try:
+            if not ((-1.0 * inv) <= inve <= inv) and \
+               (rentabilidad >= rentMinima or
+               rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or
+               rentabilidad == 0.0) and\
+                ((rentabilidad >= 0.0 and
+                  (maxDia > entrada and minDia > entrada and valorActual > entrada and entrada > salida and entrada > ltpricefin)) or
+                 (rentabilidad < 0.0 and
+                  (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))) and\
+               timming in timmings:
+                resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+        except:
+             print (ticket)
+          
     return tuple(resultado2)
 
 
