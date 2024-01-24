@@ -1083,9 +1083,20 @@ def cotizacionesTicketyfinance(nombreticket):
 def cotizacionesMoneda(nombreticket):
     """."""
     nombreticket = nombreticket.upper()
-    
-    yahoo = YahooFinancials(nombreticket)
-    datos = yahoo.get_summary_data()
+    datos = None
+    yahoo = yf.Ticker(nombreticket)
+    try:
+        datos = yahoo.info
+    except Exception as e:
+        #duerme()
+        logging.debug('Error: %s; Ticket: %s' % (e, nombreticket.encode('utf-8')))
+        print (nombreticket)
+        print (datos)
+
+    if not (datos == None) and 'regularMarketPreviousClose' in datos:
+        datoValorActual = datos['regularMarketPreviousClose']
+    else:
+        datoValorActual = '0'
     
     # urldatos = "https://finance.yahoo.com/quote/" + nombreticket.replace("=", "%3D") + "?p=" + nombreticket.replace("=", "%3D")
     # web = None
@@ -1128,9 +1139,7 @@ def cotizacionesMoneda(nombreticket):
     #         datoValorActual = float(web[inicio:fin].replace(',', '.'))
     #     except ValueError:
     #         datoValorActual = 'null'
-    
-    datoValorActual = datos[nombreticket]['regularMarketPreviousClose']
-    
+
     datos = ("%s,%s" % (nombreticket, datoValorActual))
 
     BBDD.monedacotizaciones(nombreticket, datos)
