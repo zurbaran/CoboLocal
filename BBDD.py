@@ -1322,7 +1322,8 @@ def listaccionesLT(**config):
                timming in timmings:
                 resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
         except:
-             print (ticket)
+             ticketerror(ticket)
+             #print (ticket)
           
     return tuple(resultado2)
 
