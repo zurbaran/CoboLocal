@@ -755,7 +755,7 @@ def cotizacionesTicket(nombreticket):
         datosurl_otra_funcion = otra_funcion(nombreticket)
 
         if datosurl != datosurl_otra_funcion:
-            print("¡Alerta! Los resultados son iguales entre dos funciones.")
+            print("¡Alerta! Los resultados no son iguales entre dos funciones.")
             logging.debug('Error: %s; Ticket: %s' % ("Resultados de funciones obtencion de datos cotizacion dispares", nombreticket.encode('utf-8')))
 
     if __name__ != '__main__':
