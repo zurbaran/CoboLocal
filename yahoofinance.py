@@ -170,6 +170,7 @@ from time import sleep, strftime, strptime
 from datetime import date, timedelta, datetime
 from calendar import timegm
 from random import randint
+import random
 import logging
 import os
 import http.client
@@ -705,35 +706,57 @@ def cotizacionesTicket(nombreticket):
     """."""
     nombreticket = nombreticket.upper()
 
-    resultado_final = None
+    # Lista de funciones que obtienen datos
+    funciones_obtencion_datos = [
+        cotizacionesTicketWeb,
+        cotizacionesTicketyfinance,
+        # Puedes agregar cotizacionesTicketYahooFinancials u otras funciones aquí
+    ]
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Ejecutar las funciones en paralelo
-        resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
-        resultado2 = executor.submit(cotizacionesTicketyfinance, nombreticket)
-        #resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
+    # Seleccionar aleatoriamente una función de la lista
+    funcion_seleccionada = random.choice(funciones_obtencion_datos)
+
+    # Obtener datos de la función seleccionada
+    datosurl = funcion_seleccionada(nombreticket)
+
+    #resultado_final = None
+
+    #with concurrent.futures.ThreadPoolExecutor() as executor:
+    #    # Ejecutar las funciones en paralelo
+    #    resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
+    #    resultado2 = executor.submit(cotizacionesTicketyfinance, nombreticket)
+    #    resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
 
         # Obtener el resultado de la primera función que termine
-        resultados_terminados, _ = concurrent.futures.wait(
-            [resultado1, resultado2], #, resultado3],
-            return_when=concurrent.futures.FIRST_COMPLETED
-        )
+    #    resultados_terminados, _ = concurrent.futures.wait(
+    #        [resultado1, resultado2], #, resultado3],
+    #        return_when=concurrent.futures.FIRST_COMPLETED
+    #    )
 
         # Obtener y comparar resultados
-        for resultado_terminado in resultados_terminados:
-            datosurl = resultado_terminado.result()
-            print(f"Resultado de la función  :{datosurl}")
+    #    for resultado_terminado in resultados_terminados:
+    #        datosurl = resultado_terminado.result()
+    #        print(f"Resultado de la función  :{datosurl}")
 
             # Almacenar el resultado y cancelar las funciones restantes
-            resultado_final = resultado_terminado
-            for resultado_pendiente in [resultado1, resultado2]:#, resultado3]:
-                if resultado_pendiente != resultado_terminado and not resultado_pendiente.done():
-                    resultado_pendiente.cancel()
+    #        resultado_final = resultado_terminado
+    #        for resultado_pendiente in [resultado1, resultado2]:#, resultado3]:
+    #            if resultado_pendiente != resultado_terminado and not resultado_pendiente.done():
+    #                resultado_pendiente.cancel()
 
-    if resultado_final is not None:
-        print("Resultado General :" + resultado_final.result())
+    #if resultado_final is not None:
+    #    print("Resultado General :" + resultado_final.result())
 
-    #print("Resultado General :" + datosurl)
+    #print(f"Resultado de la función: {datosurl}")
+
+    # Comparar resultados aleatoriamente entre dos funciones
+    if random.random() < 0.1:  # 10% de probabilidad de comparar resultados
+        otra_funcion = random.choice([f for f in funciones_obtencion_datos if f != funcion_seleccionada])
+        datosurl_otra_funcion = otra_funcion(nombreticket)
+
+        if datosurl == datosurl_otra_funcion:
+            print("¡Alerta! Los resultados son iguales entre dos funciones.")
+            logging.debug('Error: %s; Ticket: %s' % ("Resultados de funciones obtencion de datos cotizacion dispares", nombreticket.encode('utf-8')))
 
     if __name__ != '__main__':
         BBDD.ticketcotizaciones(nombreticket, datosurl)
