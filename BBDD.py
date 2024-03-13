@@ -654,7 +654,7 @@ def ticketcotizaciones(nombreticket, datosurl):
         numero_resultado = len(datosBBDDcomponentes)
 
         print(('Actualizando cotizaciones de : %s' % nombreticket))
-        print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
+        #print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
 
         if numero_resultado == 0:
             sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (null , " + datosurl + ",'" + str(date.today()) + "')"
@@ -1066,8 +1066,8 @@ def monedacotizaciones(nombreticket, datosurl):
         db.commit()
         db.close()
 
-        print(('Actualizando cotizaciones de : %s' % nombreticket))
-        print(('Actualizando %s con datos %s' % (nombreticket, datoprecio)))
+        #print(('Actualizando cotizaciones de : %s' % nombreticket))
+        #print(('Actualizando %s con datos %s' % (nombreticket, datoprecio)))
         print('')
 
 
