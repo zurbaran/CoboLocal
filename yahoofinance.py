@@ -754,7 +754,7 @@ def cotizacionesTicket(nombreticket):
         otra_funcion = random.choice([f for f in funciones_obtencion_datos if f != funcion_seleccionada])
         datosurl_otra_funcion = otra_funcion(nombreticket)
 
-        if datosurl == datosurl_otra_funcion:
+        if datosurl != datosurl_otra_funcion:
             print("¡Alerta! Los resultados son iguales entre dos funciones.")
             logging.debug('Error: %s; Ticket: %s' % ("Resultados de funciones obtencion de datos cotizacion dispares", nombreticket.encode('utf-8')))
 
