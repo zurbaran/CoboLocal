@@ -562,6 +562,7 @@ def descargaHistoricoAccion(naccion, **config):
                 return 'URL invalida'
             elif e.code == 401:
                 logging.debug('Error: %s; Ticket: %s' % (e, naccion.encode('utf-8'), ))
+                sleep(pausareconexion)
                 #logging.debug('Error: %s; Ticket: %s; crumb: %s' % (e, naccion.encode('utf-8'), _crumb))
             reintento = True
         except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout, http.client.IncompleteRead) as e:
