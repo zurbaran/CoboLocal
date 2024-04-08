@@ -536,6 +536,8 @@ def descargaHistoricoAccion(naccion, **config):
         url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true" #&crumb=" + _crumb  # .decode('utf-8')
     else:
         actualizar = True
+        #resto un dia a la fecha inicial porque esta descargando los datos en la actualizacion de un dia posterior al que queremos actualizar
+        fechaini = str(fechaini - 86400)
         url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true" #&crumb=" + _crumb  # .decode('utf-8')
     f = None
     r = urllib.request.Request(url, headers=webheaders)
@@ -668,8 +670,8 @@ def descargaHistoricoAccion(naccion, **config):
             if (registroalmacenadoultimo != registrodescargadoprimero):  # and (registroalmacenadoultimo[0] == registrodescargadoprimero[0]):
                 print('El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
                 logging.debug('Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s ' % (naccion, str(config), str(registroalmacenadoultimo), str(registrodescargadoprimero)))
-                # print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
-                # print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
+                print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
+                print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
                 # print 'Borrando todos los datos almacenados'
                 # borraTicket(naccion, BBDD=False)
                 return 'Pago Dividendos'
