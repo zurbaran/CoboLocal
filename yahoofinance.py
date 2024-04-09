@@ -537,7 +537,7 @@ def descargaHistoricoAccion(naccion, **config):
     else:
         actualizar = True
         #resto un dia a la fecha inicial porque esta descargando los datos en la actualizacion de un dia posterior al que queremos actualizar
-        fechaini = str(fechaini - 86400)
+        fechaini = str(int(fechaini) - 86400)
         url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true" #&crumb=" + _crumb  # .decode('utf-8')
     f = None
     r = urllib.request.Request(url, headers=webheaders)
