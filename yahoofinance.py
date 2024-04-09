@@ -760,8 +760,8 @@ def cotizacionesTicket(nombreticket):
         if datosurl.rsplit(',', 10)[3:] != datosurl_otra_funcion.rsplit(',', 10)[3:]: #solo compara los datos que corresponden a datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
                                                       #no comparamos los datos que corresponden a datonombre, datoticket, datomercado porque el datomercado cambia en funcion del modo obtenido
             print("¡Alerta! Los resultados no son iguales entre dos funciones.")
-            print(datosurl[3:])
-            print(datosurl_otra_funcion[3:])
+            print(datosurl.rsplit(',', 10)[3:])
+            print(datosurl_otra_funcion.rsplit(',', 10)[3:])
             logging.debug('Error: %s; Ticket: %s' % ("Resultados de funciones obtencion de datos cotizacion dispares", nombreticket.encode('utf-8')))
 
     if __name__ != '__main__':
