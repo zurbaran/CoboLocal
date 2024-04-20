@@ -817,6 +817,7 @@ def cotizacionesTicketWeb(nombreticket):
 
     if not (web == None):
         inicio = web.find('h1 class="') + len('h1 class="')
+        inicio = web.find('h1 class="', inicio) + len('h1 class="')
         inicio = web.find('>',inicio) + len('>')
         fin = web.find("("+nombreticket+")</h1>", inicio)  # - len(nombreticket) - 2
         # print(web)
@@ -830,7 +831,8 @@ def cotizacionesTicketWeb(nombreticket):
         error = 'No such ticker symbol'
         
     if not (web == None):
-        inicio = fin
+        #inicio = fin
+        inicio = web.find('<span class="exchange')
         inicio = web.find('<span>', inicio) + len('<span>')
         fin = web.find(' - ', inicio)
         if 'Currency in' in web[inicio:fin].strip() or len (web[inicio:fin].strip()) > 150:
@@ -844,8 +846,9 @@ def cotizacionesTicketWeb(nombreticket):
         error = 'No such ticker symbol'
 
     if not (web == None):
-        inicio = web.find('data-test="PREV_CLOSE-value">') + len('data-test="PREV_CLOSE-value">')
-        fin = web.find('</td>', inicio)
+        inicio = web.find('data-field="regularMarketPreviousClose"') + len('data-field="regularMarketPreviousClose"')
+        inicio = web.find('>', inicio) + len('>')
+        fin = web.find('</', inicio)
         try:
             datoValorActual = float(web[inicio:fin].replace(',', '.'))
         except ValueError:
@@ -855,14 +858,15 @@ def cotizacionesTicketWeb(nombreticket):
 
     if not (web == None):
         # Con el mercado abierto este datos es correcto buscarlo asi
-        inicio = web.find('data-test="DAYS_RANGE-value">') + len('data-test="DAYS_RANGE-value">')
+        inicio = web.find('data-field="regularMarketDayRange"') + len('data-field="regularMarketDayRange"')
+        inicio = web.find('>', inicio) + len('>')
         fin = web.find(' - ', inicio)
         try:
             datominDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
         except ValueError:
             datominDia = 'null'
         inicio = fin + len(' - ')
-        fin = web.find('</td>', inicio)
+        fin = web.find('</', inicio)
         try:
             datomaxDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
         except ValueError:
@@ -872,14 +876,15 @@ def cotizacionesTicketWeb(nombreticket):
         datomaxDia = 'null'
 
     if not (web == None):
-        inicio = web.find('data-test="FIFTY_TWO_WK_RANGE-value">') + len('data-test="FIFTY_TWO_WK_RANGE-value">')
+        inicio = web.find('data-field="fiftyTwoWeekRange"') + len('data-field="fiftyTwoWeekRange"')
+        inicio = web.find('>', inicio) + len('>')
         fin = web.find(' - ', inicio)
         try:
             datomin52 = round(float(web[inicio:fin].replace(',', '.')), 3)
         except ValueError:
             datomin52 = 'null'
         inicio = fin + len(' - ')
-        fin = web.find('</td>', inicio)
+        fin = web.find('</', inicio)
         try:
             datomax52 = round(float(web[inicio:fin].replace(',', '.')), 3)
         except ValueError:
@@ -900,8 +905,9 @@ def cotizacionesTicketWeb(nombreticket):
         datovolumen = 'null'
 
     if not (web == None):
-        inicio = web.find('data-test="AVERAGE_VOLUME_3MONTH-value">') + len('data-test="AVERAGE_VOLUME_3MONTH-value">')
-        fin = web.find('</td>', inicio)
+        inicio = web.find('data-field="averageVolume"') + len('data-field="averageVolume"')
+        inicio = web.find('>', inicio) + len ('>')
+        fin = web.find('</', inicio)
         try:
             datovolumenMedio = int((web[inicio:fin].replace(',', '')).replace('.', ''))
         except ValueError:
