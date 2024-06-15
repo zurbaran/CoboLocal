@@ -385,8 +385,8 @@ def ticketsCriptoIPO():
 
     print('')
     n = 0
-    for n in range (97):
-        url = 'https://finance.yahoo.com/cryptocurrencies?count=100&offset=' + str(100*n)
+    for n in range (101):
+        url = 'https://finance.yahoo.com/crypto?count=100&offset=' + str(100*n)
         print(url)
 
         web = None
