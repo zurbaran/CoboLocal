@@ -784,10 +784,10 @@ def cotizacionesTicketWeb(nombreticket):
 
         # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
         # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,null
-    
+
     #reintentos = 0
     #while (datos == None or datos2 == None) and reintentos <= 1:
-    
+
     urldatos = "https://finance.yahoo.com/quote/" + nombreticket + "?p=" + nombreticket
     r = urllib.request.Request(urldatos, headers=webheaders)
 
@@ -836,7 +836,7 @@ def cotizacionesTicketWeb(nombreticket):
         #inicio = fin
         inicio = web.find('<span class="exchange')
         inicio = web.find('<span>', inicio) + len('<span>')
-        fin = web.find(' - ', inicio)
+        fin = web.find('</span>', inicio)
         if 'Currency in' in web[inicio:fin].strip() or len (web[inicio:fin].strip()) > 150:
             #fin = web.find('</span>', inicio)
             fin = web.find(' . ', inicio)       
