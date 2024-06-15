@@ -241,7 +241,7 @@ def ticketsdeMercado(mercado):
     mercado = mercado.strip()
     while pagina <= ultimapagina:
         print('')
-        url = 'https://es.finance.yahoo.com/q/cp?s=' + mercado + '&c=' + str(pagina)
+        url = 'https://finance.yahoo.com/quote/' + mercado + '/components'# + str(pagina)
         print(url)
 
         web = None
@@ -306,13 +306,13 @@ def ticketsdeMercado(mercado):
 
 def ticketsIPO(diasatras=6):
     """."""
-    
+
     ticketsanadidos = []
     hoy = datetime.today()
     fechas=[]
     for n in range(diasatras):
         fechas.append((hoy - timedelta(days=n)).strftime('%Y-%m-%d'))
-    
+
     for fecha in fechas:
         url = 'https://finance.yahoo.com/calendar/ipo?day=' + fecha
         print(url)
@@ -385,8 +385,10 @@ def ticketsCriptoIPO():
 
     print('')
     n = 0
+
     for n in range (101):
         url = 'https://finance.yahoo.com/crypto?count=100&offset=' + str(100*n)
+
         print(url)
 
         web = None
@@ -417,13 +419,13 @@ def ticketsCriptoIPO():
             ticketinicio = 0
             ticketfin = 0
         while True:
-            ticketinicio = web.find('data-test="quoteLink" href="/quote/', ticketfin)
+            ticketinicio = web.find('<a data-test="quoteLink" href="/quote/', ticketfin)
             if ticketinicio == -1:
                 break
             else:
-                ticketinicio = ticketinicio + len('data-test="quoteLink" href="/quote/')
+                ticketinicio = ticketinicio + len('<a data-test="quoteLink" href="/quote/')
 
-            ticketfin = web.find('?p=', ticketinicio)
+            ticketfin = web.find('" title=', ticketinicio)
             if ticketfin == -1:
                 break
 
