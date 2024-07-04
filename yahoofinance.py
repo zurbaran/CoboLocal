@@ -841,6 +841,8 @@ def cotizacionesTicketWeb(nombreticket):
             #fin = web.find('</span>', inicio)
             fin = web.find(' . ', inicio)       
         datomercado = web[inicio:fin].strip()
+        datomercado = datomercado.replace(' - Delayed Quote', '')
+        datomercado = datomercado.strip()
         if len(datomercado) > 150:
             error = 'No such ticker symbol'
     else:
