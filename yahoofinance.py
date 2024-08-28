@@ -178,7 +178,10 @@ import urllib.request
 import urllib.error
 import socket
 import csv
-import concurrent.futures
+#import concurrent.futures
+
+import asyncio
+from playwright.async_api import async_playwright
 
 ####################################################
 # modulos no estandar o propios
@@ -304,142 +307,131 @@ def ticketsdeMercado(mercado):
     return ticketsanadidos
 
 
-def ticketsIPO(diasatras=6):
-    """."""
-
-    ticketsanadidos = []
+async def scrape_tickets_ipo(diasatras=6, is_headless=True):
+    """Función principal para extraer los tickets de IPO en las últimas fechas especificadas."""
+    tickets_anadidos = []
     hoy = datetime.today()
-    fechas=[]
+    fechas = []
+
+    # Crear la lista de fechas
     for n in range(diasatras):
         fechas.append((hoy - timedelta(days=n)).strftime('%Y-%m-%d'))
 
-    for fecha in fechas:
-        url = 'https://finance.yahoo.com/calendar/ipo?day=' + fecha
-        print(url)
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=is_headless)
+        context = await browser.new_context()
+        page = await context.new_page()
 
-        web = None
-        while web is None:
+        for fecha in fechas:
+            url = f'https://finance.yahoo.com/calendar/ipo?day={fecha}'
+            print(f"Accediendo a la URL: {url}")
+            await page.goto(url)
+            await page.wait_for_load_state('networkidle')  # Esperar que la página cargue completamente
+
+            # Aceptar consentimiento si es necesario utilizando atributos constantes
             try:
-                r = urllib.request.Request(url, headers=webheaders)
-                f = urllib.request.urlopen(r, timeout=pausareconexion)
-                web = (f.read()).decode('utf-8')
-                f.close()
-            except urllib.error.HTTPError as e:
-                print('Conexion Perdida')
-                print(e.code)
-                if e.code == 500:
-                    return ticketsanadidos
-                else:
-                    web = None
-                    sleep(pausareconexion)
-                    # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
-                print('Conexion Erronea')
-                # print(e.reason)
-                print(url, e)
-                web = None
-                # logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('utf-8'), url.encode('utf-8')))
-                print('Pausa de %d segundos' % pausareconexion)
-                sleep(pausareconexion)
+                accept_button = await page.query_selector("button[name='agree'][value='agree']")
+                if accept_button:
+                    await accept_button.click()
+                    print("Consentimiento aceptado.")
+            except Exception as e:
+                print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
 
-            ticketfin = 0
+            await page.wait_for_timeout(5000)  # Esperar para asegurarse de que la página está completamente cargada
 
-            while True:
-                try:
-                    ticketinicio = web.find('<a data-test="quoteLink" href="/quote/', ticketfin)
-                except AttributeError:
-                    break
-                if ticketinicio == -1:
-                    break
-                else:
-                    ticketinicio = ticketinicio + len('<a data-test="quoteLink" href="/quote/')
+            # Extraer los tickets de la página
+            rows = await page.query_selector_all("tr.simpTblRow")  # Filas de la tabla de IPOs
+            for row in rows:
+                ticket = await row.query_selector("a[data-test='quoteLink']")
+                if ticket:
+                    ticket_text = await ticket.inner_text()
+                    ticket_clean = ticket_text.strip().upper()
 
-                ticketfin = web.find('" title="', ticketinicio)
-                if ticketfin == -1:
-                    break
+                    # Añadir el ticket si no se ha añadido ya
+                    if ticket_clean not in tickets_anadidos and '%20' not in ticket_clean:
+                        tickets_anadidos.append(ticket_clean)
 
-                ticket = (web[ticketinicio:ticketfin].strip())
+            print(f"{len(tickets_anadidos)} Tickets IPO añadidos hasta ahora para la fecha {fecha}")
+            await page.wait_for_timeout(3000)  # Esperar antes de pasar a la siguiente fecha
 
-##                # En ocasiones la cerda ticket contiene el ticket y un enlace, comprobamos que no existe este enlace:
-##                if '<a href="http://finance.yahoo.com/q?s=' in ticket:  # Si que existe este enlace
-##                    ticketinicio = web.find('<a href="http://finance.yahoo.com/q?s=', ticketinicio) + len('<a href="http://finance.yahoo.com/q?s=')
-##                    ticketinicio = web.find('&d=t">', ticketinicio) + len('&d=t">')
-##                    ticket = (web[ticketinicio:ticketfin].strip())
-                ticket = ticket.upper()
+        await browser.close()
 
-                if (ticket not in ticketsanadidos) and ('%20' not in ticket):
-                    ticketsanadidos.append(ticket)
-
-        print(("%8d Tickets IPO añadidas" % (len(ticketsanadidos))))
-        duerme()
-    print('')
-    print(("Total %8d Tickets IPO añadidas" % (len(ticketsanadidos))))
-    print('')
-
-    return ticketsanadidos
+    return tickets_anadidos
 
 
-def ticketsCriptoIPO():
-    """."""
-    ticketsanadidos = []
+def ticketsIPO(diasatras=6):
+    """Función para llamar al scraping y retornar los tickets extraídos."""
+    return asyncio.run(scrape_tickets_ipo(diasatras=diasatras, is_headless=True))  # Headless = True para servidor sin entorno gráfico
 
-    print('')
-    n = 0
 
-    for n in range (101):
-        url = 'https://finance.yahoo.com/crypto?count=100&offset=' + str(100*n)
+async def scrape_tickets(is_headless=True):
+    """Función principal para extraer los tickets de criptomonedas"""
+    tickets_anadidos = []
 
-        print(url)
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=is_headless)
+        context = await browser.new_context()
+        page = await context.new_page()
 
-        web = None
-        while web is None:
-            try:
-                r = urllib.request.Request(url, headers=webheaders)
-                f = urllib.request.urlopen(r, timeout=pausareconexion)
-                web = (f.read()).decode('utf-8')
-                f.close()
-            except urllib.error.HTTPError as e:
-                print('Conexion Perdida')
-                print(e.code)
-                if e.code == 500:
-                    return ticketsanadidos
-                else:
-                    web = None
-                    sleep(pausareconexion)
-                    # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
-                print('Conexion Erronea')
-                # print(e.reason)
-                print(url, e)
-                web = None
-                # logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('utf-8'), url.encode('utf-8')))
-                print('Pausa de %d segundos' % pausareconexion)
-                sleep(pausareconexion)
+        # Ir a la página inicial
+        await page.goto("https://finance.yahoo.com/markets/crypto/all/")
+        await page.wait_for_load_state('networkidle')  # Asegurar que la página se ha cargado completamente
 
-            ticketinicio = 0
-            ticketfin = 0
+        # Aceptar consentimiento si es necesario utilizando atributos constantes
+        try:
+            accept_button = await page.query_selector("button[name='agree'][value='agree']")
+            if accept_button:
+                await accept_button.click()
+                print("Consentimiento aceptado.")
+        except Exception as e:
+            print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
+
+        await page.wait_for_timeout(5000)  # Espera para asegurar que la página está completamente cargada
+
+        # Paginación y extracción de tickets
         while True:
-            ticketinicio = web.find('<a data-test="quoteLink" href="/quote/', ticketfin)
-            if ticketinicio == -1:
-                break
-            else:
-                ticketinicio = ticketinicio + len('<a data-test="quoteLink" href="/quote/')
+            rows = await page.query_selector_all("table tr")  # Filas de la tabla de criptomonedas
+            for row in rows:
+                columns = await row.query_selector_all("td")
+                if columns:
+                    symbol = await columns[0].inner_text()
+                    clean_symbol = symbol.split('\n')[0]  # Limpiar el texto del ticket
+                    if clean_symbol not in tickets_anadidos:
+                        tickets_anadidos.append(clean_symbol)
 
-            ticketfin = web.find('" title=', ticketinicio)
-            if ticketfin == -1:
-                break
+            # Verificar si hay más páginas y navegar
+            try:
+                next_button = await page.query_selector("button[data-testid='next-page-button']")
+                if next_button:
+                    is_disabled = await next_button.get_attribute('disabled')
+                    if not is_disabled:
+                        is_visible = await next_button.is_visible()
+                        if is_visible:
+                            print("Siguiente página disponible, haciendo clic...")
+                            await next_button.click()
+                            await page.wait_for_timeout(5000)  # Esperar para asegurar que la página se carga
+                        else:
+                            print("El botón 'Siguiente' no está visible. Esperando...")
+                            await page.wait_for_timeout(3000)  # Esperar un poco más antes de volver a intentar
+                    else:
+                        print("Botón 'Siguiente' deshabilitado, no hay más páginas.")
+                        break
+                else:
+                    print("No se encontró el botón 'Siguiente'. Finalizando paginación.")
+                    break  # Salir del bucle si no se encuentra el botón
+            except Exception as e:
+                print(f"Error al manejar el botón 'Siguiente': {e}")
+                break  # Salir del bucle si ocurre un error
 
-            ticket = (web[ticketinicio:ticketfin].strip())
-            ticket = ticket.upper()
+        await browser.close()
 
-            if (ticket not in ticketsanadidos) and ('%20' not in ticket):
-                ticketsanadidos.append(ticket)
+    return tickets_anadidos
 
-    print('')
-    print("%d CriptoMonedas añadidas" % (len(ticketsanadidos)))
-    print('')
-
-    return ticketsanadidos
+# Función normal que se puede llamar sincrónicamente
+def ticketsCriptoIPO():
+    """Función para llamar al scraping y retornar los tickets extraídos."""
+    # Ejecutar la función asíncrona scrape_tickets y retornar el resultado
+    return asyncio.run(scrape_tickets(is_headless=True))  # Headless = True para servidor sin entorno gráfico
 
 
 def descargaHistoricoAccion(naccion, **config):
@@ -708,416 +700,280 @@ def descargaHistoricoAccion(naccion, **config):
 
 
 def cotizacionesTicket(nombreticket):
-    """."""
+    """Obtiene cotizaciones de un ticket utilizando diferentes fuentes de datos."""
     nombreticket = nombreticket.upper()
+    
+    # Definir el margen de error
+    margen_error = 0.01
 
     # Lista de funciones que obtienen datos
     funciones_obtencion_datos = [
         cotizacionesTicketWeb,
         cotizacionesTicketyfinance,
-        # Puedes agregar cotizacionesTicketYahooFinancials u otras funciones aquí
+        # cotizacionesTicketYahooFinancials,  # Comentada por problemas con cookies
     ]
 
     # Seleccionar aleatoriamente una función de la lista
     funcion_seleccionada = random.choice(funciones_obtencion_datos)
 
-    # Obtener datos de la función seleccionada
-    datosurl = funcion_seleccionada(nombreticket)
+    try:
+        # Obtener datos de la función seleccionada
+        datosurl = funcion_seleccionada(nombreticket)
+    except Exception as e:
+        logging.error(f"Error obteniendo datos de {funcion_seleccionada.__name__}: {str(e)}")
+        return None
 
-    #resultado_final = None
-
-    #with concurrent.futures.ThreadPoolExecutor() as executor:
-    #    # Ejecutar las funciones en paralelo
-    #    resultado1 = executor.submit(cotizacionesTicketWeb, nombreticket)
-    #    resultado2 = executor.submit(cotizacionesTicketyfinance, nombreticket)
-    #    resultado3 = executor.submit(cotizacionesTicketYahooFinancials, nombreticket)
-
-        # Obtener el resultado de la primera función que termine
-    #    resultados_terminados, _ = concurrent.futures.wait(
-    #        [resultado1, resultado2], #, resultado3],
-    #        return_when=concurrent.futures.FIRST_COMPLETED
-    #    )
-
-        # Obtener y comparar resultados
-    #    for resultado_terminado in resultados_terminados:
-    #        datosurl = resultado_terminado.result()
-    #        print(f"Resultado de la función  :{datosurl}")
-
-            # Almacenar el resultado y cancelar las funciones restantes
-    #        resultado_final = resultado_terminado
-    #        for resultado_pendiente in [resultado1, resultado2]:#, resultado3]:
-    #            if resultado_pendiente != resultado_terminado and not resultado_pendiente.done():
-    #                resultado_pendiente.cancel()
-
-    #if resultado_final is not None:
-    #    print("Resultado General :" + resultado_final.result())
-
-    #print(f"Resultado de la función: {datosurl}")
-
-    # Comparar resultados aleatoriamente entre dos funciones
-    if random.random() < 0.1:  # 10% de probabilidad de comparar resultados
+    # 10% de probabilidad de comparar resultados entre dos funciones
+    if random.random() < 0.1:
         otra_funcion = random.choice([f for f in funciones_obtencion_datos if f != funcion_seleccionada])
-        datosurl_otra_funcion = otra_funcion(nombreticket)
 
-        if datosurl.rsplit(',', 10)[3:] != datosurl_otra_funcion.rsplit(',', 10)[3:]: #solo compara los datos que corresponden a datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
-                                                      #no comparamos los datos que corresponden a datonombre, datoticket, datomercado porque el datomercado cambia en funcion del modo obtenido
-            print("¡Alerta! Los resultados no son iguales entre dos funciones.")
-            print(datosurl.rsplit(',', 10)[3:])
-            print(datosurl_otra_funcion.rsplit(',', 10)[3:])
-            logging.debug('Error: %s; Ticket: %s' % ("Resultados de funciones obtencion de datos cotizacion dispares", nombreticket.encode('utf-8')))
+        try:
+            # Obtener los datos de la segunda función
+            datosurl_otra_funcion = otra_funcion(nombreticket)
+        except Exception as e:
+            logging.error(f"Error obteniendo datos de {otra_funcion.__name__}: {str(e)}")
+            return datosurl
 
+        # Separar los campos en listas para compararlos numéricamente
+        campos1 = datosurl.rsplit(',', 10)[3:]  # Últimos 10 campos de la primera función
+        campos2 = datosurl_otra_funcion.rsplit(',', 10)[3:]  # Últimos 10 campos de la segunda función
+
+        # Asegurarse de que ambas listas tengan el mismo tamaño
+        if len(campos1) == len(campos2):
+            for i in range(len(campos1)):
+                try:
+                    # Convertir ambos valores a float y comparar con el margen de error
+                    valor1 = float(campos1[i])
+                    valor2 = float(campos2[i])
+                    if abs(valor1 - valor2) > margen_error:
+                        print(f"¡Alerta! Los valores en la posición {i} no coinciden dentro del margen de error.")
+                        print(f"Valor 1: {valor1}, Valor 2: {valor2}")
+                        logging.debug(f"Discrepancia detectada: {valor1} vs {valor2} para {nombreticket}")
+                except ValueError:
+                    # Si no se puede convertir el valor a float (es decir, si es una cadena no numérica), se ignora la comparación
+                    logging.warning(f"No se pudo convertir a float uno de los valores: {campos1[i]} o {campos2[i]}")
+
+    # Guardar datos en la base de datos si no se está ejecutando como script principal
     if __name__ != '__main__':
         BBDD.ticketcotizaciones(nombreticket, datosurl)
 
     return datosurl
 
 
-def cotizacionesTicketWeb(nombreticket):
-    """."""
+async def scrape_ticket_data(nombreticket, is_headless=True):
+    """Función principal para extraer datos de un ticket específico en Yahoo Finance"""
     nombreticket = nombreticket.upper()
-    # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
-    # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
+    urldatos = f"https://finance.yahoo.com/quote/{nombreticket}?p={nombreticket}"
 
     error = 'null'
+    datonombre, datomercado, datoValorActual, datomaxDia, datominDia, datomax52, datomin52, datovolumen, datovolumenMedio = \
+        ['null'] * 9
 
-    web = None
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=is_headless)
+        context = await browser.new_context()
+        page = await context.new_page()
 
-        # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
-        # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,null
+        # Ir a la URL del ticket
+        await page.goto(urldatos)
+        await page.wait_for_load_state('networkidle')  # Esperar que la página cargue completamente
 
-    #reintentos = 0
-    #while (datos == None or datos2 == None) and reintentos <= 1:
-
-    urldatos = "https://finance.yahoo.com/quote/" + nombreticket + "?p=" + nombreticket
-    r = urllib.request.Request(urldatos, headers=webheaders)
-
-    while web is None:
+        # Aceptar consentimiento si es necesario utilizando atributos constantes
         try:
-            f = urllib.request.urlopen(r, timeout=pausareconexion)
-            web = f.read().decode('utf-8')
-            f.close()
-        except urllib.error.HTTPError as e:
-            print('Conexion Perdida')
-            print(e.code)
-            web = None
-            if e.code == 301 or e.code == 404:
-                error = 'No such ticker symbol'
-                web = ""
-            sleep(pausareconexion)
-            # input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-        except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
-            print('Conexion Erronea')
-            print(e)
-            web = None
-            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, nombreticket.encode('utf-8'), urldatos.encode('utf-8')))
-            print('Pausa de %d segundos' % pausareconexion)
-            sleep(pausareconexion)
-        except UnicodeDecodeError:
-            print(f.read())
-            #print(nombreticket)
+            accept_button = await page.query_selector("button[name='agree'][value='agree']")
+            if accept_button:
+                await accept_button.click()
+                print("Consentimiento aceptado.")
+        except Exception as e:
+            print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
 
+        await page.wait_for_timeout(5000)  # Esperar para asegurarse de que la página está completamente cargada
 
-    if not (web == None):
-        inicio = web.find('h1 class="') + len('h1 class="')
-        inicio = web.find('h1 class="', inicio) + len('h1 class="')
-        inicio = web.find('>',inicio) + len('>')
-        fin = web.find("("+nombreticket+")</h1>", inicio)  # - len(nombreticket) - 2
-        # print(web)
-        datonombre = web[inicio:fin].strip()
-        datonombre = datonombre.strip('"')
-        datonombre = datonombre.replace('"', '')
-        if len(datonombre) > 300:
-            error = 'No such ticker symbol'
-    else:
-        datonombre = 'null'
-        error = 'No such ticker symbol'
-        
-    if not (web == None):
-        #inicio = fin
-        inicio = web.find('<span class="exchange')
-        inicio = web.find('<span>', inicio) + len('<span>')
-        fin = web.find('</span>', inicio)
-        if 'Currency in' in web[inicio:fin].strip() or len (web[inicio:fin].strip()) > 150:
-            #fin = web.find('</span>', inicio)
-            fin = web.find(' . ', inicio)       
-        datomercado = web[inicio:fin].strip()
-        if not (datomercado.find(' - ') == -1):
-            datomercado = datomercado[:datomercado.find(' - ')]
-        datomercado = datomercado.strip()
-        if len(datomercado) > 150:
-            error = 'No such ticker symbol'
-    else:
-        datomercado = 'null'
-        error = 'No such ticker symbol'
-
-    if not (web == None):
-        inicio = web.find('data-field="regularMarketPreviousClose"') + len('data-field="regularMarketPreviousClose"')
-        inicio = web.find('>', inicio) + len('>')
-        fin = web.find('</', inicio)
+        # Extraer datos específicos usando selectores precisos
         try:
-            datoValorActual = float(web[inicio:fin].replace(',', '.'))
-        except ValueError:
+            datonombre_element = await page.locator('(//h1)[2]').inner_text()
+            datonombre = datonombre_element.split('(')[0].strip()
+        except Exception as e:
+            print(f"Error al obtener el nombre de la compañía: {e}")
+
+        try:
+            datoValorActual = round(float(await page.get_attribute('fin-streamer[data-field="regularMarketPreviousClose"]', 'data-value')), 2)
+        except:
+            print("No se encontró el valor actual.")
             datoValorActual = 'null'
-    else:
-        datoValorActual = 'null'
 
-    if not (web == None):
-        # Con el mercado abierto este datos es correcto buscarlo asi
-        inicio = web.find('data-field="regularMarketDayRange"') + len('data-field="regularMarketDayRange"')
-        inicio = web.find('>', inicio) + len('>')
-        fin = web.find(' - ', inicio)
         try:
-            datominDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
-        except ValueError:
-            datominDia = 'null'
-        inicio = fin + len(' - ')
-        fin = web.find('</', inicio)
-        try:
-            datomaxDia = round(float(web[inicio:fin].replace(',', '.')), 3)  # Este dato puede se N/A, no siendo posible la conversion a float
-        except ValueError:
-            datomaxDia = 'null'
-    else:
-        datominDia = 'null'
-        datomaxDia = 'null'
+            day_range_text = await page.get_attribute('fin-streamer[data-field="regularMarketDayRange"]', 'data-value')
+            if day_range_text:
+                datominDia, datomaxDia = [round(float(x), 2) for x in day_range_text.split(' - ')]
+            else:
+                print("No se encontró el rango del día.")
+        except:
+            print("Error al extraer el rango del día.")
 
-    if not (web == None):
-        inicio = web.find('data-field="fiftyTwoWeekRange"') + len('data-field="fiftyTwoWeekRange"')
-        inicio = web.find('>', inicio) + len('>')
-        fin = web.find(' - ', inicio)
         try:
-            datomin52 = round(float(web[inicio:fin].replace(',', '.')), 3)
-        except ValueError:
-            datomin52 = 'null'
-        inicio = fin + len(' - ')
-        fin = web.find('</', inicio)
-        try:
-            datomax52 = round(float(web[inicio:fin].replace(',', '.')), 3)
-        except ValueError:
-            datomax52 = 'null'
-    else:
-        datomin52 = 'null'
-        datomax52 = 'null'
+            year_range_text = await page.get_attribute('fin-streamer[data-field="fiftyTwoWeekRange"]', 'data-value')
+            if year_range_text:
+                datomin52, datomax52 = [round(float(x), 2) for x in year_range_text.split(' - ')]
+            else:
+                print("No se encontró el rango de 52 semanas.")
+        except:
+            print("Error al extraer el rango de 52 semanas.")
 
-    if not (web == None):
-        inicio = web.find('data-field="regularMarketVolume"') + len('data-field="regularMarketVolume"')
-        inicio = web.find('>', inicio) + len ('>')
-        fin = web.find('</', inicio)
         try:
-            datovolumen = int((web[inicio:fin].replace(',', '')).replace('.', ''))
-        except ValueError:
-            datovolumen = 'null'
-    else:
-        datovolumen = 'null'
+            datovolumen = int((await page.get_attribute('fin-streamer[data-field="regularMarketVolume"]', 'data-value')).replace(',', '').replace('.', ''))
+        except:
+            print("No se encontró el volumen actual.")
 
-    if not (web == None):
-        inicio = web.find('data-field="averageVolume"') + len('data-field="averageVolume"')
-        inicio = web.find('>', inicio) + len ('>')
-        fin = web.find('</', inicio)
         try:
-            datovolumenMedio = int((web[inicio:fin].replace(',', '')).replace('.', ''))
-        except ValueError:
-            datovolumenMedio = 'null'
-    else:
-        datovolumenMedio = 'null'
-    # "CEWE Stiftung &amp; Co. KGaA","CWC.SW","Swiss",92.6,None,73.1,None,73.1,0,None,null
-    datosurl = ('"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre,
-                                                            nombreticket,
-                                                            datomercado,
-                                                            str(datomax52).replace('None', 'null'),
-                                                            str(datomaxDia).replace('None', 'null'),
-                                                            str(datomin52).replace('None', 'null'),
-                                                            str(datominDia).replace('None', 'null'),
-                                                            str(datoValorActual).replace('None', 'null'),
-                                                            str(datovolumenMedio).replace('None', 'null'),
-                                                            str(datovolumen).replace('None', 'null'),
-                                                            error))
+            datovolumenMedio = int((await page.get_attribute('fin-streamer[data-field="averageVolume"]', 'data-value')).replace(',', '').replace('.', ''))
+        except:
+            print("No se encontró el volumen promedio.")
 
-    print ("Datos de WEB             :" + datosurl)
+        # Intentar obtener el mercado de la acción
+        try:
+            datomercado_element = await page.locator('span.exchange').text_content(timeout=10000)
+            if datomercado_element:
+                datomercado = datomercado_element.strip().split(' - ')[0]
+        except:
+            print("No se encontró el mercado de la acción.")
+
+        await browser.close()
+
+    # Formatear los datos como string para almacenamiento o procesamiento adicional
+    datosurl = (f'"{datonombre}","{nombreticket}","{datomercado}",'
+                f'{str(datomax52).replace("None", "null")},'
+                f'{str(datomaxDia).replace("None", "null")},'
+                f'{str(datomin52).replace("None", "null")},'
+                f'{str(datominDia).replace("None", "null")},'
+                f'{str(datoValorActual).replace("None", "null")},'
+                f'{str(datovolumenMedio).replace("None", "null")},'
+                f'{str(datovolumen).replace("None", "null")},'
+                f'{error}')
+
+    print("Datos de WEB             :" + datosurl)
 
     return datosurl
+
+
+def cotizacionesTicketWeb(nombreticket):
+    """Función adaptada que devuelve los datos de un ticket usando Playwright."""
+    return asyncio.run(scrape_ticket_data(nombreticket, is_headless=True))
+
 
 def cotizacionesTicketYahooFinancials(nombreticket):
-    """."""
-    nombreticket = nombreticket.upper()
-    # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
-    # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
+    """
+    Obtiene datos financieros y de mercado de uno o más tickets de Yahoo Finance utilizando la librería YahooFinancials.
+    
+    Args:
+        nombreticket (str): Símbolo(s) del ticket (ej. "AAPL", "GOOG"). Múltiples tickets se separan por comas.
 
+    Returns:
+        str: Cadena con los datos obtenidos del ticket en formato:
+             "Nombre de la Compañía", "Ticker", "Mercado", Máximo 52 semanas, Máximo del día, Mínimo 52 semanas, 
+             Mínimo del día, Valor actual, Volumen promedio, Volumen actual, Error
+    """
+    # Convertir los tickets a mayúsculas y dividir por comas para manejar múltiples tickets
+    nombreticket = nombreticket.upper().replace(" ", "")
+    tickers = nombreticket.split(',')
+
+    # Inicializar variables para manejar múltiples tickets
+    datosurl_list = []
     error = 'null'
 
-    datos = None
-    datos2 = None
-
-        # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
-        # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,null
-    
-    yahoo = YahooFinancials(nombreticket)
-
-    #reintentos = 0
-    #while (datos == None or datos2 == None) and reintentos <= 1:
-    try:
-        datos = yahoo.get_summary_data()
-        datos2 = yahoo.get_stock_quote_type_data()
-    except Exception as e:
-        #duerme()
-        logging.debug('Error: %s; Ticket: %s' % (e, nombreticket.encode('utf-8')))
-        #print (nombreticket)
-        #print (datos)
-        #print (datos2)
-    #    print (reintentos)
-    #    reintentos= reintentos+1
-
-
-    if not (datos == None and datos2 == None) and 'longName' in datos[nombreticket]:
-        datonombre = datos2[nombreticket]['longName']
-        datonombre = datonombre.strip('"')
-        datonombre = datonombre.replace('"', '')
-    else:
-        datonombre = 'null'
-        error = 'No such ticker symbol'
+    for ticket in tickers:
+        # Instanciar el objeto YahooFinancials para el ticket
+        yahoo = YahooFinancials(ticket)
         
-    if not (datos == None and datos2 == None) and 'exchange' in datos[nombreticket]:
-        #datomercado = datos2[nombreticket]['market']
-        datomercado = datos2[nombreticket]['exchange']
-    else:
-        datomercado = 'null'
-        error = 'No such ticker symbol'
+        try:
+            # Obtener los datos financieros y de cotización
+            datos = yahoo.get_summary_data()
+            datos2 = yahoo.get_stock_quote_type_data()
+        except Exception as e:
+            logging.debug('Error al obtener datos para %s: %s', ticket, e)
+            continue
+        
+        # Extraer la información relevante o manejar errores si faltan datos
+        datonombre = datos2.get(ticket, {}).get('longName', 'null').strip('"').replace('"', '')
+        datomercado = datos2.get(ticket, {}).get('exchange', 'null')
+        datoValorActual = datos.get(ticket, {}).get('regularMarketPreviousClose', 'null')
+        datominDia = datos.get(ticket, {}).get('regularMarketDayLow', 'null')
+        datomaxDia = datos.get(ticket, {}).get('regularMarketDayHigh', 'null')
+        datomin52 = datos.get(ticket, {}).get('fiftyTwoWeekLow', 'null')
+        datomax52 = datos.get(ticket, {}).get('fiftyTwoWeekHigh', 'null')
+        datovolumen = datos.get(ticket, {}).get('regularMarketVolume', 'null')
+        datovolumenMedio = datos.get(ticket, {}).get('averageVolume', 'null')
 
-    if not (datos == None and datos2 == None) and 'regularMarketPreviousClose' in datos[nombreticket]:
-        datoValorActual = datos[nombreticket]['regularMarketPreviousClose']
-    else:
-        datoValorActual = 'null'
+        # Si no se encuentra el nombre de la compañía, establecer el error
+        if datonombre == 'null':
+            error = 'No such ticker symbol'
 
-    if not (datos == None and datos2 == None) and 'regularMarketDayLow' in datos[nombreticket] and 'regularMarketDayHigh' in datos[nombreticket]:
-        #datominDia = datos[nombreticket]['dayLow']
-        datominDia = datos[nombreticket]['regularMarketDayLow']
-        #datomaxDia = datos[nombreticket]['dayHigh']
-        datomaxDia = datos[nombreticket]['regularMarketDayHigh']
-    else:
-        datominDia = 'null'
-        datomaxDia = 'null'
+        # Formatear los datos en la cadena final
+        datosurl = f'"{datonombre}","{ticket}","{datomercado}",{datomax52},{datomaxDia},{datomin52},{datominDia},{datoValorActual},{datovolumenMedio},{datovolumen},{error}'
+        datosurl_list.append(datosurl)
 
-    if not (datos == None and datos2 == None) and 'fiftyTwoWeekLow' in datos[nombreticket] and 'fiftyTwoWeekHigh' in datos[nombreticket]:
-        datomin52 = datos[nombreticket]['fiftyTwoWeekLow']
-        datomax52 = datos[nombreticket]['fiftyTwoWeekHigh']
-    else:
-        datomin52 = 'null'
-        datomax52 = 'null'
+    # Imprimir y devolver la cadena final con los datos de todos los tickets procesados
+    datosurl_final = "\n".join(datosurl_list)
+    print(f"Datos de YahooFinancials:\n{datosurl_final}")
+    
+    return datosurl_final
 
-    if not (datos == None and datos2 == None) and 'regularMarketVolume' in datos[nombreticket]:
-        datovolumen = datos[nombreticket]['regularMarketVolume']
-    else:
-        datovolumen = 'null'
-
-    if not (datos == None and datos2 == None) and 'averageVolume' in datos[nombreticket]:
-        datovolumenMedio = datos[nombreticket]['averageVolume']
-    else:
-        datovolumenMedio = 'null'
-    # "CEWE Stiftung &amp; Co. KGaA","CWC.SW","Swiss",92.6,None,73.1,None,73.1,0,None,null
-    datosurl = ('"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre,
-                                                            nombreticket,
-                                                            datomercado,
-                                                            str(datomax52).replace('None', 'null'),
-                                                            str(datomaxDia).replace('None', 'null'),
-                                                            str(datomin52).replace('None', 'null'),
-                                                            str(datominDia).replace('None', 'null'),
-                                                            str(datoValorActual).replace('None', 'null'),
-                                                            str(datovolumenMedio).replace('None', 'null'),
-                                                            str(datovolumen).replace('None', 'null'),
-                                                            error))
-
-    print ("Datos de YahooFinancials :" + datosurl)
-
-    return datosurl
 
 def cotizacionesTicketyfinance(nombreticket):
-    """."""
-    nombreticket = nombreticket.upper()
-    # habilitar en la funcion la posibilidad de descargar multiples tickets, tienen que ir separados o unidos por '+'
-    # Tendriamos que separar nombreticket con un split y obtener una lista, comprobar la longitud de la misma, hacer la descarga, leer las lineas, comparar la lista inicial con la lista obtenida, crear un bucle en el else despues del try de la conxion en el que actualiza la BBDD
+    """
+    Obtiene datos financieros y de mercado de uno o más tickets de Yahoo Finance utilizando la librería yfinance.
+    
+    Args:
+        nombreticket (str): Símbolo(s) del ticket (ej. "AAPL", "GOOG"). Múltiples tickets se separan por comas.
 
+    Returns:
+        str: Cadena con los datos obtenidos del ticket en formato:
+             "Nombre de la Compañía", "Ticker", "Mercado", Máximo 52 semanas, Máximo del día, Mínimo 52 semanas, 
+             Mínimo del día, Valor actual, Volumen promedio, Volumen actual, Error
+    """
+    # Convertir los tickets a mayúsculas y eliminar espacios
+    nombreticket = nombreticket.upper().replace(" ", "")
+    tickers = nombreticket.split(',')
+
+    # Inicializar lista para almacenar los datos de todos los tickets
+    datosurl_list = []
     error = 'null'
 
-    datos = None
-
-        # datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror
-        # "Apple Inc.","AAPL","NasdaqNM",705.07,N/A,419.00,N/A,431.144,20480200,6870,null
-    
-    yahoo = yf.Ticker(nombreticket)
-
-    #reintentos = 0
-    #while (datos == None or datos2 == None) and reintentos <= 1:
-    try:
-        datos = yahoo.info
-    except Exception as e:
-        #duerme()
-        logging.debug('Error: %s; Ticket: %s' % (e, nombreticket.encode('utf-8')))
-        print (nombreticket)
-        print (datos)
-    #    print (reintentos)
-    #    reintentos= reintentos+1
-
-
-    if not (datos == None) and 'longName' in datos:
-        datonombre = datos['longName']
-        datonombre = datonombre.strip('"')
-        datonombre = datonombre.replace('"', '')
-    else:
-        datonombre = 'null'
-        error = 'No such ticker symbol'
+    for ticket in tickers:
+        # Crear instancia de yfinance para el ticket
+        yahoo = yf.Ticker(ticket)
         
-    if not (datos == None) and 'exchange' in datos:
-        #datomercado = datos2[nombreticket]['market']
-        datomercado = datos['exchange']
-    else:
-        datomercado = 'null'
-        error = 'No such ticker symbol'
+        try:
+            # Obtener la información general del ticket
+            datos = yahoo.info
+        except Exception as e:
+            logging.debug(f'Error al obtener datos para {ticket}: {e}')
+            datos = None  # Asegurarse de que los datos sean None en caso de error
 
-    if not (datos == None) and 'regularMarketPreviousClose' in datos:
-        datoValorActual = datos['regularMarketPreviousClose']
-    else:
-        datoValorActual = 'null'
+        # Extraer información o asignar valores predeterminados
+        datonombre = datos.get('longName', 'null').replace('"', '') if datos else 'null'
+        datomercado = datos.get('exchange', 'null') if datos else 'null'
+        datoValorActual = datos.get('regularMarketPreviousClose', 'null') if datos else 'null'
+        datominDia = datos.get('regularMarketDayLow', 'null') if datos else 'null'
+        datomaxDia = datos.get('regularMarketDayHigh', 'null') if datos else 'null'
+        datomin52 = datos.get('fiftyTwoWeekLow', 'null') if datos else 'null'
+        datomax52 = datos.get('fiftyTwoWeekHigh', 'null') if datos else 'null'
+        datovolumen = datos.get('regularMarketVolume', 'null') if datos else 'null'
+        datovolumenMedio = datos.get('averageVolume', 'null') if datos else 'null'
 
-    if not (datos == None) and 'regularMarketDayLow' in datos and 'regularMarketDayHigh' in datos:
-        #datominDia = datos['dayLow']
-        datominDia = datos['regularMarketDayLow']
-        #datomaxDia = datos['dayHigh']
-        datomaxDia = datos['regularMarketDayHigh']
-    else:
-        datominDia = 'null'
-        datomaxDia = 'null'
+        # Asignar error si no se pudo obtener el nombre del ticket
+        if datonombre == 'null':
+            error = 'No such ticker symbol'
 
-    if not (datos == None) and 'fiftyTwoWeekLow' in datos and 'fiftyTwoWeekHigh' in datos:
-        datomin52 = datos['fiftyTwoWeekLow']
-        datomax52 = datos['fiftyTwoWeekHigh']
-    else:
-        datomin52 = 'null'
-        datomax52 = 'null'
+        # Formatear los datos en una cadena para este ticket
+        datosurl = f'"{datonombre}","{ticket}","{datomercado}",{datomax52},{datomaxDia},{datomin52},{datominDia},{datoValorActual},{datovolumenMedio},{datovolumen},{error}'
+        datosurl_list.append(datosurl)
 
-    if not (datos == None) and 'regularMarketVolume' in datos:
-        datovolumen = datos['regularMarketVolume']
-    else:
-        datovolumen = 'null'
-
-    if not (datos == None) and 'averageVolume' in datos:
-        datovolumenMedio = datos['averageVolume']
-    else:
-        datovolumenMedio = 'null'
-    # "CEWE Stiftung &amp; Co. KGaA","CWC.SW","Swiss",92.6,None,73.1,None,73.1,0,None,null
-    datosurl = ('"%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s' % (datonombre,
-                                                            nombreticket,
-                                                            datomercado,
-                                                            str(datomax52).replace('None', 'null'),
-                                                            str(datomaxDia).replace('None', 'null'),
-                                                            str(datomin52).replace('None', 'null'),
-                                                            str(datominDia).replace('None', 'null'),
-                                                            str(datoValorActual).replace('None', 'null'),
-                                                            str(datovolumenMedio).replace('None', 'null'),
-                                                            str(datovolumen).replace('None', 'null'),
-                                                            error))
-
-    print ("Datos de yFinance        :" + datosurl)
-
-    return datosurl
+    # Unir los datos de todos los tickets en una sola cadena
+    datosurl_final = "\n".join(datosurl_list)
+    print(f"Datos de yFinance:\n{datosurl_final}")
+    
+    return datosurl_final
 
 
 def cotizacionesMoneda(nombreticket):
