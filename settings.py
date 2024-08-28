@@ -102,7 +102,7 @@ FILTROS = {'volumen': 20000000,
            'rentMinima': 0.35,
            'invMinima': 800,
            'riesgo': 200}
-
+"""
 SUFIJOSEXCLUIDOS = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
                     '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
                     '.KQ', '.KS', '.MA', '.MF', '.MU', '.MX', '.NS', '.NYB',
@@ -114,6 +114,11 @@ MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
                      'Frankfurt', 'Berlin', 'Stuttgart', 'Munich', 'Barcelona',
                      'Valencia', 'Bilbao', 'Dusseldorf', 'Hamburg', 'Hanover',
                      'FSI', 'EUX',)
+"""
+
+SUFIJOSEXCLUIDOS = ()
+
+MERCADOSEXCLUIDOS = ()
 
 BACKTESTOPERACIONESSOSPECHOSAS = 1.50
 
@@ -121,7 +126,7 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
 
 ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
 
-access_token = 'sl.BJtfwAR6oVBr1j5Vu7YMKNd0GZmLjPVPbxUEtrdL0RZPoLJLmspf_HlNWTH9d_ti50Kt6fsR4I6_3PhdEafzDRgZqeGlJUOSU_Yrq8olLfXBayoh76Tmx2Kr0cNg1b90_27hZ_KN'
+access_token = '' 
 
 ####################################################
 # modulos no estandar o propios

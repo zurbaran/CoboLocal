@@ -119,7 +119,7 @@ from jstock import ticketsJstock
 from yahooticket import ticketsYahooD
 import HTML
 
-from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST#, access_token
+from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST
 
 try:
     if os.path.getsize(ARCHIVO_LOG) >= (100*1024*1024):#524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
@@ -153,19 +153,6 @@ def _test():
     # ejemplos en : http://mundogeek.net/archivos/2008/09/17/pruebas-en-python/  http://magmax9.blogspot.com.es/2011/09/python-como-hacer-pruebas-1.html
     # Externalizar los test
     # doctest.testfile('example2.txt')
-
-
-##class TransferData:
-##    def __init__(self, access_token):
-##        self.access_token = access_token
-##
-##    def upload_file(self, file_from, file_to):
-##        """upload a file to Dropbox using API v2
-##        """
-##        dbx = dropbox.Dropbox(self.access_token)
-##
-##        with open(file_from, 'rb') as f:
-##            dbx.files_upload(f.read(), file_to)
             
 
 def analisisAlcistaAccion(naccion, **config):
@@ -2927,15 +2914,6 @@ def main():
             f.write('</html>' + os.linesep)
             f.close()
 
-            #transferData=TransferData(access_token)
-            #file_to = (os.path.join("/Analisis", ficheroFecha))
-            # print (ficheroDatos)
-            # print (file_to)
-            #try:
-            #    transferData.upload_file(ficheroDatos, file_to)
-            #except:
-            #    print ("Token Expirado")
-            # os.remove(ficheroDatos)
 #
 #
 #    ficheroDatos=os.path.join(os.getcwd(),"\\Cobo.pck")
