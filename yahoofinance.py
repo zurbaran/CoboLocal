@@ -183,6 +183,9 @@ import csv
 import asyncio
 from playwright.async_api import async_playwright
 
+import asyncio
+from playwright.async_api import async_playwright
+
 ####################################################
 # modulos no estandar o propios
 from yahoofinancials import YahooFinancials
@@ -793,6 +796,7 @@ async def scrape_ticket_data(nombreticket, is_headless=True):
         try:
             datonombre_element = await page.locator('(//h1)[2]').inner_text()
             datonombre = datonombre_element.split('(')[0].strip()
+            datonombre = datonombre.replace('"','').replace("'","")
         except Exception as e:
             print(f"Error al obtener el nombre de la compañía: {e}")
 
