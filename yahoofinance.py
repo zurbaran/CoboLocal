@@ -183,6 +183,9 @@ import csv
 import asyncio
 from playwright.async_api import async_playwright
 
+import asyncio
+from playwright.async_api import async_playwright
+
 ####################################################
 # modulos no estandar o propios
 from yahoofinancials import YahooFinancials
