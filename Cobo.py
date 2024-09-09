@@ -97,6 +97,7 @@ from datetime import date, datetime
 import csv
 import glob
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import ast
 import sys
@@ -121,17 +122,30 @@ import HTML
 
 from settings import ARCHIVO_LOG, SUFIJOSEXCLUIDOS, MERCADOSEXCLUIDOS, CARPETAS, DIFREGACTUALIZAR, FILTROS, FILTROSTOPLOSS, ARCHIVOCONFIGBACKTEST
 
-try:
-    if os.path.getsize(ARCHIVO_LOG) >= (100*1024*1024):#524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
-        os.remove(ARCHIVO_LOG)
-except:
-    pass
+#try:
+#    if os.path.getsize(ARCHIVO_LOG) >= (100*1024*1024):#524288000: #Si el archivo log ocupa mas de 500 MB*1024*1024 lo borra
+#        os.remove(ARCHIVO_LOG)
+#except:
+#    pass
 
 borranoactualizados = False
 # 2018-02-02 15:45:52
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
-                    level=logging.DEBUG)
+# Crear un logger personalizado
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)  # Establecer el nivel global de logging
+
+# Configurar el RotatingFileHandler
+handler = RotatingFileHandler(ARCHIVO_LOG, maxBytes=10*1024*1024, backupCount=5)  # Máximo de 100 MB por archivo, 5 archivos de respaldo
+handler.setLevel(logging.DEBUG)
+
+# Mantener el formato actual de log
+formatter = logging.Formatter('%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s')
+handler.setFormatter(formatter)
+
+# Añadir el manejador (handler) al logger
+logger.addHandler(handler)
+
+# Ejemplo de uso (manteniendo la sintaxis actual)
 logging.debug(os.linesep)
 logging.debug('Inicio de Aplicacion')
 
@@ -408,9 +422,10 @@ def analisisAlcistaAccion(naccion, **config):
                         localizaLTi = False
                         break
 
-    #                    print LTi
+                        #print (LTi)
                     for j in range(LTi, -1, -1):
                         fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
+                        # logging.debug(f"Iteración {j}: Valores de entrada: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTi={LTi}, LTf={LTf}")
 
                         # if (minimoLTi>minimoLTf or minimoLTi==0.0) and LTi>0:# Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
                         if minimoLTi > minimoLTf and LTi > 0:  # Anadido el 23/01/2011 como estoy en alcista, si el minimodeLTi es mayor que el minimoLTf es porque esta por encima, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por debajo del LTf
@@ -422,12 +437,7 @@ def analisisAlcistaAccion(naccion, **config):
 
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s'
-                                          % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, minimoLTi))
-#                            LineaTendenciaInicio = ('0-0-0', 0.0)
-#                            LineaTendenciaFin = ('0-0-0', 0.0)
-#                            localizaLTi = False
-#                            localizaLTf = False
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
 #                            break
                             puntoLT = minimoj
                             j = 0
@@ -459,9 +469,8 @@ def analisisAlcistaAccion(naccion, **config):
 #                     print "LTf, i =", LTf, i
 #                     while j<=i:
                     for j in range(LTf, i + 1):
-
                         fechaj, _aperturaj, _maximoj, minimoj, _cierrej, _volumenj = datoshistoricos[j]
-
+                        # logging.debug(f"Iteración {j}: Valores de entrada: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTi={LTi}, LTf={LTf}")
                         # se me ha dado el caso de que cuando en los primeros ciclos alcistas, si estan demasiado proximos al inicio del historico de la accion, me toma como el mismo punto el punto de LTi y LTf
                         if LTf == LTi:
                             LTf += 1
@@ -472,8 +481,7 @@ def analisisAlcistaAccion(naccion, **config):
                             # TODO: analisis de GAWK, se queda en bucle aqui parado
                             puntoLT = round((minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; minimoLTi: %s'
-                                          % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, minimoLTi))
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
 #                            localizaLTi = False
@@ -877,9 +885,10 @@ def analisisBajistaAccion(naccion, **config):
                         localizaLTi = False
                         break
 
-    #                    print LTi
+                        #print LTi
                     for j in range(LTi, -1, -1):
                         fechaj, _aperturaj, maximoj, _minimoj, _cierrej, _volumenj = datoshistoricos[j]
+                        # logging.debug(f"Iteración {j}: Valores de entrada: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}")
 
                         if (maximoLTi < maximoLTf or maximoLTi == 0.0) and LTi > 0:  # como estoy en bajista, si el maximoLTi es menor que el maximoLTf es porque esta por debajo, asi que muevo el punto LTi una barra menos, en busca del un LTi que este por encima del LTf
                             LTi -= 1
@@ -887,11 +896,9 @@ def analisisBajistaAccion(naccion, **config):
                         try:
                             # TODO :  comprobar con un asser si el precioentradapuntoLT es igual al calculado con la siguiente funcion
                             # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
-
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTi; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s'
-                                          % (e, naccion.encode('UTF-8'), timming, fechaLTi, fechaj, maximoLTi))
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
 #                            localizaLTi = False
@@ -941,9 +948,8 @@ def analisisBajistaAccion(naccion, **config):
                             # entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
 
                             puntoLT = round((maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
-                        except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug('Error: %s buscando LTf; Accion: %s; timming: %s; FechaLTi: %s; Fecha barra del Error: %s; con un valor de maximoLTi: %s'
-                                          % (e, naccion.encode('UTF-8'), timming, fechaLTf, fechaj, maximoLTi))
+                        except (OverflowError, ZeroDivisionError) as e: 
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
 #                            LineaTendenciaInicio = ('0-0-0', 0.0)
 #                            LineaTendenciaFin = ('0-0-0', 0.0)
 #                            localizaLTi = False
@@ -2077,8 +2083,7 @@ def main():
             #     print((naccion[0] + ' anadido a la base de datos'))
 
             # Actualizamos las cotizaciones
-            
-            if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(naccion):
+            if 'null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(naccion):
                 BBDD.ticketborra(naccion)
             else:
                 # Descargamos/Actualizamos el historico
@@ -2396,9 +2401,8 @@ def main():
 
             while len(listatickets) > 0:
                 ticket = listatickets.popleft()
-                yahoofinance.cotizacionesTicket(ticket)
-                #if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(ticket):
-                #    BBDD.ticketborra(ticket)
+                if 'null,null,null,null,null,null,null,null' in yahoofinance.cotizacionesTicket(ticket):
+                    BBDD.ticketborra(ticket)
 
                 print((((datetime.now()).strftime("%m-%d %H:%M:%S")) + (' - Quedan por actualizar un total de : %d' % len(listatickets))))
 #                threads = list()

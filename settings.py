@@ -116,7 +116,7 @@ MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
                      'FSI', 'EUX',)
 """
 
-SUFIJOSEXCLUIDOS = ()
+SUFIJOSEXCLUIDOS = ('.TA',)
 
 MERCADOSEXCLUIDOS = ()
 

@@ -439,6 +439,88 @@ def ticketsCriptoIPO():
 
 def descargaHistoricoAccion(naccion, **config):
     """
+    Descarga las cotizaciones históricas de una acción usando yfinance con auto ajuste de valores.
+    
+    Parámetros:
+        naccion - nombre de la acción (str)
+        fechaini - fecha de inicio (AAAA-MM-DD)
+        fechafin - fecha fin (AAAA-MM-DD)
+        actualizar - True/False, para actualizar datos existentes
+        txt - True/False, para guardar los datos en un archivo CSV
+    """
+    
+    naccion = naccion.upper()
+    fechaini = config.get('fechaini', None)
+    fechafin = config.get('fechafin', None)
+    actualizar = config.get('actualizar', False)
+    txt = config.get('txt', True)
+
+    try:
+        # Descarga los datos históricos usando yfinance con auto ajuste activado
+        accion = yf.Ticker(naccion)
+        
+        if fechaini is None and fechafin is None:
+            # Descarga todo el histórico si no se especifican fechas
+            historial = accion.history(period="max", interval='1d', auto_adjust=True)
+        else:
+            # Descarga dentro del rango de fechas
+            historial = accion.history(start=fechaini, end=fechafin, interval='1d', auto_adjust=True)
+        
+        if historial.empty:
+            return 'URL invalida'
+        
+        # Procesamiento de los datos
+        datosaccion = BBDD.datoshistoricoslee(naccion)
+        if actualizar and len(datosaccion) > 1:
+            penultimoregistro = len(datosaccion) - 2
+            del datosaccion[penultimoregistro:]
+        else:
+            datosaccion = []
+        
+        n=0
+        
+        for i, row in historial.iterrows():
+            fecha = i.strftime('%Y-%m-%d')
+            apertura = round(float(row['Open']),3)
+            maximo = round(float(row['High']),3)
+            minimo = round(float(row['Low']),3)
+            cierre = round(float(row['Close']),3)
+            volumen = int(row['Volume'])
+            n=n+1
+            datosaccion.append((fecha, apertura, maximo, minimo, cierre, volumen))
+        print('%d Registros de la accion' % (n))
+        
+        # Comprobación de dividendos
+        if actualizar:
+            registrodescargadoprimero = datosaccion[0]
+            registroalmacenadoultimo = datosaccion[-1] if len(datosaccion) > 1 else ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
+            if registroalmacenadoultimo != registrodescargadoprimero:
+                logging.debug('Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s ' % (naccion, str(config), str(registroalmacenadoultimo), str(registrodescargadoprimero)))
+                print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
+                print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
+                print('El histórico ha cambiado por el pago de un dividendo, se necesita una descarga completa.')
+                return 'Pago Dividendos'
+
+        # Guardar en la base de datos
+        BBDD.datoshistoricosgraba(naccion, datosaccion)
+
+        # Guardar en archivo CSV si se requiere
+        if txt:
+            nombre = (str(naccion)).replace('.', '_')
+            archivo = os.path.join(os.getcwd(), 'Historicos', f"{nombre}.csv")
+            with open(archivo, 'w', newline='') as j:
+                writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep)
+                for n in datosaccion:
+                    writercsv.writerow(n)
+
+        return datosaccion
+
+    except Exception as e:
+        print(f"Error descargando datos para {naccion}: {e}")
+        return 'URL invalida'
+
+def descargaHistoricoAccion2(naccion, **config):
+    """
     Funcion para la descarga de las cotizaciones historicas de una accion.
 
     Parametros : naccion - nombre de la accion
@@ -711,9 +793,10 @@ def cotizacionesTicket(nombreticket):
 
     # Lista de funciones que obtienen datos
     funciones_obtencion_datos = [
-        cotizacionesTicketWeb,
         cotizacionesTicketyfinance,
+        # cotizacionesTicketWeb,
         # cotizacionesTicketYahooFinancials,  # Comentada por problemas con cookies
+
     ]
 
     # Seleccionar aleatoriamente una función de la lista
@@ -726,8 +809,8 @@ def cotizacionesTicket(nombreticket):
         logging.error(f"Error obteniendo datos de {funcion_seleccionada.__name__}: {str(e)}")
         return None
 
-    # 10% de probabilidad de comparar resultados entre dos funciones
-    if random.random() < 0.1:
+    # Solo realizar la comparación si hay más de una función en la lista
+    if len(funciones_obtencion_datos) > 1 and random.random() < 0.1:
         otra_funcion = random.choice([f for f in funciones_obtencion_datos if f != funcion_seleccionada])
 
         try:
@@ -753,7 +836,6 @@ def cotizacionesTicket(nombreticket):
                         print(f"Valor 1: {valor1}, Valor 2: {valor2}")
                         logging.debug(f"Discrepancia detectada: {valor1} vs {valor2} para {nombreticket}")
                 except ValueError:
-                    # Si no se puede convertir el valor a float (es decir, si es una cadena no numérica), se ignora la comparación
                     logging.warning(f"No se pudo convertir a float uno de los valores: {campos1[i]} o {campos2[i]}")
 
     # Guardar datos en la base de datos si no se está ejecutando como script principal
@@ -761,6 +843,7 @@ def cotizacionesTicket(nombreticket):
         BBDD.ticketcotizaciones(nombreticket, datosurl)
 
     return datosurl
+
 
 
 async def scrape_ticket_data(nombreticket, is_headless=True):
