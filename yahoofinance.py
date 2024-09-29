@@ -439,85 +439,105 @@ def ticketsCriptoIPO():
 
 def descargaHistoricoAccion(naccion, **config):
     """
-    Descarga las cotizaciones históricas de una acción usando yfinance con auto ajuste de valores.
-    
-    Parámetros:
-        naccion - nombre de la acción (str)
-        fechaini - fecha de inicio (AAAA-MM-DD)
-        fechafin - fecha fin (AAAA-MM-DD)
-        actualizar - True/False, para actualizar datos existentes
-        txt - True/False, para guardar los datos en un archivo CSV
+    Función para la descarga de las cotizaciones históricas de una acción usando yfinance.
+
+    Parámetros: 
+        naccion - nombre de la acción
+        fechaini - fecha de inicio (formato AAAA-MM-DD)
+        fechafin - fecha fin (opcional, por defecto es hoy)
+        timming - intervalo de tiempo (d - diario, w - semanal, m - mensual)
+        actualizar - False/True (si se debe actualizar los datos existentes)
+        txt - True/False (si se debe guardar un archivo .csv)
+
+    El return devuelve:
+        - los datos históricos
+        - 'Pago Dividendos' si hay cambios por dividendos
+        - 'URL invalida' si no se puede obtener los datos.
     """
-    
+
     naccion = naccion.upper()
     fechaini = config.get('fechaini', None)
-    fechafin = config.get('fechafin', None)
+    fechafin = config.get('fechafin', str(date.today()))
+    timming = config.get('timming', '1d')
     actualizar = config.get('actualizar', False)
     txt = config.get('txt', True)
 
+    if fechaini is not None:
+        #actualizar = True
+        #resto un dia a la fecha inicial porque esta descargando los datos en la actualizacion de un dia posterior al que queremos actualizar
+        fechaini = datetime.strptime(fechaini, '%Y-%m-%d') - timedelta(days=1)
+        fechaini = fechaini.strftime('%Y-%m-%d')  # Convertir de nuevo a cadena
+
+    # Descargar los datos con yfinance usando yf.Ticker
     try:
-        # Descarga los datos históricos usando yfinance con auto ajuste activado
         accion = yf.Ticker(naccion)
-        
-        if fechaini is None and fechafin is None:
-            # Descarga todo el histórico si no se especifican fechas
-            historial = accion.history(period="max", interval='1d', auto_adjust=True)
+        if fechaini is None: # and fechafin is None:
+            datos = accion.history(period="max", interval='1d', auto_adjust=True)
         else:
-            # Descarga dentro del rango de fechas
-            historial = accion.history(start=fechaini, end=fechafin, interval='1d', auto_adjust=True)
-        
-        if historial.empty:
-            return 'URL invalida'
-        
-        # Procesamiento de los datos
-        datosaccion = BBDD.datoshistoricoslee(naccion)
-        if actualizar and len(datosaccion) > 1:
-            penultimoregistro = len(datosaccion) - 2
-            del datosaccion[penultimoregistro:]
-        else:
-            datosaccion = []
-        
-        n=0
-        
-        for i, row in historial.iterrows():
-            fecha = i.strftime('%Y-%m-%d')
-            apertura = round(float(row['Open']),3)
-            maximo = round(float(row['High']),3)
-            minimo = round(float(row['Low']),3)
-            cierre = round(float(row['Close']),3)
-            volumen = int(row['Volume'])
-            n=n+1
-            datosaccion.append((fecha, apertura, maximo, minimo, cierre, volumen))
-        print('%d Registros de la accion' % (n))
-        
-        # Comprobación de dividendos
+            datos = accion.history(start=fechaini, end=fechafin, interval='1d', auto_adjust=True)
+    except Exception as e:
+        print(f"Error al descargar los datos: {e}")
+        return 'URL invalida'
+
+    if datos.empty:
+        print('No se pudieron obtener datos para la acción')
+        return 'URL invalida'
+
+    # Procesar datos existentes si se va a actualizar
+    datosaccion = BBDD.datoshistoricoslee(naccion)
+    
+    if actualizar: # and not datosaccion.empty:
+        penultimoregistro = len(datosaccion) - 2
+        del datosaccion[penultimoregistro:]
+    else:
+        datosaccion = []
+
+    # Cargar y comparar los nuevos datos
+    i = 0
+    print(f'{len(datos)} registros de la acción')
+
+    for index, row in datos.iterrows():
+        fecha = index.strftime('%Y-%m-%d')
+        apertura, maximo, minimo, cierre, volumen = (
+            abs(round(float(row['Open']), 3)),
+            abs(round(float(row['High']), 3)),
+            abs(round(float(row['Low']), 3)),
+            abs(round(float(row['Close']), 3)),
+            abs(int(row['Volume']))
+            )
+
         if actualizar:
-            registrodescargadoprimero = datosaccion[0]
-            registroalmacenadoultimo = datosaccion[-1] if len(datosaccion) > 1 else ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
+            registrodescargadoprimero = (fecha, apertura, maximo, minimo, cierre)
+            if len(datosaccion) > 1:
+                registroalmacenadoultimo = datosaccion[-1][0:5]
+            else:
+                registroalmacenadoultimo = ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
+
+            actualizar = False
             if registroalmacenadoultimo != registrodescargadoprimero:
-                logging.debug('Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s ' % (naccion, str(config), str(registroalmacenadoultimo), str(registrodescargadoprimero)))
+                print('El histórico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
+                logging.debug(f'Error: Cambio histórico; Acción: {naccion}; Último registro almacenado: {registroalmacenadoultimo}; Primer registro descargado: {registrodescargadoprimero}')
                 print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
                 print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
-                print('El histórico ha cambiado por el pago de un dividendo, se necesita una descarga completa.')
                 return 'Pago Dividendos'
+        else:
+            datosaccion.append((fecha, apertura, maximo, minimo, cierre, volumen))
 
-        # Guardar en la base de datos
-        BBDD.datoshistoricosgraba(naccion, datosaccion)
+    # Guardar datos en la base de datos
+    BBDD.datoshistoricosgraba(naccion, datosaccion)
 
-        # Guardar en archivo CSV si se requiere
-        if txt:
-            nombre = (str(naccion)).replace('.', '_')
-            archivo = os.path.join(os.getcwd(), 'Historicos', f"{nombre}.csv")
-            with open(archivo, 'w', newline='') as j:
-                writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep)
-                for n in datosaccion:
-                    writercsv.writerow(n)
+    # Guardar archivo .csv si se requiere
+    if txt:
+        nombre = naccion.replace('.', '_')
+        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], f'{nombre}.{timming}.csv')
+        with open(archivo, 'w', newline='') as j:
+            writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep)
+            for n in datosaccion:
+                fecha, apertura, maximo, minimo, cierre, volumen = n
+                writercsv.writerow([fecha, apertura, maximo, minimo, cierre, volumen])
 
-        return datosaccion
+    return datosaccion
 
-    except Exception as e:
-        print(f"Error descargando datos para {naccion}: {e}")
-        return 'URL invalida'
 
 def descargaHistoricoAccion2(naccion, **config):
     """

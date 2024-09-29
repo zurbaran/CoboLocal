@@ -441,6 +441,9 @@ def analisisAlcistaAccion(naccion, **config):
 #                            break
                             puntoLT = minimoj
                             j = 0
+                        except TypeError as e:
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            puntoLT = round(abs(minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
 
                         if puntoLT > minimoj:
                             LTi = j
@@ -488,6 +491,9 @@ def analisisAlcistaAccion(naccion, **config):
 #                            localizaLTf = False
 #                            break
                             puntoLT = minimoj
+                        except TypeError as e:
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            puntoLT = round(abs(minimoLTi * ((1 + (((1.0 + (((minimoLTf - minimoLTi) / minimoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
                         # puntoLT = round((minimoLTi*((minimoLTf/minimoLTi)**(365.0/(7.0*(LTf-LTi))))**((7.0/365)*j-(7.0/365.0)*LTi)),3)
 
                         # Aveces por falta de precision en el calculo del puntoLT creamos un bucle infinito que siempre impacta en la misma barra una y otra vez
@@ -906,6 +912,9 @@ def analisisBajistaAccion(naccion, **config):
 #                            break
                             puntoLT = maximoj
                             j = 0
+                        except TypeError as e:
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            puntoLT = round(abs(maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
 
                         if puntoLT < maximoj:
                             LTi = j
@@ -956,6 +965,9 @@ def analisisBajistaAccion(naccion, **config):
 #                            localizaLTf = False
 #                            break
                             puntoLT = maximoj  # asi no altero el LTf
+                        except TypeError as e:
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            puntoLT = round(abs(maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
 
                         if puntoLT < maximoj:
                             if (LTf == j or (puntoLT == 0.0 and LTf < i)) and not (j + 1 > i):
