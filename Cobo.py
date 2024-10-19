@@ -440,6 +440,11 @@ def analisisAlcistaAccion(naccion, **config):
                                 logging.debug(f"Se detectó un número complejo en el cálculo de puntoLT. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                                 # Aplicar abs() para obtener el valor absoluto, si es necesario, o solo usar la parte real
                                 puntoLT = abs(puntoLT) if abs(puntoLT.imag) > 0 else puntoLT.real
+
+                            # Verificamos si puntoLT es infinito o NaN antes de redondearlo
+                            if not math.isfinite(puntoLT):
+                                logging.debug(f"Valor no finito detectado en puntoLT, asignando valor de fallback.Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                puntoLT = minimoj  # Valor de fallback
                             
                             # Redondeamos puntoLT solo si no es complejo
                             puntoLT = round(puntoLT, 3)
@@ -498,7 +503,13 @@ def analisisAlcistaAccion(naccion, **config):
                                 # Aplicamos abs() para obtener el valor absoluto, si es necesario, o usamos solo la parte real
                                 puntoLT = abs(puntoLT) if abs(puntoLT.imag) > 0 else puntoLT.real
                             
+                            # Verificamos si puntoLT es infinito o NaN antes de redondearlo
+                            if not math.isfinite(puntoLT):
+                                logging.debug(f"Valor no finito detectado en puntoLT, asignando valor de fallback.Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: minimoLTi={minimoLTi}, minimoLTf={minimoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                puntoLT = minimoj  # Valor de fallback
+                            
                             # Redondeamos puntoLT solo si no es complejo
+                            print (puntoLT)
                             puntoLT = round(puntoLT, 3)
                             
                         except (OverflowError, ZeroDivisionError) as e:
@@ -922,24 +933,27 @@ def analisisBajistaAccion(naccion, **config):
                             
                             # Comprobamos si puntoLT es un número complejo
                             if isinstance(puntoLT, complex):
-                                logging.debug(f"Se detectó un número complejo en el cálculo de puntoLT. Buscando LTi; Accion: {naccion}. Timming: {timming}. "
-                                            f"FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                logging.debug(f"Se detectó un número complejo en el cálculo de puntoLT. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                                 # Aplicamos abs() para obtener el valor absoluto, si es necesario, o usamos solo la parte real
                                 puntoLT = abs(puntoLT) if abs(puntoLT.imag) > 0 else puntoLT.real
+
+                            # Verificamos si puntoLT es infinito o NaN antes de redondearlo
+                            if not math.isfinite(puntoLT):
+                                logging.debug(f"Valor no finito detectado en puntoLT, asignando valor de fallback.Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                puntoLT = maximoj  # Valor de fallback
                             
                             # Redondeamos puntoLT solo si no es complejo
                             puntoLT = round(puntoLT, 3)
 
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug(f"Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. "
-                                        f"Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            
                             # En caso de error, asignamos maximoj a puntoLT como valor de fallback
                             puntoLT = maximoj
                             j = 0  # Reinicio de j para evitar bucles infinitos si no se controla correctamente
 
                         except TypeError as e:
-                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. "
-                                        f"FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTi; Accion: {naccion}. Timming: {timming}. FechaLTi: {fechaLTi}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                             # Aplicamos abs() y recalculamos puntoLT
                             puntoLT = round(abs(maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
 
@@ -985,23 +999,25 @@ def analisisBajistaAccion(naccion, **config):
                             
                             # Comprobamos si puntoLT es un número complejo
                             if isinstance(puntoLT, complex):
-                                logging.debug(f"Se detectó un número complejo en el cálculo de puntoLT. Buscando LTf; Accion: {naccion}. Timming: {timming}. "
-                                            f"FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                logging.debug(f"Se detectó un número complejo en el cálculo de puntoLT. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                                 # Aplicamos abs() para obtener el valor absoluto, si es necesario, o usamos solo la parte real
                                 puntoLT = abs(puntoLT) if abs(puntoLT.imag) > 0 else puntoLT.real
+
+                            # Verificamos si puntoLT es infinito o NaN antes de redondearlo
+                            if not math.isfinite(puntoLT):
+                                logging.debug(f"Valor no finito detectado en puntoLT, asignando valor de fallback.Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                                puntoLT = maximoj  # Valor de fallback
                             
                             # Redondeamos puntoLT solo si no es complejo
                             puntoLT = round(puntoLT, 3)
 
                         except (OverflowError, ZeroDivisionError) as e:
-                            logging.debug(f"Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. "
-                                        f"Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            logging.debug(f"Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                             # En caso de error, asignamos maximoj a puntoLT como valor de fallback, pero no alteramos LTf
                             puntoLT = maximoj
 
                         except TypeError as e:
-                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. "
-                                        f"FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
+                            logging.debug(f"TypeError en el cálculo de puntoLT, se aplicará abs(): Error en cálculo: {e}. Buscando LTf; Accion: {naccion}. Timming: {timming}. FechaLTf: {fechaLTf}. Fecha barra del Error: {fechaj}. Valores: maximoLTi={maximoLTi}, maximoLTf={maximoLTf}, LTf={LTf}, LTi={LTi}, j={j}")
                             # Aplicamos abs() y recalculamos puntoLT
                             puntoLT = round(abs(maximoLTi * ((1 + (((1.0 + (((maximoLTf - maximoLTi) / maximoLTi))) ** (12.0 / (LTf - LTi))) - 1.0)) ** ((j - LTi) / 12.0))), 3)
 
