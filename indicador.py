@@ -92,6 +92,8 @@ Ejemplos de datos tomados en la accion ticket MSG
 """
 
 from datetime import date
+import decimal
+import cmath  # Importación adicional para manejo de números complejos
 
 def _test():
     """
@@ -775,6 +777,11 @@ def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
         # if entrada > stoploss:#Alcista
         try:
             rentab = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+        
+            # Verificación para convertir a real si es complejo
+            if isinstance(rentab, complex):
+                rentab = abs(rentab) if abs(rentab.imag) > 0 else rentab.real
+     
      
         # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
         # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
@@ -782,12 +789,15 @@ def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
         # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
         except OverflowError:
             print (fechainicial, precioinicial, fechafinal, preciofinal, diffechas)
-            import decimal
+
             rentab = ((((decimal.Decimal(1) + ((decimal.Decimal(preciofinal) - decimal.Decimal(precioinicial)) / decimal.Decimal(precioinicial))) ** (decimal.Decimal(365.0) / decimal.Decimal(diffechas))) - decimal.Decimal(1.0)) * decimal.Decimal(100.0)) / decimal.Decimal(100.0)
+            # Validación y ajuste si el valor es muy alto o bajo
+            #rentab = float(rentab)
             if rentab > 0:
                 rentab = 1000.0
             elif rentab < 0:
                 rentab = -1000.0
+    
     return rentab
 
 
