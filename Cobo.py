@@ -510,7 +510,7 @@ def analisisAlcistaAccion(naccion, **config):
                                 puntoLT = minimoj  # Valor de fallback
                             
                             # Redondeamos puntoLT solo si no es complejo
-                            print (puntoLT)
+                            #print (puntoLT)
                             puntoLT = round(puntoLT, 3)
                             
                         except (OverflowError, ZeroDivisionError) as e:
