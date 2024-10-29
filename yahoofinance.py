@@ -9,9 +9,9 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.06'
-__date__    = '2020-03-09'
-__author__  = ('Antonio Caballero',)
-__mail__    = ('zurbaran79@hotmail.com',)
+__date__ = '2020-03-09'
+__author__ = ('Antonio Caballero', )
+__mail__ = ('zurbaran79@hotmail.com', )
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -85,81 +85,83 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #
 #     Creative Commons may be contacted at http://creativecommons.org/.
 
-
 # paginas de interes
 # http://finance.yahoo.com/international
-
 
 #################################################
 # Constantes locales
 
-webheaders = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36'}
+webheaders = {
+    'User-Agent':
+    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36'
+}
 pausareconexion = 35
-prefijo = {'': '',
-           '.AS': '',
-           '.AT': 'gr.',
-           '.AX': '',
-           '.BA': 'ar.',
-           '.BC': 'es.',
-           '.BE': 'de.',
-           '.BI': 'es.',
-           '.BM': 'de.',
-           '.BO': 'in.',
-           '.BR': 'fr.',
-           '.CBT': '',
-           '.CME': '',
-           '.CMX': '',
-           '.CO': '',
-           '.DE': 'de.',
-           '.DU': 'de.',
-           '.EX': '',
-           '.F': 'de.',
-           '.HA': 'de.',
-           '.HK': 'hk.',
-           '.HM': 'de.',
-           '.IL': 'uk.',
-           '.IR': '',
-           '.JK': 'id.',
-           '.KL': '',
-           '.JP': 'kr.',
-           '.KQ': 'kr.',
-           '.KS': 'kr.',
-           '.L': 'uk.',
-           '.LS': '',
-           '.MA': 'es.',
-           '.MC': 'es.',
-           '.MDD': '',
-           '.ME': 'ru.',
-           '.MF': 'es.',
-           '.MI': 'it.',
-           '.MU': 'de.',
-           '.MX': 'mx.',
-           '.NS': 'in.',
-           '.NX': 'fr.',
-           '.NYB': '',
-           '.NYM': '',
-           '.NZ': 'nz.',
-           '.OB': '',
-           '.OL': '',
-           '.PA': 'fr.',
-           '.PK': '',
-           '.SA': 'br.',
-           '.SG': 'de.',
-           '.SI': 'sg.',
-           '.SN': 'cl.',
-           '.SS': '',
-           '.ST': '',
-           '.SW': '',
-           '.SZ': '',
-           '.TA': 'ta.',
-           '.TO': 'ca.',
-           '.TW': 'tw.',
-           '.TWO': 'tw.',
-           '.V': 'ca.',
-           '.VA': 'at.',
-           '.VI': '',
-           '.VX': '',
-           }
+prefijo = {
+    '': '',
+    '.AS': '',
+    '.AT': 'gr.',
+    '.AX': '',
+    '.BA': 'ar.',
+    '.BC': 'es.',
+    '.BE': 'de.',
+    '.BI': 'es.',
+    '.BM': 'de.',
+    '.BO': 'in.',
+    '.BR': 'fr.',
+    '.CBT': '',
+    '.CME': '',
+    '.CMX': '',
+    '.CO': '',
+    '.DE': 'de.',
+    '.DU': 'de.',
+    '.EX': '',
+    '.F': 'de.',
+    '.HA': 'de.',
+    '.HK': 'hk.',
+    '.HM': 'de.',
+    '.IL': 'uk.',
+    '.IR': '',
+    '.JK': 'id.',
+    '.KL': '',
+    '.JP': 'kr.',
+    '.KQ': 'kr.',
+    '.KS': 'kr.',
+    '.L': 'uk.',
+    '.LS': '',
+    '.MA': 'es.',
+    '.MC': 'es.',
+    '.MDD': '',
+    '.ME': 'ru.',
+    '.MF': 'es.',
+    '.MI': 'it.',
+    '.MU': 'de.',
+    '.MX': 'mx.',
+    '.NS': 'in.',
+    '.NX': 'fr.',
+    '.NYB': '',
+    '.NYM': '',
+    '.NZ': 'nz.',
+    '.OB': '',
+    '.OL': '',
+    '.PA': 'fr.',
+    '.PK': '',
+    '.SA': 'br.',
+    '.SG': 'de.',
+    '.SI': 'sg.',
+    '.SN': 'cl.',
+    '.SS': '',
+    '.ST': '',
+    '.SW': '',
+    '.SZ': '',
+    '.TA': 'ta.',
+    '.TO': 'ca.',
+    '.TW': 'tw.',
+    '.TWO': 'tw.',
+    '.V': 'ca.',
+    '.VA': 'at.',
+    '.VI': '',
+    '.VX': '',
+}
 # # Lista que contiene los mercados que estan fallando al descargar las cotizaciones del csv, leyendo la web para obtener la informacion
 # mercadosfail = ('.MC',)
 
@@ -195,13 +197,13 @@ from settings import CARPETAS, ARCHIVO_LOG
 # from BBDD import datoshistoricoslee, datoshistoricosgraba, ticketcotizaciones, monedacotizaciones
 import BBDD
 
-
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    filename=ARCHIVO_LOG,
+    format=
+    '%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+    level=logging.DEBUG)
 
 socket.setdefaulttimeout(pausareconexion)
-
 
 # TODO: Utilizando la red TOR para descargar la informacion de yahoo
 
@@ -247,7 +249,7 @@ def ticketsdeMercado(mercado):
     mercado = mercado.strip()
     while pagina <= ultimapagina:
         print('')
-        url = 'https://finance.yahoo.com/quote/' + mercado + '/components'# + str(pagina)
+        url = 'https://finance.yahoo.com/quote/' + mercado + '/components'  # + str(pagina)
         print(url)
 
         web = None
@@ -266,17 +268,21 @@ def ticketsdeMercado(mercado):
                     web = None
                     sleep(pausareconexion)
                     # raw_input('Pulsa una tecla cuando este reestablecida la conexion para continuar')
-            except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout) as e:
+            except (urllib.error.URLError, IOError, http.client.BadStatusLine,
+                    socket.timeout) as e:
                 print('Conexion Erronea')
                 # print(e.reason)
                 print(url, e)
                 web = None
-                logging.debug('Error: %s; Mercado: %s; Url: %s' % (e, mercado.encode('utf-8'), url.encode('utf-8')))
+                logging.debug(
+                    'Error: %s; Mercado: %s; Url: %s' %
+                    (e, mercado.encode('utf-8'), url.encode('utf-8')))
                 print('Pausa de %d segundos' % pausareconexion)
                 sleep(pausareconexion)
 
         if ultimapagina == 0:
-            busqueda = 'Siguiente</a> | <a href="/q/cp?s=' + (mercado.upper().replace('^', '%5E')) + '&amp;c='
+            busqueda = 'Siguiente</a> | <a href="/q/cp?s=' + (
+                mercado.upper().replace('^', '%5E')) + '&amp;c='
             ultimapaginainicio = web.find(busqueda)
             if ultimapaginainicio == -1:
                 ultimapagina = 0
@@ -304,7 +310,8 @@ def ticketsdeMercado(mercado):
         duerme()
         pagina += 1
     print('')
-    print(("%8d Tickets componen el mercado %s" % (len(ticketsanadidos), mercado)))
+    print(("%8d Tickets componen el mercado %s" %
+           (len(ticketsanadidos), mercado)))
     print('')
 
     return ticketsanadidos
@@ -329,21 +336,28 @@ async def scrape_tickets_ipo(diasatras=6, is_headless=True):
             url = f'https://finance.yahoo.com/calendar/ipo?day={fecha}'
             print(f"Accediendo a la URL: {url}")
             await page.goto(url)
-            await page.wait_for_load_state('networkidle')  # Esperar que la página cargue completamente
+            await page.wait_for_load_state(
+                'networkidle')  # Esperar que la página cargue completamente
 
             # Aceptar consentimiento si es necesario utilizando atributos constantes
             try:
-                accept_button = await page.query_selector("button[name='agree'][value='agree']")
+                accept_button = await page.query_selector(
+                    "button[name='agree'][value='agree']")
                 if accept_button:
                     await accept_button.click()
                     print("Consentimiento aceptado.")
             except Exception as e:
-                print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
+                print(
+                    f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}"
+                )
 
-            await page.wait_for_timeout(5000)  # Esperar para asegurarse de que la página está completamente cargada
+            await page.wait_for_timeout(
+                5000
+            )  # Esperar para asegurarse de que la página está completamente cargada
 
             # Extraer los tickets de la página
-            rows = await page.query_selector_all("tr.simpTblRow")  # Filas de la tabla de IPOs
+            rows = await page.query_selector_all("tr.simpTblRow"
+                                                 )  # Filas de la tabla de IPOs
             for row in rows:
                 ticket = await row.query_selector("a[data-test='quoteLink']")
                 if ticket:
@@ -354,8 +368,11 @@ async def scrape_tickets_ipo(diasatras=6, is_headless=True):
                     if ticket_clean not in tickets_anadidos and '%20' not in ticket_clean:
                         tickets_anadidos.append(ticket_clean)
 
-            print(f"{len(tickets_anadidos)} Tickets IPO añadidos hasta ahora para la fecha {fecha}")
-            await page.wait_for_timeout(3000)  # Esperar antes de pasar a la siguiente fecha
+            print(
+                f"{len(tickets_anadidos)} Tickets IPO añadidos hasta ahora para la fecha {fecha}"
+            )
+            await page.wait_for_timeout(
+                3000)  # Esperar antes de pasar a la siguiente fecha
 
         await browser.close()
 
@@ -364,7 +381,9 @@ async def scrape_tickets_ipo(diasatras=6, is_headless=True):
 
 def ticketsIPO(diasatras=6):
     """Función para llamar al scraping y retornar los tickets extraídos."""
-    return asyncio.run(scrape_tickets_ipo(diasatras=diasatras, is_headless=True))  # Headless = True para servidor sin entorno gráfico
+    return asyncio.run(
+        scrape_tickets_ipo(diasatras=diasatras, is_headless=True)
+    )  # Headless = True para servidor sin entorno gráfico
 
 
 async def scrape_tickets(is_headless=True):
@@ -378,49 +397,71 @@ async def scrape_tickets(is_headless=True):
 
         # Ir a la página inicial
         await page.goto("https://finance.yahoo.com/markets/crypto/all/")
-        await page.wait_for_load_state('networkidle')  # Asegurar que la página se ha cargado completamente
+        await page.wait_for_load_state(
+            'networkidle'
+        )  # Asegurar que la página se ha cargado completamente
 
         # Aceptar consentimiento si es necesario utilizando atributos constantes
         try:
-            accept_button = await page.query_selector("button[name='agree'][value='agree']")
+            accept_button = await page.query_selector(
+                "button[name='agree'][value='agree']")
             if accept_button:
                 await accept_button.click()
                 print("Consentimiento aceptado.")
         except Exception as e:
-            print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
+            print(
+                f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}"
+            )
 
-        await page.wait_for_timeout(5000)  # Espera para asegurar que la página está completamente cargada
+        await page.wait_for_timeout(
+            5000
+        )  # Espera para asegurar que la página está completamente cargada
 
         # Paginación y extracción de tickets
         while True:
-            rows = await page.query_selector_all("table tr")  # Filas de la tabla de criptomonedas
+            rows = await page.query_selector_all(
+                "table tr")  # Filas de la tabla de criptomonedas
             for row in rows:
                 columns = await row.query_selector_all("td")
                 if columns:
                     symbol = await columns[0].inner_text()
-                    clean_symbol = symbol.split('\n')[0]  # Limpiar el texto del ticket
+                    clean_symbol = symbol.split('\n')[
+                        0]  # Limpiar el texto del ticket
                     if clean_symbol not in tickets_anadidos:
                         tickets_anadidos.append(clean_symbol)
 
             # Verificar si hay más páginas y navegar
             try:
-                next_button = await page.query_selector("button[data-testid='next-page-button']")
+                next_button = await page.query_selector(
+                    "button[data-testid='next-page-button']")
                 if next_button:
                     is_disabled = await next_button.get_attribute('disabled')
                     if not is_disabled:
                         is_visible = await next_button.is_visible()
                         if is_visible:
-                            print("Siguiente página disponible, haciendo clic...")
+                            print(
+                                "Siguiente página disponible, haciendo clic..."
+                            )
                             await next_button.click()
-                            await page.wait_for_timeout(5000)  # Esperar para asegurar que la página se carga
+                            await page.wait_for_timeout(
+                                5000
+                            )  # Esperar para asegurar que la página se carga
                         else:
-                            print("El botón 'Siguiente' no está visible. Esperando...")
-                            await page.wait_for_timeout(3000)  # Esperar un poco más antes de volver a intentar
+                            print(
+                                "El botón 'Siguiente' no está visible. Esperando..."
+                            )
+                            await page.wait_for_timeout(
+                                3000
+                            )  # Esperar un poco más antes de volver a intentar
                     else:
-                        print("Botón 'Siguiente' deshabilitado, no hay más páginas.")
+                        print(
+                            "Botón 'Siguiente' deshabilitado, no hay más páginas."
+                        )
                         break
                 else:
-                    print("No se encontró el botón 'Siguiente'. Finalizando paginación.")
+                    print(
+                        "No se encontró el botón 'Siguiente'. Finalizando paginación."
+                    )
                     break  # Salir del bucle si no se encuentra el botón
             except Exception as e:
                 print(f"Error al manejar el botón 'Siguiente': {e}")
@@ -430,11 +471,13 @@ async def scrape_tickets(is_headless=True):
 
     return tickets_anadidos
 
+
 # Función normal que se puede llamar sincrónicamente
 def ticketsCriptoIPO():
     """Función para llamar al scraping y retornar los tickets extraídos."""
     # Ejecutar la función asíncrona scrape_tickets y retornar el resultado
-    return asyncio.run(scrape_tickets(is_headless=True))  # Headless = True para servidor sin entorno gráfico
+    return asyncio.run(scrape_tickets(
+        is_headless=True))  # Headless = True para servidor sin entorno gráfico
 
 
 def descargaHistoricoAccion(naccion, **config):
@@ -471,10 +514,15 @@ def descargaHistoricoAccion(naccion, **config):
     # Descargar los datos con yfinance usando yf.Ticker
     try:
         accion = yf.Ticker(naccion)
-        if fechaini is None: # and fechafin is None:
-            datos = accion.history(period="max", interval='1d', auto_adjust=True)
+        if fechaini is None:  # and fechafin is None:
+            datos = accion.history(period="max",
+                                   interval='1d',
+                                   auto_adjust=True)
         else:
-            datos = accion.history(start=fechaini, end=fechafin, interval='1d', auto_adjust=True)
+            datos = accion.history(start=fechaini,
+                                   end=fechafin,
+                                   interval='1d',
+                                   auto_adjust=True)
     except Exception as e:
         print(f"Error al descargar los datos: {e}")
         return 'URL invalida'
@@ -485,8 +533,8 @@ def descargaHistoricoAccion(naccion, **config):
 
     # Procesar datos existentes si se va a actualizar
     datosaccion = BBDD.datoshistoricoslee(naccion)
-    
-    if actualizar: # and not datosaccion.empty:
+
+    if actualizar:  # and not datosaccion.empty:
         penultimoregistro = len(datosaccion) - 2
         del datosaccion[penultimoregistro:]
     else:
@@ -498,16 +546,16 @@ def descargaHistoricoAccion(naccion, **config):
 
     for index, row in datos.iterrows():
         fecha = index.strftime('%Y-%m-%d')
-        apertura, maximo, minimo, cierre, volumen = (
-            abs(round(float(row['Open']), 3)),
-            abs(round(float(row['High']), 3)),
-            abs(round(float(row['Low']), 3)),
-            abs(round(float(row['Close']), 3)),
-            abs(int(row['Volume']))
-            )
+        apertura, maximo, minimo, cierre, volumen = (abs(
+            round(float(row['Open']), 3)), abs(round(
+                float(row['High']),
+                3)), abs(round(float(row['Low']),
+                               3)), abs(round(float(row['Close']),
+                                              3)), abs(int(row['Volume'])))
 
         if actualizar:
-            registrodescargadoprimero = (fecha, apertura, maximo, minimo, cierre)
+            registrodescargadoprimero = (fecha, apertura, maximo, minimo,
+                                         cierre)
             if len(datosaccion) > 1:
                 registroalmacenadoultimo = datosaccion[-1][0:5]
             else:
@@ -515,13 +563,20 @@ def descargaHistoricoAccion(naccion, **config):
 
             actualizar = False
             if registroalmacenadoultimo != registrodescargadoprimero:
-                print('El histórico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
-                logging.debug(f'Error: Cambio histórico; Acción: {naccion}; Último registro almacenado: {registroalmacenadoultimo}; Primer registro descargado: {registrodescargadoprimero}')
-                print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
-                print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
+                print(
+                    'El histórico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva'
+                )
+                logging.debug(
+                    f'Error: Cambio histórico; Acción: {naccion}; Último registro almacenado: {registroalmacenadoultimo}; Primer registro descargado: {registrodescargadoprimero}'
+                )
+                print('Ultimo registro almacenado: %s ' %
+                      str(registroalmacenadoultimo))
+                print('Primer registro descargado: %s ' %
+                      str(registrodescargadoprimero))
                 return 'Pago Dividendos'
         else:
-            datosaccion.append((fecha, apertura, maximo, minimo, cierre, volumen))
+            datosaccion.append(
+                (fecha, apertura, maximo, minimo, cierre, volumen))
 
     # Guardar datos en la base de datos
     BBDD.datoshistoricosgraba(naccion, datosaccion)
@@ -529,12 +584,14 @@ def descargaHistoricoAccion(naccion, **config):
     # Guardar archivo .csv si se requiere
     if txt:
         nombre = naccion.replace('.', '_')
-        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], f'{nombre}.{timming}.csv')
+        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'],
+                               f'{nombre}.{timming}.csv')
         with open(archivo, 'w', newline='') as j:
             writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep)
             for n in datosaccion:
                 fecha, apertura, maximo, minimo, cierre, volumen = n
-                writercsv.writerow([fecha, apertura, maximo, minimo, cierre, volumen])
+                writercsv.writerow(
+                    [fecha, apertura, maximo, minimo, cierre, volumen])
 
     return datosaccion
 
@@ -564,7 +621,7 @@ def descargaHistoricoAccion2(naccion, **config):
         o que la url no es valida 'URL invalida'
     """
 
-    global _cookie, webheaders#, _crumb
+    global _cookie, webheaders  #, _crumb
 
     naccion = naccion.upper()
     fechaini = config.get('fechaini', None)
@@ -572,14 +629,14 @@ def descargaHistoricoAccion2(naccion, **config):
     timming = config.get('timming', "d")
     actualizar = config.get('actualizar', False)
     txt = config.get('txt', True)
-#    if timming in '1dD':
-#        timming = 'd'
-#    elif timming in '2wW':
-#        timming ='w'
-#    elif timming in '4vV':
-#        timming = 'v'
-#    else:
-#        timming ='m'
+    #    if timming in '1dD':
+    #        timming = 'd'
+    #    elif timming in '2wW':
+    #        timming ='w'
+    #    elif timming in '4vV':
+    #        timming = 'v'
+    #    else:
+    #        timming ='m'
 
     if fechafin is None:
         fechafin = int(timegm((date.today().timetuple())))
@@ -609,19 +666,19 @@ def descargaHistoricoAccion2(naccion, **config):
 #    >>> time.mktime(hoy)
 #    1495749600.0
 
-    # mesfin = str(int(mesfin) - 1)
-    # La barra de hoy no puede estar "acabada" por eso no se descarga.
-    # Si la guardamos y efectivamente no esta acabada, cuando vuelva a descargar los datos
-    # y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
-    # diafin = str(int(diafin) - 1)
-    # le restamos un dia completo
+# mesfin = str(int(mesfin) - 1)
+# La barra de hoy no puede estar "acabada" por eso no se descarga.
+# Si la guardamos y efectivamente no esta acabada, cuando vuelva a descargar los datos
+# y al comprobar la ultima guardada con la primera descargada, no coincidiran y pensara que hay un pago de dividendos
+# diafin = str(int(diafin) - 1)
+# le restamos un dia completo
     fechafin = str(fechafin - 86400)
     # comprobandodividendo=False
 
     if fechaini is not None:
         fechaini = str(int(timegm((strptime(fechaini, "%Y-%m-%d")))))
         #fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
-    
+
     preurl = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true"
 
     # abrimos la pagina donde esta la informacion de las cotizaciones historicos del pais al que le corresponde la accion
@@ -632,12 +689,12 @@ def descargaHistoricoAccion2(naccion, **config):
 
     if fechaini is None:  # hay un caso en el que nos puede interesar que la funcion cambie el estado de actualizar en el caso de que venga de 'actualizacionDatosHisAccion' con actualizar=True pero con fechaini=None
         actualizar = False
-        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true" #&crumb=" + _crumb  # .decode('utf-8')
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=0&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true"  #&crumb=" + _crumb  # .decode('utf-8')
     else:
         actualizar = True
         #resto un dia a la fecha inicial porque esta descargando los datos en la actualizacion de un dia posterior al que queremos actualizar
         fechaini = str(int(fechaini) - 86400)
-        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true" #&crumb=" + _crumb  # .decode('utf-8')
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + naccion + "?period1=" + fechaini + "&period2=" + fechafin + "&interval=1d&events=history&includeAdjustedClose=true"  #&crumb=" + _crumb  # .decode('utf-8')
     f = None
     r = urllib.request.Request(url, headers=webheaders)
 
@@ -659,18 +716,25 @@ def descargaHistoricoAccion2(naccion, **config):
             #_crumb = None
             #yahoocrumb(naccion, renew=True, fechaini=config.get('fechaini', None), fechafin=config.get('fechafin', None))
             # si ha reintentado y error http 401, sin autorizacion, o error 404, no encontrado, o error 301, movido
-            if (reintento and not (e.code == 401)) or (e.code == 404) or (e.code == 301):
+            if (reintento and not (e.code == 401)) or (e.code
+                                                       == 404) or (e.code
+                                                                   == 301):
                 return 'URL invalida'
             elif e.code == 401:
-                logging.debug('Error: %s; Ticket: %s' % (e, naccion.encode('utf-8'), ))
+                logging.debug('Error: %s; Ticket: %s' % (
+                    e,
+                    naccion.encode('utf-8'),
+                ))
                 sleep(pausareconexion)
                 #logging.debug('Error: %s; Ticket: %s; crumb: %s' % (e, naccion.encode('utf-8'), _crumb))
             reintento = True
-        except (urllib.error.URLError, IOError, http.client.BadStatusLine, socket.timeout, http.client.IncompleteRead) as e:
+        except (urllib.error.URLError, IOError, http.client.BadStatusLine,
+                socket.timeout, http.client.IncompleteRead) as e:
             print('Conexion Perdida')
             # print(e.reason)
             print(url, e)
-            logging.debug('Error: %s; Ticket: %s; Url: %s' % (e, naccion.encode('utf-8'), url.encode('utf-8')))
+            logging.debug('Error: %s; Ticket: %s; Url: %s' %
+                          (e, naccion.encode('utf-8'), url.encode('utf-8')))
             f = None
             print('Pausa de %d segundos' % pausareconexion)
             sleep(pausareconexion)
@@ -754,29 +818,44 @@ def descargaHistoricoAccion2(naccion, **config):
             cierreajustado = 0.0
 
         # hacemos esto para que no hayan datos a cero, eliminando en el caso de que algun dato llege a cero todo la lista de datos anterior al dato donde es cero
+
+
 # #        if aperturaajustado == 0.0 or maximoajustado == 0.0 or minimoajustado == 0.0 or cierreajustado == 0.0:
 # #            datosaccion = []
 # #        else:
 
         if actualizar:
-            registrodescargadoprimero = (fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado)
+            registrodescargadoprimero = (fecha, aperturaajustado,
+                                         maximoajustado, minimoajustado,
+                                         cierreajustado)
             if len(datosaccion) > 1:
-                registroalmacenadoultimo = datosaccion[-1][0:5]  # no queremos comparar el volumen
+                registroalmacenadoultimo = datosaccion[-1][
+                    0:5]  # no queremos comparar el volumen
             else:
                 registroalmacenadoultimo = ('0000-00-00', 0.0, 0.0, 0.0, 0.0)
 
             actualizar = False
-            if (registroalmacenadoultimo != registrodescargadoprimero):  # and (registroalmacenadoultimo[0] == registrodescargadoprimero[0]):
-                print('El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva')
-                logging.debug('Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s ' % (naccion, str(config), str(registroalmacenadoultimo), str(registrodescargadoprimero)))
-                print ('Ultimo registro almacenado: %s ' % str(registroalmacenadoultimo))
-                print ('Primer registro descargado: %s ' % str(registrodescargadoprimero))
+            if (
+                    registroalmacenadoultimo != registrodescargadoprimero
+            ):  # and (registroalmacenadoultimo[0] == registrodescargadoprimero[0]):
+                print(
+                    'El historico ha cambiado por el pago de un dividendo, hay que hacer una descarga completa nueva'
+                )
+                logging.debug(
+                    'Error: Cambio historico; Ticket: %s; Parametros funcion: %s; Ultimo registro almacenado: %s; Primer registro descargado: %s '
+                    % (naccion, str(config), str(registroalmacenadoultimo),
+                       str(registrodescargadoprimero)))
+                print('Ultimo registro almacenado: %s ' %
+                      str(registroalmacenadoultimo))
+                print('Primer registro descargado: %s ' %
+                      str(registrodescargadoprimero))
                 # print 'Borrando todos los datos almacenados'
                 # borraTicket(naccion, BBDD=False)
                 return 'Pago Dividendos'
 
         else:
-            datosaccion.append((fecha, aperturaajustado, maximoajustado, minimoajustado, cierreajustado, volumen))
+            datosaccion.append((fecha, aperturaajustado, maximoajustado,
+                                minimoajustado, cierreajustado, volumen))
 
         i += 1
 
@@ -784,9 +863,13 @@ def descargaHistoricoAccion2(naccion, **config):
 
     if txt:
         nombre = (str(naccion)).replace('.', '_')
-        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'], nombre + '.' + timming + '.csv')
+        archivo = os.path.join(os.getcwd(), CARPETAS['Historicos'],
+                               nombre + '.' + timming + '.csv')
         j = open(archivo, 'w')
-        writercsv = csv.writer(j, delimiter=';', lineterminator=os.linesep, doublequote=True)
+        writercsv = csv.writer(j,
+                               delimiter=';',
+                               lineterminator=os.linesep,
+                               doublequote=True)
         for n in datosaccion:
 
             fecha, apertura, maximo, minimo, cierre, volumen = n
@@ -807,7 +890,7 @@ def descargaHistoricoAccion2(naccion, **config):
 def cotizacionesTicket(nombreticket):
     """Obtiene cotizaciones de un ticket utilizando diferentes fuentes de datos."""
     nombreticket = nombreticket.upper()
-    
+
     # Definir el margen de error
     margen_error = 0.01
 
@@ -816,7 +899,6 @@ def cotizacionesTicket(nombreticket):
         cotizacionesTicketyfinance,
         # cotizacionesTicketWeb,
         # cotizacionesTicketYahooFinancials,  # Comentada por problemas con cookies
-
     ]
 
     # Seleccionar aleatoriamente una función de la lista
@@ -826,23 +908,30 @@ def cotizacionesTicket(nombreticket):
         # Obtener datos de la función seleccionada
         datosurl = funcion_seleccionada(nombreticket)
     except Exception as e:
-        logging.error(f"Error obteniendo datos de {funcion_seleccionada.__name__}: {str(e)}")
+        logging.error(
+            f"Error obteniendo datos de {funcion_seleccionada.__name__}: {str(e)}"
+        )
         return None
 
     # Solo realizar la comparación si hay más de una función en la lista
     if len(funciones_obtencion_datos) > 1 and random.random() < 0.1:
-        otra_funcion = random.choice([f for f in funciones_obtencion_datos if f != funcion_seleccionada])
+        otra_funcion = random.choice([
+            f for f in funciones_obtencion_datos if f != funcion_seleccionada
+        ])
 
         try:
             # Obtener los datos de la segunda función
             datosurl_otra_funcion = otra_funcion(nombreticket)
         except Exception as e:
-            logging.error(f"Error obteniendo datos de {otra_funcion.__name__}: {str(e)}")
+            logging.error(
+                f"Error obteniendo datos de {otra_funcion.__name__}: {str(e)}")
             return datosurl
 
         # Separar los campos en listas para compararlos numéricamente
-        campos1 = datosurl.rsplit(',', 10)[3:]  # Últimos 10 campos de la primera función
-        campos2 = datosurl_otra_funcion.rsplit(',', 10)[3:]  # Últimos 10 campos de la segunda función
+        campos1 = datosurl.rsplit(
+            ',', 10)[3:]  # Últimos 10 campos de la primera función
+        campos2 = datosurl_otra_funcion.rsplit(
+            ',', 10)[3:]  # Últimos 10 campos de la segunda función
 
         # Asegurarse de que ambas listas tengan el mismo tamaño
         if len(campos1) == len(campos2):
@@ -852,18 +941,23 @@ def cotizacionesTicket(nombreticket):
                     valor1 = float(campos1[i])
                     valor2 = float(campos2[i])
                     if abs(valor1 - valor2) > margen_error:
-                        print(f"¡Alerta! Los valores en la posición {i} no coinciden dentro del margen de error.")
+                        print(
+                            f"¡Alerta! Los valores en la posición {i} no coinciden dentro del margen de error."
+                        )
                         print(f"Valor 1: {valor1}, Valor 2: {valor2}")
-                        logging.debug(f"Discrepancia detectada: {valor1} vs {valor2} para {nombreticket}")
+                        logging.debug(
+                            f"Discrepancia detectada: {valor1} vs {valor2} para {nombreticket}"
+                        )
                 except ValueError:
-                    logging.warning(f"No se pudo convertir a float uno de los valores: {campos1[i]} o {campos2[i]}")
+                    logging.warning(
+                        f"No se pudo convertir a float uno de los valores: {campos1[i]} o {campos2[i]}"
+                    )
 
     # Guardar datos en la base de datos si no se está ejecutando como script principal
     if __name__ != '__main__':
         BBDD.ticketcotizaciones(nombreticket, datosurl)
 
     return datosurl
-
 
 
 async def scrape_ticket_data(nombreticket, is_headless=True):
@@ -882,64 +976,85 @@ async def scrape_ticket_data(nombreticket, is_headless=True):
 
         # Ir a la URL del ticket
         await page.goto(urldatos)
-        await page.wait_for_load_state('networkidle')  # Esperar que la página cargue completamente
+        await page.wait_for_load_state(
+            'networkidle')  # Esperar que la página cargue completamente
 
         # Aceptar consentimiento si es necesario utilizando atributos constantes
         try:
-            accept_button = await page.query_selector("button[name='agree'][value='agree']")
+            accept_button = await page.query_selector(
+                "button[name='agree'][value='agree']")
             if accept_button:
                 await accept_button.click()
                 print("Consentimiento aceptado.")
         except Exception as e:
-            print(f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}")
+            print(
+                f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}"
+            )
 
-        await page.wait_for_timeout(5000)  # Esperar para asegurarse de que la página está completamente cargada
+        await page.wait_for_timeout(
+            5000
+        )  # Esperar para asegurarse de que la página está completamente cargada
 
         # Extraer datos específicos usando selectores precisos
         try:
             datonombre_element = await page.locator('(//h1)[2]').inner_text()
             datonombre = datonombre_element.split('(')[0].strip()
-            datonombre = datonombre.replace('"','').replace("'","")
+            datonombre = datonombre.replace('"', '').replace("'", "")
         except Exception as e:
             print(f"Error al obtener el nombre de la compañía: {e}")
 
         try:
-            datoValorActual = round(float(await page.get_attribute('fin-streamer[data-field="regularMarketPreviousClose"]', 'data-value')), 2)
+            datoValorActual = round(
+                float(await page.get_attribute(
+                    'fin-streamer[data-field="regularMarketPreviousClose"]',
+                    'data-value')), 2)
         except:
             print("No se encontró el valor actual.")
             datoValorActual = 'null'
 
         try:
-            day_range_text = await page.get_attribute('fin-streamer[data-field="regularMarketDayRange"]', 'data-value')
+            day_range_text = await page.get_attribute(
+                'fin-streamer[data-field="regularMarketDayRange"]',
+                'data-value')
             if day_range_text:
-                datominDia, datomaxDia = [round(float(x), 2) for x in day_range_text.split(' - ')]
+                datominDia, datomaxDia = [
+                    round(float(x), 2) for x in day_range_text.split(' - ')
+                ]
             else:
                 print("No se encontró el rango del día.")
         except:
             print("Error al extraer el rango del día.")
 
         try:
-            year_range_text = await page.get_attribute('fin-streamer[data-field="fiftyTwoWeekRange"]', 'data-value')
+            year_range_text = await page.get_attribute(
+                'fin-streamer[data-field="fiftyTwoWeekRange"]', 'data-value')
             if year_range_text:
-                datomin52, datomax52 = [round(float(x), 2) for x in year_range_text.split(' - ')]
+                datomin52, datomax52 = [
+                    round(float(x), 2) for x in year_range_text.split(' - ')
+                ]
             else:
                 print("No se encontró el rango de 52 semanas.")
         except:
             print("Error al extraer el rango de 52 semanas.")
 
         try:
-            datovolumen = int((await page.get_attribute('fin-streamer[data-field="regularMarketVolume"]', 'data-value')).replace(',', '').replace('.', ''))
+            datovolumen = int((await page.get_attribute(
+                'fin-streamer[data-field="regularMarketVolume"]',
+                'data-value')).replace(',', '').replace('.', ''))
         except:
             print("No se encontró el volumen actual.")
 
         try:
-            datovolumenMedio = int((await page.get_attribute('fin-streamer[data-field="averageVolume"]', 'data-value')).replace(',', '').replace('.', ''))
+            datovolumenMedio = int((await page.get_attribute(
+                'fin-streamer[data-field="averageVolume"]',
+                'data-value')).replace(',', '').replace('.', ''))
         except:
             print("No se encontró el volumen promedio.")
 
         # Intentar obtener el mercado de la acción
         try:
-            datomercado_element = await page.locator('span.exchange').text_content(timeout=10000)
+            datomercado_element = await page.locator(
+                'span.exchange').text_content(timeout=10000)
             if datomercado_element:
                 datomercado = datomercado_element.strip().split(' - ')[0]
         except:
@@ -991,7 +1106,7 @@ def cotizacionesTicketYahooFinancials(nombreticket):
     for ticket in tickers:
         # Instanciar el objeto YahooFinancials para el ticket
         yahoo = YahooFinancials(ticket)
-        
+
         try:
             # Obtener los datos financieros y de cotización
             datos = yahoo.get_summary_data()
@@ -999,11 +1114,15 @@ def cotizacionesTicketYahooFinancials(nombreticket):
         except Exception as e:
             logging.debug('Error al obtener datos para %s: %s', ticket, e)
             continue
-        
+
         # Extraer la información relevante o manejar errores si faltan datos
-        datonombre = datos2.get(ticket, {}).get('longName', 'null').strip('"').replace('"', '')
+        datonombre = datos2.get(ticket,
+                                {}).get('longName',
+                                        'null').strip('"').replace('"', '')
         datomercado = datos2.get(ticket, {}).get('exchange', 'null')
-        datoValorActual = datos.get(ticket, {}).get('regularMarketPreviousClose', 'null')
+        datoValorActual = datos.get(ticket,
+                                    {}).get('regularMarketPreviousClose',
+                                            'null')
         datominDia = datos.get(ticket, {}).get('regularMarketDayLow', 'null')
         datomaxDia = datos.get(ticket, {}).get('regularMarketDayHigh', 'null')
         datomin52 = datos.get(ticket, {}).get('fiftyTwoWeekLow', 'null')
@@ -1022,7 +1141,7 @@ def cotizacionesTicketYahooFinancials(nombreticket):
     # Imprimir y devolver la cadena final con los datos de todos los tickets procesados
     datosurl_final = "\n".join(datosurl_list)
     print(f"Datos de YahooFinancials:\n{datosurl_final}")
-    
+
     return datosurl_final
 
 
@@ -1049,7 +1168,7 @@ def cotizacionesTicketyfinance(nombreticket):
     for ticket in tickers:
         # Crear instancia de yfinance para el ticket
         yahoo = yf.Ticker(ticket)
-        
+
         try:
             # Obtener la información general del ticket
             datos = yahoo.info
@@ -1058,15 +1177,21 @@ def cotizacionesTicketyfinance(nombreticket):
             datos = None  # Asegurarse de que los datos sean None en caso de error
 
         # Extraer información o asignar valores predeterminados
-        datonombre = datos.get('longName', 'null').replace('"', '') if datos else 'null'
+        datonombre = datos.get('longName', 'null').replace(
+            '"', '') if datos else 'null'
         datomercado = datos.get('exchange', 'null') if datos else 'null'
-        datoValorActual = datos.get('regularMarketPreviousClose', 'null') if datos else 'null'
-        datominDia = datos.get('regularMarketDayLow', 'null') if datos else 'null'
-        datomaxDia = datos.get('regularMarketDayHigh', 'null') if datos else 'null'
+        datoValorActual = datos.get('regularMarketPreviousClose',
+                                    'null') if datos else 'null'
+        datominDia = datos.get('regularMarketDayLow',
+                               'null') if datos else 'null'
+        datomaxDia = datos.get('regularMarketDayHigh',
+                               'null') if datos else 'null'
         datomin52 = datos.get('fiftyTwoWeekLow', 'null') if datos else 'null'
         datomax52 = datos.get('fiftyTwoWeekHigh', 'null') if datos else 'null'
-        datovolumen = datos.get('regularMarketVolume', 'null') if datos else 'null'
-        datovolumenMedio = datos.get('averageVolume', 'null') if datos else 'null'
+        datovolumen = datos.get('regularMarketVolume',
+                                'null') if datos else 'null'
+        datovolumenMedio = datos.get('averageVolume',
+                                     'null') if datos else 'null'
 
         # Asignar error si no se pudo obtener el nombre del ticket
         if datonombre == 'null':
@@ -1079,7 +1204,7 @@ def cotizacionesTicketyfinance(nombreticket):
     # Unir los datos de todos los tickets en una sola cadena
     datosurl_final = "\n".join(datosurl_list)
     print(f"Datos de yFinance:\n{datosurl_final}")
-    
+
     return datosurl_final
 
 
@@ -1092,19 +1217,20 @@ def cotizacionesMoneda(nombreticket):
         datos = yahoo.info
     except Exception as e:
         #duerme()
-        logging.debug('Error: %s; Ticket: %s' % (e, nombreticket.encode('utf-8')))
-        print (nombreticket)
-        print (datos)
+        logging.debug('Error: %s; Ticket: %s' %
+                      (e, nombreticket.encode('utf-8')))
+        print(nombreticket)
+        print(datos)
 
     if not (datos == None) and 'regularMarketPreviousClose' in datos:
         datoValorActual = datos['regularMarketPreviousClose']
     else:
         datoValorActual = '0'
-    
+
     # urldatos = "https://finance.yahoo.com/quote/" + nombreticket.replace("=", "%3D") + "?p=" + nombreticket.replace("=", "%3D")
     # web = None
     # r = urllib.request.Request(urldatos, headers=webheaders)
-    # 
+    #
     # while web is None:
     #     try:
     #         f = urllib.request.urlopen(r, timeout=pausareconexion)
@@ -1126,12 +1252,12 @@ def cotizacionesMoneda(nombreticket):
     #     except UnicodeDecodeError:
     #         print((f.read()))
     #         print(nombreticket)
-    # 
+    #
     # inicio = web.find('data-symbol="'+nombreticket+'"')
     # inicio = web.find('data-field="regularMarketPrice"',inicio) + len('data-field="regularMarketPrice"')
     # inicio = web.find('">',inicio) + len ('">')
     # fin = web.find('</', inicio)
-    # 
+    #
     # try:
     #     datoValorActual = float(web[inicio:fin].replace(',', '.'))
     # except ValueError:
@@ -1183,7 +1309,8 @@ def subirtimming(datos, **config):
         if timming == 'm':
             # %Y     Year with century as a decimal number.
             # %m     Month as a decimal number [01,12].
-            fechaagr = strftime('%Y, %m', strptime(datos[0][fechadatos], '%Y-%m-%d'))
+            fechaagr = strftime('%Y, %m',
+                                strptime(datos[0][fechadatos], '%Y-%m-%d'))
         elif timming == 'w':
             # %w     Weekday as a decimal number [0(Sunday),6].
             # el siguiente domigo a la fecha de inico
@@ -1195,36 +1322,46 @@ def subirtimming(datos, **config):
         while i < len(datos):
             fecha = datos[i][fechadatos]
             fecha = strptime(fecha, '%Y-%m-%d')
-# FIXME : en mensual es correcto, cuando cambia de ANO y MES, pero en semanal hay que acumular de domingo a domingo, siendo el corte el domingo siguiente
-            if ((timming == 'm' and fechaagr != strftime('%Y, %m', fecha)) or (timming == 'w' and datos[i][fechadatos] >= str(fechaagr))) and i != inicio:
+            # FIXME : en mensual es correcto, cuando cambia de ANO y MES, pero en semanal hay que acumular de domingo a domingo, siendo el corte el domingo siguiente
+            if ((timming == 'm' and fechaagr != strftime('%Y, %m', fecha)) or
+                (timming == 'w'
+                 and datos[i][fechadatos] >= str(fechaagr))) and i != inicio:
                 if timming == 'm':
                     fechaagr = strftime('%Y, %m', fecha)
                 elif timming == 'w':
-                    fechaagr = list(map(int, (((datos[i][fechadatos]).split('-')))))
+                    fechaagr = list(
+                        map(int, (((datos[i][fechadatos]).split('-')))))
                     fechaagr = (date(fechaagr[0], fechaagr[1], fechaagr[2]))
                     fechaagr += timedelta(days=6 - fechaagr.weekday())
 
                 maximo = max([(n[maximodatos]) for n in datos][inicio:i])
                 minimo = min([(n[minimodatos]) for n in datos][inicio:i])
                 # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
-                volumen = sum([(n[volumendatos]) for n in datos][inicio:i]) / len([(n[volumendatos]) for n in datos][inicio:i])
+                volumen = sum([(n[volumendatos]) for n in datos
+                               ][inicio:i]) / len([(n[volumendatos])
+                                                   for n in datos][inicio:i])
 
-                datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[i - 1][cierredatos], volumen))
+                datostimming.append(
+                    (datos[inicio][fechadatos], datos[inicio][aperturadatos],
+                     maximo, minimo, datos[i - 1][cierredatos], volumen))
                 inicio = i
             i += 1
 
         maximo = max([(n[maximodatos]) for n in datos][inicio:i])
         minimo = min([(n[minimodatos]) for n in datos][inicio:i])
         # al generar los timmings hicimos que acumulase el volumen en vez de promediarlo como lo teniamos anteriormente
-        volumen = sum([(n[volumendatos]) for n in datos][inicio:i]) / len([(n[volumendatos]) for n in datos][inicio:i])
-        datostimming.append((datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo, minimo, datos[-1][cierredatos], volumen))
+        volumen = sum([(n[volumendatos]) for n in datos][inicio:i]) / len(
+            [(n[volumendatos]) for n in datos][inicio:i])
+        datostimming.append(
+            (datos[inicio][fechadatos], datos[inicio][aperturadatos], maximo,
+             minimo, datos[-1][cierredatos], volumen))
 
     return datostimming
 
 
 # def yahoocrumb(naccion, **config):
 #     """Funcion para la descarga de la cookie o campo crumb
-# 
+#
 #     Parametros : naccion - nombre de la accion
 #                 fechaini - fecha de inicio
 #                 fechafin - fecha fin
@@ -1232,34 +1369,34 @@ def subirtimming(datos, **config):
 #     Modificado desde Mayo 2017
 #     el formato de las fechas es en segundos, considerando la fecha 1 de enero de 1970 como el punto 0,
 #     apartir de ahi en segundos desde esa fecha en adelante
-# 
+#
 #     el return devuelve valor de crumb
 #     """
 #     global cookier, _cookie, _crumb
-# 
+#
 #     # Perform a Yahoo financial lookup on SP500
 #     cookier.cookiejar.clear()
-# 
+#
 #     naccion = naccion.upper()
 #     fechaini = config.get('fechaini', None)
 #     fechafin = config.get('fechafin', None)
-# 
+#
 #     if fechafin is None:
 #         fechafin = int(mktime((date.today().timetuple())))
-# 
+#
 #     else:
-# 
+#
 #         fechafin = int(mktime((strptime(fechafin, "%Y-%m-%d"))))
 #     fechafin = str(fechafin - 86400)
-# 
+#
 #     if fechaini is not None:
 #         fechaini = str(int(mktime((strptime(fechaini, "%Y-%m-%d")))))
-# 
+#
 #     preurl = "https://finance.yahoo.com/quote/" + naccion + "/history?period1=0&period2=" + fechafin + "&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true"
 #     #     logging.debug('Error: Falta relacion Prefijo-Sufijo; Sufijo: %s' % sufijo)
-# 
+#
 #     r1 = urllib.request.Request(preurl, headers=webheaders)
-# 
+#
 #     alines = None
 #     while alines is None:
 #         try:
@@ -1282,13 +1419,13 @@ def subirtimming(datos, **config):
 #         finally:
 #             print('Pausa de 1 segundo')
 #             duerme(tiempo=1000)
-# 
+#
 #     crumbinweb = (('"CrumbStore":{"crumb":"', '"}'),
 #                   ('"],"crumb":"', '","'),
 #                   (':{"user":{"crumb":"', '","'),
 #                   ('&crumb=', '&')
 #                   )
-# 
+#
 #     crumbOK = False
 #     while crumbOK is False:
 #         # TODO: limitar el len(crumb) a la longitud que debe de tener hasta que localice y encuentre el verdadero crumb, utilizando los distintos formatos de busqueda
@@ -1306,7 +1443,7 @@ def subirtimming(datos, **config):
 #                     break
 #                 else:
 #                     print(crumb)
-# 
+#
 #     # Extract the crumb from the response
 #     # cs = alines.find('CrumbStore')
 #     # cr = alines.find('crumb', cs + 10)
@@ -1315,7 +1452,7 @@ def subirtimming(datos, **config):
 #     # q2 = alines.find('"', q1 + 1)
 #     # crumb = alines[q1 + 1:q2]
 #     _crumb = crumb
-# 
+#
 #     # Extract the cookie from cookiejar
 #     for c in cookier.cookiejar:
 #         # print(c)
@@ -1324,11 +1461,10 @@ def subirtimming(datos, **config):
 #         if c.name != 'B':
 #             continue
 #         _cookie = c.value
-# 
+#
 #     print('Cookie:', _cookie)
 #     print('Crumb:', _crumb)
 #     # return _crumb
-
 
 if __name__ == '__main__':
     _test()

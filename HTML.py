@@ -52,7 +52,6 @@ __author__ = 'Philippe Lagadec'
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license and that you accept its terms.
 
-
 #--- CHANGES ------------------------------------------------------------------
 
 # 2008-10-06 v0.01 PL: - First version
@@ -63,7 +62,6 @@ __author__ = 'Philippe Lagadec'
 #                        (thanks to an idea submitted by Michal Cernoevic)
 # 2009-07-28 v0.04 PL: - improved column styles, workaround for Mozilla
 
-
 #-------------------------------------------------------------------------------
 #TODO:
 # - method to return a generator (yield each row) instead of a single string
@@ -72,7 +70,6 @@ __author__ = 'Philippe Lagadec'
 # - constants for standard colors
 # - use lxml to generate well-formed HTML ?
 # - add classes/functions to generate a HTML page, paragraphs, headings, etc...
-
 
 #--- THANKS --------------------------------------------------------------------
 
@@ -87,18 +84,16 @@ __author__ = 'Philippe Lagadec'
 # Columns alignement and style, one of the oldest and trickiest bugs in Mozilla:
 # https://bugzilla.mozilla.org/show_bug.cgi?id=915
 
-
 #--- CONSTANTS -----------------------------------------------------------------
 
 # Table style to get thin black lines in Mozilla/Firefox instead of 3D borders
 TABLE_STYLE_THINBORDER = "border: 1px solid #000000; border-collapse: collapse;"
 #TABLE_STYLE_THINBORDER = "border: 1px solid #000000;"
 
-
 #=== CLASSES ===================================================================
 
-class TableCell (object):
 
+class TableCell(object):
     """
     a TableCell object is used to create a cell in a HTML table. (TD or TH).
 
@@ -119,8 +114,16 @@ class TableCell (object):
 
     """
 
-    def __init__(self, text="", bgcolor=None, header=False, width=None,
-                 align=None, char=None, charoff=None, valign=None, style=None,
+    def __init__(self,
+                 text="",
+                 bgcolor=None,
+                 header=False,
+                 width=None,
+                 align=None,
+                 char=None,
+                 charoff=None,
+                 valign=None,
+                 style=None,
                  attribs=None):
         """TableCell constructor."""
         self.text = text
@@ -158,11 +161,11 @@ class TableCell (object):
         else:
             return '  <td%s>%s</td>\n' % (attribs_str, text)
 
+
 #-------------------------------------------------------------------------------
 
 
-class TableRow (object):
-
+class TableRow(object):
     """
     a TableRow object is used to create a row in a HTML table. (TR tag).
 
@@ -178,9 +181,16 @@ class TableRow (object):
 
     """
 
-    def __init__(self, cells=None, bgcolor=None, header=False, attribs=None,
-                 col_align=None, col_valign=None, col_char=None,
-                 col_charoff=None, col_styles=None):
+    def __init__(self,
+                 cells=None,
+                 bgcolor=None,
+                 header=False,
+                 attribs=None,
+                 col_align=None,
+                 col_valign=None,
+                 col_char=None,
+                 col_charoff=None,
+                 col_styles=None):
         """TableCell constructor."""
         self.bgcolor = bgcolor
         self.cells = cells
@@ -203,9 +213,9 @@ class TableRow (object):
         result = ' <tr%s>\n' % attribs_str
         for cell in self.cells:
             try:
-                col = self.cells.index(cell)    # cell column index
+                col = self.cells.index(cell)  # cell column index
             except UnicodeWarning:
-                print (cell)
+                print(cell)
                 input()
             if not isinstance(cell, TableCell):
                 cell = TableCell(cell, header=self.header)
@@ -225,11 +235,11 @@ class TableRow (object):
         result += ' </tr>\n'
         return result
 
+
 #-------------------------------------------------------------------------------
 
 
-class Table (object):
-
+class Table(object):
     """
     a Table object is used to create a HTML table. (TABLE tag).
 
@@ -252,10 +262,21 @@ class Table (object):
 
     """
 
-    def __init__(self, rows=None, border='1', style=None, width=None,
-                 cellspacing=None, cellpadding=4, attribs=None, header_row=None,
-                 col_width=None, col_align=None, col_valign=None,
-                 col_char=None, col_charoff=None, col_styles=None):
+    def __init__(self,
+                 rows=None,
+                 border='1',
+                 style=None,
+                 width=None,
+                 cellspacing=None,
+                 cellpadding=4,
+                 attribs=None,
+                 header_row=None,
+                 col_width=None,
+                 col_align=None,
+                 col_valign=None,
+                 col_char=None,
+                 col_charoff=None,
+                 col_styles=None):
         """TableCell constructor."""
         self.border = border
         self.style = style
@@ -316,7 +337,7 @@ class Table (object):
 ##                    col += ' valign="%s"' % self.col_valign[i]
 ##            except: pass
 ##            result += '<COL%s>\n' % col
-        # First insert a header row if specified:
+# First insert a header row if specified:
         if self.header_row:
             if not isinstance(self.header_row, TableRow):
                 result += str(TableRow(self.header_row, header=True))
@@ -345,8 +366,8 @@ class Table (object):
 
 #-------------------------------------------------------------------------------
 
-class List (object):
 
+class List(object):
     """
     a List object is used to create an ordered or unordered list in HTML.
 
@@ -418,8 +439,8 @@ class List (object):
 ##            attribs_str += ' %s="%s"' % (attr, self.attribs[attr])
 ##        return '<a%s>%s</a>' % (attribs_str, text)
 
-
 #=== FUNCTIONS ================================================================
+
 
 # much simpler definition of a link as a function:
 def Link(text, url):
@@ -456,24 +477,23 @@ if __name__ == '__main__':
     t.rows.append(TableRow(['D', 'E', 'F']))
     t.rows.append(('i', 'j', 'k'))
     f.write(str(t) + '<p>\n')
-    print ((str(t)))
-    print (('-' * 79))
+    print((str(t)))
+    print(('-' * 79))
 
-    t2 = Table([
-        ('1', '2'),
-        ['3', '4']
-        ], width='100%', header_row=('col1', 'col2'),
-        col_width=('', '75%'))
+    t2 = Table([('1', '2'), ['3', '4']],
+               width='100%',
+               header_row=('col1', 'col2'),
+               col_width=('', '75%'))
     f.write(str(t2) + '<p>\n')
-    print (t2)
-    print (('-' * 79))
+    print(t2)
+    print(('-' * 79))
 
     t2.rows.append(['5', '6'])
     t2.rows[1][1] = TableCell('new', bgcolor='red')
     t2.rows.append(TableRow(['7', '8'], attribs={'align': 'center'}))
     f.write(str(t2) + '<p>\n')
-    print (t2)
-    print (('-' * 79))
+    print(t2)
+    print(('-' * 79))
 
     # sample table with column attributes and styles:
     table_data = [
@@ -482,28 +502,31 @@ if __name__ == '__main__':
         ['Johnson', 'Paul', 62, 10.55],
     ]
     htmlcode = table(table_data,
-                          header_row=['Last name', 'First name', 'Age', 'Score'],
-                          col_width=['', '20%', '10%', '10%'],
-                          col_align=['left', 'center', 'right', 'char'],
-                          col_styles=['font-size: large', '', 'font-size: small', 'background-color:yellow'])
+                     header_row=['Last name', 'First name', 'Age', 'Score'],
+                     col_width=['', '20%', '10%', '10%'],
+                     col_align=['left', 'center', 'right', 'char'],
+                     col_styles=[
+                         'font-size: large', '', 'font-size: small',
+                         'background-color:yellow'
+                     ])
     f.write(htmlcode + '<p>\n')
-    print (htmlcode)
-    print (('-' * 79))
+    print(htmlcode)
+    print(('-' * 79))
 
     def gen_table_squares(n):
         """
         Generator to create table rows for integers from 1 to n
         """
-##        # First, header row:
-##        yield TableRow(('x', 'square(x)'), header=True, bgcolor='blue')
-##        # Then all rows:
+        ##        # First, header row:
+        ##        yield TableRow(('x', 'square(x)'), header=True, bgcolor='blue')
+        ##        # Then all rows:
         for x in range(1, n + 1):
             yield (x, x * x)
 
     t = Table(rows=gen_table_squares(10), header_row=('x', 'square(x)'))
     f.write(str(t) + '<p>\n')
 
-    print (('-' * 79))
+    print(('-' * 79))
     l = List(['aaa', 'bbb', 'ccc'])
     f.write(str(l) + '<p>\n')
     l.ordered = True

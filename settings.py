@@ -10,7 +10,7 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.06'
-__date__    = '2020-03-09'
+__date__ = '2020-03-09'
 __author__ = ('Antonio Caballero', 'Paco Corbi')
 __mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -91,17 +91,25 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 import os
 #################################################
 # Constantes locales
-CARPETAS = {'Analisis': 'Analisis', 'Backtest': 'Backtest', 'Datos': 'Datos',
-            'Historicos': 'Historicos', 'Log': 'Log', 'Graficos': 'amstock'}
+CARPETAS = {
+    'Analisis': 'Analisis',
+    'Backtest': 'Backtest',
+    'Datos': 'Datos',
+    'Historicos': 'Historicos',
+    'Log': 'Log',
+    'Graficos': 'amstock'
+}
 
 DIFREGACTUALIZAR = {'historico': 10, 'cotizacion': 10, 'noActualizados': 120}
 
 FILTROSTOPLOSS = {'m': 0.04, 'w': 0.03, 'd': 0.02}
 
-FILTROS = {'volumen': 20000000,
-           'rentMinima': 0.35,
-           'invMinima': 800,
-           'riesgo': 200}
+FILTROS = {
+    'volumen': 20000000,
+    'rentMinima': 0.35,
+    'invMinima': 800,
+    'riesgo': 200
+}
 """
 SUFIJOSEXCLUIDOS = ('.BA', '.BC', '.BE', '.BI', '.BM', '.BO', '.CBT', '.CME',
                     '.CMX', '.DU', '.EX', '.F', '.HA', '.HM', '.JK', '.KL',
@@ -116,7 +124,7 @@ MERCADOSEXCLUIDOS = ('NGM', 'PCX', 'WCB', 'DJI', 'SNP', 'NasdaqSC', 'Other OTC',
                      'FSI', 'EUX',)
 """
 
-SUFIJOSEXCLUIDOS = ('.TA',)
+SUFIJOSEXCLUIDOS = ('.TA', )
 
 MERCADOSEXCLUIDOS = ()
 
@@ -126,16 +134,14 @@ ARCHIVO_LOG = os.path.join(os.getcwd(), CARPETAS['Log'], "general.log")
 
 ARCHIVOCONFIGBACKTEST = os.path.join(os.getcwd(), 'Cobo.backtest.config')
 
-access_token = '' 
+access_token = ''
 
 ####################################################
 # modulos no estandar o propios
 
-
 ############################################################
 # comprobaciones especiales
 # assert
-
 
 ############################################################
 # definicion de funciones

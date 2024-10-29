@@ -10,7 +10,7 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.06'
-__date__    = '2020-03-09'
+__date__ = '2020-03-09'
 __author__ = ('Antonio Caballero', 'Paco Corbi')
 __mail__ = ('zurbaran79@hotmail.com', 'pacocorbi@hotmail.com')
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
@@ -85,7 +85,6 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #     Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, Creative Commons does not authorize the use by either party of the trademark "Creative Commons" or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons' then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time. For the avoidance of doubt, this trademark restriction does not form part of this License.
 #
 #     Creative Commons may be contacted at http://creativecommons.org/.
-
 """
 Ejemplos de datos tomados en la accion ticket MSG
 
@@ -94,6 +93,7 @@ Ejemplos de datos tomados en la accion ticket MSG
 from datetime import date
 import decimal
 import cmath  # Importación adicional para manejo de números complejos
+
 
 def _test():
     """
@@ -130,7 +130,8 @@ def MME(datos, **config):
     n = int(config.get('MME', 30))
     numberound = config.get('numberound', True)
     indicedatos = config.get('indicedatos', 'cierre')
-    indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen').index(indicedatos)
+    indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre',
+                   'volumen').index(indicedatos)
 
     resultado = []
 
@@ -139,7 +140,8 @@ def MME(datos, **config):
         fechaMME = datos[iMME][0]
         cierreMME = datos[iMME][indicedatos]
         if iMME == 0:
-            puntoMME = datos[iMME][indicedatos]  # Este es el pirmer cierre de los datos historicos
+            puntoMME = datos[iMME][
+                indicedatos]  # Este es el pirmer cierre de los datos historicos
         else:
             puntoMME = (cierreMME * k) + (puntoMME * (1 - k))
 
@@ -182,11 +184,16 @@ def TR(datos, **config):
             valorTR = 0.0  # round(max((abs(maximo - minimo), abs(maximo - cierre), abs(minimo - cierre))), 3)
         else:
             ant = i - 1
-            _fechaanterior, _aperturaanterior, _maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datos[ant]
+            _fechaanterior, _aperturaanterior, _maximoanterior, _minimoanterior, cierreanterior, _volumenanterior = datos[
+                ant]
             if numberound is True:
-                valorTR = round(max((abs(maximo - minimo), abs(maximo - cierreanterior), abs(minimo - cierreanterior))), 3)
+                valorTR = round(
+                    max((abs(maximo - minimo), abs(maximo - cierreanterior),
+                         abs(minimo - cierreanterior))), 3)
             else:
-                valorTR = max((abs(maximo - minimo), abs(maximo - cierreanterior), abs(minimo - cierreanterior)))
+                valorTR = max(
+                    (abs(maximo - minimo), abs(maximo - cierreanterior),
+                     abs(minimo - cierreanterior)))
 
         listaTR.append((fecha, valorTR))
     assert len(listaTR) == len(datos)
@@ -219,7 +226,8 @@ def TAR(datos, **config):
     listaTAR = []
 
     for i in range(0, len(listaTR)):
-        assert datos[i][0] == listaTR[i][0]  # Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaTR[i][
+            0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
         if inicio < 0:
@@ -263,7 +271,8 @@ def DM(datos, **config):
             listaDM.append((fecha, 0.0, 0.0))
         else:
             ant = i - 1
-            _fechaanterior, _aperturaanterior, maximoanterior, minimoanterior, _cierreanterior, _volumenanterior = datos[ant]
+            _fechaanterior, _aperturaanterior, maximoanterior, minimoanterior, _cierreanterior, _volumenanterior = datos[
+                ant]
 
             if numberound is True:
                 deltamaximo = max(0, round(maximo - maximoanterior, 3))
@@ -272,7 +281,8 @@ def DM(datos, **config):
                 deltamaximo = max(0, maximo - maximoanterior)
                 deltaminimo = max(0, minimoanterior - minimo)
 
-            if (deltamaximo == 0 and deltaminimo == 0) or deltamaximo == deltaminimo:
+            if (deltamaximo == 0
+                    and deltaminimo == 0) or deltamaximo == deltaminimo:
                 deltamaximo = 0
                 deltaminimo = 0
             elif deltamaximo > deltaminimo:
@@ -302,7 +312,8 @@ def ADM(datos, **config):
 
     listaDM = DM(datos, numberound=False)
 
-    assert len(datos) == len(listaDM)  # Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(
+        listaDM)  # Comprobamos que tienen la misma cantidad de datos
 
     listaADM = []
     # valorADMas=0.0
@@ -314,7 +325,8 @@ def ADM(datos, **config):
     valorADMenos = 0.0
 
     for i in range(0, len(listaDM)):
-        assert datos[i][0] == listaDM[i][0]  # Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaDM[i][
+            0]  # Comprobamos que cohinciden las fechas
 
         inicio = (i + 1) - n
         if inicio < 0:
@@ -335,18 +347,21 @@ def ADM(datos, **config):
             # valorADMenos = (sum(valoresDMenso[inicio:])) / (len(valoresDMenso[inicio:]))
 
         if numberound is True:
-            listaADM.append((fecha, round(valorADMas, 3), round(valorADMenos, 3)))
+            listaADM.append((fecha, round(valorADMas,
+                                          3), round(valorADMenos, 3)))
         else:
             listaADM.append((fecha, valorADMas, valorADMenos))
-       # if i <= n:
-       #     listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
-       # else:
-       #     listaADMultimo=listaADM[-1]
-       #     listaADM.append((fecha,
-       #                      (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
-       #                      (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
+    # if i <= n:
+    #     listaADM.append((fecha, listaDM[i][1] * (1 / n), listaDM[i][2] * (1 / n)))
+    # else:
+    #     listaADMultimo=listaADM[-1]
+    #     listaADM.append((fecha,
+    #                      (listaADMultimo[1] * (n - 1 / n)) + (listaDM[i][1] * (1 / n)),
+    #                      (listaADMultimo[2] * (n - 1 / n)) + (listaDM[i][2] * (1 / n))))
 
-    assert len(datos) == len(listaADM)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(
+        listaADM
+    )  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaADM)
 
 
@@ -363,15 +378,21 @@ def DI(datos, **config):
     n = int(config.get('DI', 14))
     numberound = config.get('numberound', True)
     listaADM = ADM(datos, ADM=n, numberound=False)
-    listaTAR = Averange(datos, indicador='TR', n=n, tipo='averange', numberound=False)
+    listaTAR = Averange(datos,
+                        indicador='TR',
+                        n=n,
+                        tipo='averange',
+                        numberound=False)
 
     listaDI = []
 
-    assert len(datos) == len(listaADM) and len(datos) == len(listaTAR)  # Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(listaADM) and len(datos) == len(
+        listaTAR)  # Comprobamos que tienen la misma cantidad de datos
 
     for i in range(0, len(datos)):
 
-        assert datos[i][0] == listaADM[i][0] and datos[i][0] == listaTAR[i][0]  # Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaADM[i][0] and datos[i][0] == listaTAR[i][
+            0]  # Comprobamos que cohinciden las fechas
 
         fecha = datos[i][0]
 
@@ -389,7 +410,9 @@ def DI(datos, **config):
         else:
             listaDI.append((fecha, DImas, Dimenos))
 
-    assert len(datos) == len(listaDI)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(
+        listaDI
+    )  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaDI)
 
 
@@ -407,15 +430,18 @@ def DX(datos, **config):
     listaDI = DI(datos, DI=n, numberound=False)
     listaDX = []
 
-    assert len(datos) == len(listaDI)  # Comprobamos que tienen la misma cantidad de datos
+    assert len(datos) == len(
+        listaDI)  # Comprobamos que tienen la misma cantidad de datos
 
     for i in range(0, len(datos)):
 
-        assert datos[i][0] == listaDI[i][0]  # Comprobamos que cohinciden las fechas
+        assert datos[i][0] == listaDI[i][
+            0]  # Comprobamos que cohinciden las fechas
 
         fecha = datos[i][0]
         try:
-            DX = ((abs(listaDI[i][1] - listaDI[i][2])) / (listaDI[i][1] + listaDI[i][2])) * 100
+            DX = ((abs(listaDI[i][1] - listaDI[i][2])) /
+                  (listaDI[i][1] + listaDI[i][2])) * 100
         except ZeroDivisionError:
             DX = 0
         if numberound is True:
@@ -423,7 +449,9 @@ def DX(datos, **config):
         else:
             listaDX.append((fecha, DX))
 
-    assert len(datos) == len(listaDX)  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
+    assert len(datos) == len(
+        listaDX
+    )  # Comprobamos que el resultado contiene la misma cantidad de datos que el origen
     return (listaDX)
 
 
@@ -544,7 +572,8 @@ def Averange(datos, **config):
     n = int(config.get('n', 14))
     indicedatos = config.get('indicedatos', False)
     if indicedatos is not False:
-        indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre', 'volumen').index(indicedatos)
+        indicedatos = ('fecha', 'apertura', 'maximo', 'minimo', 'cierre',
+                       'volumen').index(indicedatos)
     else:
         indicedatos = 0
     indicador = str(config.get('indicador', False))
@@ -571,7 +600,8 @@ def Averange(datos, **config):
     valores = []
 
     for i in range(0, len(lista)):
-        assert datos[i][0] == lista[i][0]  # Comprobamos que cohinciden las fechas
+        assert datos[i][0] == lista[i][
+            0]  # Comprobamos que cohinciden las fechas
 
         valores.append(list(lista[i]))
 
@@ -700,14 +730,17 @@ def fibonacci(numero):
 
     """
     a, b = 0, 1
-    lista = [1, ]
+    lista = [
+        1,
+    ]
     for _i in range(numero - 2):
         a, b = b, a + b
         lista.append(b)
     return lista
 
 
-def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, **config):
+def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin,
+                          timming, **config):
     """
 
     >>> puntocurvaexponencial('2008-01-25', 48.260, '2008-04-18', 76.958, 'w', fechahoy='2008-04-18')
@@ -746,17 +779,25 @@ def puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming,
     else:
         fechahoy = (date.today().year, date.today().month, date.today().day)
 
-    diffechas = (date(ltdatefin[0], ltdatefin[1], ltdatefin[2]) - date(ltdateini[0], ltdateini[1], ltdateini[2])).days
-    diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(ltdatefin[0], ltdatefin[1], ltdatefin[2])).days
+    diffechas = (date(ltdatefin[0], ltdatefin[1], ltdatefin[2]) -
+                 date(ltdateini[0], ltdateini[1], ltdateini[2])).days
+    diffechas2 = (date(fechahoy[0], fechahoy[1], fechahoy[2]) -
+                  date(ltdatefin[0], ltdatefin[1], ltdatefin[2])).days
 
     # rentaanual = (((1.0 + (ltpricefin - ltpriceini) / ltpriceini) ** (365.0 / diffechas)) - 1.0)
     # Calculos de entrada obtenidos apartir de la hoja Excel, Analisis y reducida ecuacion con Maple
     if timming == 'd':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 365.0)) ** (diffechas2 + incremperiod + 0.0)
+        entrada = ltpricefin * (
+            ((ltpricefin / ltpriceini)**(365.0 / diffechas))
+            **(1.0 / 365.0))**(diffechas2 + incremperiod + 0.0)
     elif timming == 'w':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (7.0 / 365.0)) ** (int((1.0 / 7.0) * diffechas2) + incremperiod + 0.0)
+        entrada = ltpricefin * (((ltpricefin / ltpriceini)**(
+            365.0 / diffechas))**(7.0 / 365.0))**(int(
+                (1.0 / 7.0) * diffechas2) + incremperiod + 0.0)
     elif timming == 'm':
-        entrada = ltpricefin * (((ltpricefin / ltpriceini) ** (365.0 / diffechas)) ** (1.0 / 12.0)) ** (int((1.0 / 30.0) * diffechas2) + incremperiod + 0.0)
+        entrada = ltpricefin * (((ltpricefin / ltpriceini)**(
+            365.0 / diffechas))**(1.0 / 12.0))**(int(
+                (1.0 / 30.0) * diffechas2) + incremperiod + 0.0)
 
     return round(entrada, 3)
 
@@ -770,37 +811,75 @@ def curvexprent(fechainicial, precioinicial, fechafinal, preciofinal):
     else:
         fechainicial = list(map(int, (fechainicial.split('-'))))
         fechafinal = list(map(int, (fechafinal.split('-'))))
-        diffechas = (date(fechafinal[0], fechafinal[1], fechafinal[2]) - date(fechainicial[0], fechainicial[1], fechainicial[2])).days
+        diffechas = (
+            date(fechafinal[0], fechafinal[1], fechafinal[2]) -
+            date(fechainicial[0], fechainicial[1], fechainicial[2])).days
         # evitando que la division de mas abajo sea por 0
         if precioinicial == 0.0:
             precioinicial = 0.001
         # if entrada > stoploss:#Alcista
         try:
-            rentab = ((((1 + ((preciofinal - precioinicial) / precioinicial)) ** (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
-        
+            rentab = ((((1 + ((preciofinal - precioinicial) / precioinicial))**
+                        (365.0 / diffechas)) - 1.0) * 100.0) / 100.0
+
             # Verificación para convertir a real si es complejo
             if isinstance(rentab, complex):
                 rentab = abs(rentab) if abs(rentab.imag) > 0 else rentab.real
-     
-     
+
         # Cualquier rentabilidad positiva dividido por 1, esa rentabilidad te dara la negativa y al reves 1- la rentabilidad negativa dividido por esa negativa te da la positiva
         # 35 dividido por 1,35 te da 25,925 y al reves 1- 0,25925 =0,7407. Que si lo dividimos por el nos da 35.       25,925/0.7407=35
         # rentabilidadnegativa= - (rentabilidadpositiva / (1+rentabilidadpositiva))
         # rentabilidadpositiva= 1-(rentabilidadnegativa / (1-rentabilidadnegativa))
         except OverflowError:
-            print (fechainicial, precioinicial, fechafinal, preciofinal, diffechas)
+            print(fechainicial, precioinicial, fechafinal, preciofinal,
+                  diffechas)
 
-            rentab = ((((decimal.Decimal(1) + ((decimal.Decimal(preciofinal) - decimal.Decimal(precioinicial)) / decimal.Decimal(precioinicial))) ** (decimal.Decimal(365.0) / decimal.Decimal(diffechas))) - decimal.Decimal(1.0)) * decimal.Decimal(100.0)) / decimal.Decimal(100.0)
+            rentab = ((((decimal.Decimal(1) + (
+                (decimal.Decimal(preciofinal) - decimal.Decimal(precioinicial))
+                / decimal.Decimal(precioinicial)))**
+                        (decimal.Decimal(365.0) / decimal.Decimal(diffechas)))
+                       - decimal.Decimal(1.0)) *
+                      decimal.Decimal(100.0)) / decimal.Decimal(100.0)
             # Validación y ajuste si el valor es muy alto o bajo
             #rentab = float(rentab)
             if rentab > 0:
                 rentab = 1000.0
             elif rentab < 0:
                 rentab = -1000.0
-    
+
     return rentab
 
 
 if __name__ == '__main__':
-    datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800), ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900), ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300), ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000), ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800), ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300), ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400), ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200), ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400), ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100), ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400), ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800), ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200), ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500), ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900), ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100), ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000), ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500), ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400), ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100), ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800), ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200), ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700), ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400), ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300), ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200), ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500), ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500), ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800), ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200), ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
+    datos = [('2010-01-25', 20.0, 23.04, 19.5, 19.6, 706800),
+             ('2010-02-01', 20.7, 20.76, 16.35, 19.5, 1385900),
+             ('2010-03-01', 19.63, 22.09, 18.62, 21.73, 470300),
+             ('2010-04-01', 21.79, 22.71, 20.54, 20.75, 391000),
+             ('2010-05-03', 20.7, 22.56, 18.7, 21.07, 362800),
+             ('2010-06-01', 21.04, 21.99, 18.93, 19.67, 240300),
+             ('2010-07-01', 19.73, 21.91, 18.39, 19.24, 538400),
+             ('2010-08-02', 19.39, 21.09, 18.7, 19.55, 286200),
+             ('2010-09-01', 19.79, 21.2, 19.27, 21.09, 208400),
+             ('2010-10-01', 21.1, 21.94, 20.52, 20.81, 205100),
+             ('2010-11-01', 20.84, 23.44, 20.28, 21.94, 281400),
+             ('2010-12-01', 22.36, 25.86, 22.35, 25.78, 286800),
+             ('2011-01-03', 25.94, 26.07, 23.94, 25.22, 214200),
+             ('2011-02-01', 25.4, 29.97, 25.05, 28.49, 303500),
+             ('2011-03-01', 28.73, 29.71, 26.64, 26.99, 467900),
+             ('2011-04-01', 27.11, 30.21, 26.82, 27.35, 336100),
+             ('2011-05-02', 27.34, 27.58, 25.75, 27.51, 294000),
+             ('2011-06-01', 27.42, 27.99, 25.73, 27.53, 254500),
+             ('2011-07-01', 27.39, 27.97, 26.3, 26.5, 299400),
+             ('2011-08-01', 26.79, 26.79, 21.7, 24.16, 475100),
+             ('2011-09-01', 24.21, 24.8, 22.04, 22.8, 247800),
+             ('2011-10-03', 22.6, 27.28, 21.12, 26.43, 350200),
+             ('2011-11-01', 25.88, 29.79, 24.63, 29.12, 424700),
+             ('2011-12-01', 29.0, 30.37, 28.29, 28.64, 279400),
+             ('2012-01-03', 28.88, 30.0, 27.95, 28.69, 200300),
+             ('2012-02-01', 28.78, 33.49, 28.74, 31.85, 452200),
+             ('2012-03-01', 31.88, 34.65, 31.82, 34.2, 399500),
+             ('2012-04-02', 34.05, 36.18, 33.75, 35.97, 330500),
+             ('2012-05-01', 35.92, 38.9, 35.33, 37.49, 320800),
+             ('2012-06-01', 36.95, 37.73, 34.95, 37.44, 214200),
+             ('2012-07-02', 37.39, 39.57, 37.32, 38.28, 203300)]
     _test()

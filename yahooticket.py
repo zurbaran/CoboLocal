@@ -10,9 +10,9 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.06'
-__date__    = '2020-03-09'
-__author__  = ('Antonio Caballero',)
-__mail__    = ('zurbaran79@hotmail.com',)
+__date__ = '2020-03-09'
+__author__ = ('Antonio Caballero', )
+__mail__ = ('zurbaran79@hotmail.com', )
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -86,14 +86,11 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #
 #     Creative Commons may be contacted at http://creativecommons.org/.
 
-
 # paginas de interes
 # http://finance.yahoo.com/international
 
-
 #################################################
 # Constantes locales
-
 
 ####################################################
 # modulos estandar importados
@@ -102,31 +99,33 @@ import logging
 import os
 import csv
 
-
 ####################################################
 # modulos no estandar o propios
-from settings import ARCHIVO_LOG #, SUFIJOSEXCLUIDOS
+from settings import ARCHIVO_LOG  #, SUFIJOSEXCLUIDOS
 
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    filename=ARCHIVO_LOG,
+    format=
+    '%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+    level=logging.DEBUG)
 
 
 def ticketsYahooD():
     """."""
     ticketsanadidos = []
     yahooticketcsv = os.path.join(os.path.join(os.getcwd(), 'stocks.csv'))
-    with open( yahooticketcsv) as csvarchivo:
+    with open(yahooticketcsv) as csvarchivo:
         entrada = csv.reader(csvarchivo)
         for reg in entrada:
-            ticker,_Name,_Exchange,_categoryName = reg
+            ticker, _Name, _Exchange, _categoryName = reg
             ticker = ticker.replace('@%5E', '^')
             ticker = ticker.replace('@', '')
             ticketsanadidos.append(ticker)
     return ticketsanadidos
 
+
 ############################################################
 # programa principal
 if __name__ == '__main__':
     ticket = ticketsYahooD()
-    print (ticket)
+    print(ticket)

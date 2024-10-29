@@ -9,9 +9,9 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 
 """
 __version__ = '0.06'
-__date__    = '2020-03-09'
-__author__ = ('Antonio Caballero',)
-__mail__ = ('zurbaran79@hotmail.com',)
+__date__ = '2020-03-09'
+__author__ = ('Antonio Caballero', )
+__mail__ = ('zurbaran79@hotmail.com', )
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -99,7 +99,6 @@ import logging
 from datetime import date, datetime, timedelta
 from random import choice
 
-
 # from sql import *
 # from sql.aggregate import *
 # from sql.conditionals import *
@@ -121,9 +120,11 @@ import sqlite3
 from settings import CARPETAS, DIFREGACTUALIZAR, FILTROSTOPLOSS, FILTROS, ARCHIVO_LOG
 from indicador import puntocurvaexponencial, curvexprent
 
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    filename=ARCHIVO_LOG,
+    format=
+    '%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+    level=logging.DEBUG)
 
 
 def conexion(archivo=None):
@@ -167,7 +168,9 @@ def conexion(archivo=None):
     #         funcion que crea la estructura completa de la bbdd, incorporandola del archivo CoboBBDDInicio.sql
 
     except:
-        input('Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos')
+        input(
+            'Base de datos no habilitada. Para que el programa funcione necesitas conexion a la base de datos'
+        )
         quit()
     else:
         return cursor, db
@@ -213,7 +216,7 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     if cola_resultado is None:
         for n in resultado:
             print(('%s contiene %d tickets' % (n)))
-        print ('')
+        print('')
 
     # Buscar tickets duplicados en la BBDD
     sql = "SELECT `tiket`, count(*) FROM `Cobo_componentes` GROUP BY `tiket` HAVING count(*) > 1"
@@ -228,9 +231,11 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     listatickets = cursor.fetchall()
     numero_resultado = len(listatickets)
     if cola_resultado is None:
-        print(('Tickets a los que les falta relacion entre mercado y moneda : %d' % numero_resultado))
+        print(
+            ('Tickets a los que les falta relacion entre mercado y moneda : %d'
+             % numero_resultado))
         if numero_resultado >= 1:
-            print (listatickets)
+            print(listatickets)
 
     # Tickets con errores
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE `fechaError` is not null"
@@ -240,14 +245,17 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
         print(('Tickets con errores : %d' % numero_resultado))
 
     # Tickets pendientes de realiar una actualizacion en la cotizacion
-    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['cotizacion'])).strftime("%Y-%m-%d %H:%M:%S")
-    diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+    diaspasados = (datetime.now() - timedelta(
+        days=DIFREGACTUALIZAR['cotizacion'])).strftime("%Y-%m-%d %H:%M:%S")
+    diasfuturos = (datetime.now() +
+                   timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
     sql = "SELECT `nombre` FROM `Cobo_nombreticket` WHERE (`fechaActualizacion`<'" + diaspasados + "' or `fechaActualizacion`>'" + diasfuturos + "' or `fechaActualizacion` is null or `fechaError` is not null) ORDER BY `Cobo_nombreticket`.`fechaError` DESC, `Cobo_nombreticket`.`fechaActualizacion` ASC"
     #print sql
     cursor.execute(sql)
     listatickets = cursor.fetchall()
     if cola_resultado is None:
-        print(('Tickets pendientes de realiar una actualizacion : %d' % len(listatickets)))
+        print(('Tickets pendientes de realiar una actualizacion : %d' %
+               len(listatickets)))
     if cola_resultado == 'Cotizacion':
         if aleatorio is False:
             cola_resultado = list((ticket[0]) for ticket in listatickets)
@@ -260,7 +268,9 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
                 cola_resultado2.remove(ticket)
 
     # Tickets pendientes de realiar una actualizacion en el historico
-    diaspasados = (datetime.now() - timedelta(days=DIFREGACTUALIZAR['historico'])).strftime("%Y-%m-%d")
+    diaspasados = (
+        datetime.now() -
+        timedelta(days=DIFREGACTUALIZAR['historico'])).strftime("%Y-%m-%d")
     diasfuturos = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     # La lista de acciones para actualizar historico lo debemos hacer partiendo de la tabla Cobo_componentes porque es ahi donde se genera el codigo con el que junto
     # al nombre sirve para el archivo que contendra la BBDD del historico, si no hay codigo porque el ticket no esta en esta tabla, no deberiamos poder descargar el
@@ -271,7 +281,9 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     cursor.execute(sql)
     listatickets = cursor.fetchall()
     if cola_resultado is None:
-        print(('Tickets pendientes de realiar una actualizacion del historico : %d' % len(listatickets)))
+        print((
+            'Tickets pendientes de realiar una actualizacion del historico : %d'
+            % len(listatickets)))
     if cola_resultado == 'Historico':
         if aleatorio is False:
             cola_resultado = list((ticket[0]) for ticket in listatickets)
@@ -288,14 +300,17 @@ def comprobaciones(cola_resultado=None, aleatorio=False):
     cursor.execute(sql)
     numero_resultado = len(cursor.fetchall())
     if cola_resultado is None:
-        print(('Tickets necesitan de actualizar completamente : %d' % numero_resultado))
+        print(('Tickets necesitan de actualizar completamente : %d' %
+               numero_resultado))
 
-   # Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
+# Con esta consulta podemos comprobar los tickets que no existen en componentes y si en nombreticket, despues de hacer una insercion masiva,....
     sql = "SELECT * FROM `Cobo_nombreticket_borrados`"
     cursor.execute(sql)
     numero_resultado = len(cursor.fetchall())
     if cola_resultado is None:
-        print(('Tickets borrados de la base de datos y almacenados en la papelera: %d' % numero_resultado))
+        print((
+            'Tickets borrados de la base de datos y almacenados en la papelera: %d'
+            % numero_resultado))
 
     db.close()
 
@@ -321,22 +336,30 @@ def ticketalta(ticket):
     anadido = False
 
     # Comprobamos si existe
-    cursor.execute("SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)", ticket)
+    cursor.execute(
+        "SELECT *  FROM `Cobo_nombreticket` WHERE (`Cobo_nombreticket`.`nombre` = ?)",
+        ticket)
     # sql = "SELECT * FROM `Cobo_nombreticket` WHERE `nombre` = '" + ticket + "'"
     # cursor.execute(sql)
     numero_resultado = len(cursor.fetchall())
     if numero_resultado == 0:
         # Si no existe, lo incorporamos
-        cursor.execute("INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, fechahistorico) VALUES (?, '" + str(date.today()) + "', null, null, null)", ticket)
+        cursor.execute(
+            "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, fechahistorico) VALUES (?, '"
+            + str(date.today()) + "', null, null, null)", ticket)
         # sql = "INSERT INTO `Cobo_nombreticket` (`nombre`, `fechaRegistro`, `fechaError`, `fechaActualizacion`, `fechahistorico`) VALUES ('" + ticket + "', '" + str(date.today()) + "', null, null, null)"
         # cursor.execute(sql)
 
         # Comprobamos si existe en los borrados
-        cursor.execute("SELECT *  FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre` = ?)", ticket)
+        cursor.execute(
+            "SELECT *  FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre` = ?)",
+            ticket)
         numero_resultado = len(cursor.fetchall())
         if numero_resultado >= 1:
             # Si existe, lo borramo
-            cursor.execute("DELETE FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre`= ?)", ticket)
+            cursor.execute(
+                "DELETE FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre`= ?)",
+                ticket)
         anadido = True
         db.commit()
         print((ticket[0] + ' anadido a la base de datos'))
@@ -388,26 +411,31 @@ def ticketborra(ticket, **config):
                 sql = "DELETE FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = '" + ticket + "'"
                 cursor.execute(sql)
 
-             # sql = "SELECT `Cobo_maximini`.`nombre` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticket + "')"
-             # cursor.execute(sql)
-             # numero_resultado = len(cursor.fetchall())
-             # if numero_resultado == 1:
-             #     sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticket + "' "
-             #     cursor.execute(sql)
+            # sql = "SELECT `Cobo_maximini`.`nombre` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticket + "')"
+            # cursor.execute(sql)
+            # numero_resultado = len(cursor.fetchall())
+            # if numero_resultado == 1:
+            #     sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticket + "' "
+            #     cursor.execute(sql)
             sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
             cursor.execute(sql)
 
             # Si lo estoy borrando completamente, se anade a la lista de tickets borrados
             if historico and archivos:
                 # Comprobamos si existe en los borrados
-                cursor.execute("SELECT *  FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre` = '" + ticket + "')")
+                cursor.execute(
+                    "SELECT *  FROM `Cobo_nombreticket_borrados` WHERE (`Cobo_nombreticket_borrados`.`nombre` = '"
+                    + ticket + "')")
                 numero_resultado = len(cursor.fetchall())
                 if numero_resultado == 0:
                     # Si no existe, lo incorporamos
-                    cursor.execute("INSERT INTO `Cobo_nombreticket_borrados` (`nombre`, `fechaRegistro`) VALUES ('" + ticket + "', '" + str(date.today()) + "')")
+                    cursor.execute(
+                        "INSERT INTO `Cobo_nombreticket_borrados` (`nombre`, `fechaRegistro`) VALUES ('"
+                        + ticket + "', '" + str(date.today()) + "')")
 
         if historico:
-            print(('Borrando los Datos historicos de la BBDD del ticket %s' % ticket))
+            print(('Borrando los Datos historicos de la BBDD del ticket %s' %
+                   ticket))
             ticket2 = ticket.replace('.', '_')
             ticket2 = ticket2.replace('-', '_')
             ticket2 = ticket2.replace('^', 'Indice')
@@ -422,7 +450,9 @@ def ticketborra(ticket, **config):
             # nombre = (str(ticket) + str(tickets[ticket])).replace('.', '_')
             nombre = ('%s' % ticket).replace('.', '_')
             for carpeta in list(CARPETAS.keys()):
-                archivosticket = glob.glob(os.path.join(os.getcwd(), CARPETAS[carpeta], nombre + ".*"))
+                archivosticket = glob.glob(
+                    os.path.join(os.getcwd(), CARPETAS[carpeta],
+                                 nombre + ".*"))
                 for archivo in archivosticket:
                     os.remove(archivo)
 
@@ -459,7 +489,8 @@ def ticketcambia(ticketviejo, ticketnuevo):
     numero_resultado = len(cursor.fetchall())
     #Si no existe lo insertamos como registronuevo. Podria ya existir
     if numero_resultado == 0:
-        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`,`fechaRegistro`,`fechaError`,`fechaActualizacion`) VALUES ('%s','%s',null, null)" % (ticketnuevo, date.today())
+        sql = "INSERT INTO `Cobo_nombreticket` (`nombre`,`fechaRegistro`,`fechaError`,`fechaActualizacion`) VALUES ('%s','%s',null, null)" % (
+            ticketnuevo, date.today())
         cursor.execute(sql)
 
     #Comprobamos que el ticketnuevo exista en 'Cobo_componentes'
@@ -494,21 +525,21 @@ def ticketcambia(ticketviejo, ticketnuevo):
     # cursor.execute(sql)
     # numero_resultado = len(cursor.fetchall())
     # if numero_resultado == 0:
-        # sql = "SELECT `Cobo_maximini`.`id` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre`='" + ticketviejo + "')"
-        # cursor.execute(sql)
-        # codigo = cursor.fetchall()
-        # numero_resultado = len(codigo)
-        # if numero_resultado == 1:
-            # codigo = str(codigo[0][0])
-            # sql = "UPDATE `Cobo_maximini` SET `nombre` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_maximini`.`id` =%s" % (ticketnuevo, ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")), codigo)
-            # cursor.execute(sql)
+    # sql = "SELECT `Cobo_maximini`.`id` FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre`='" + ticketviejo + "')"
+    # cursor.execute(sql)
+    # codigo = cursor.fetchall()
+    # numero_resultado = len(codigo)
+    # if numero_resultado == 1:
+    # codigo = str(codigo[0][0])
+    # sql = "UPDATE `Cobo_maximini` SET `nombre` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_maximini`.`id` =%s" % (ticketnuevo, ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")), codigo)
+    # cursor.execute(sql)
     # elif numero_resultado == 1:
-        # sql = "SELECT * FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticketviejo + "')"
-        # cursor.execute(sql)
-        # numero_resultado = len(cursor.fetchall())
-        # if numero_resultado == 1:
-            # sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticketviejo + "' "
-            # cursor.execute(sql)
+    # sql = "SELECT * FROM `Cobo_maximini` WHERE (`Cobo_maximini`.`nombre` = '" + ticketviejo + "')"
+    # cursor.execute(sql)
+    # numero_resultado = len(cursor.fetchall())
+    # if numero_resultado == 1:
+    # sql = "DELETE FROM `Cobo_maximini` WHERE `Cobo_maximini`.`nombre`='" + ticketviejo + "' "
+    # cursor.execute(sql)
 
     # Borramos el ticketviejo de 'Cobo_nombreticket'
     sql = "DELETE FROM `Cobo_nombreticket` WHERE `Cobo_nombreticket`.`nombre`='" + ticketviejo + "'"
@@ -516,7 +547,8 @@ def ticketcambia(ticketviejo, ticketnuevo):
     db.commit()
     db.close()
 
-    print(('El ticket %s ha cambiado a %s. Cambiandolo en BBDD' % (ticketviejo, ticketnuevo)))
+    print(('El ticket %s ha cambiado a %s. Cambiandolo en BBDD' %
+           (ticketviejo, ticketnuevo)))
     print('')
     ticketerror(ticketnuevo)
     ticketborra(ticketviejo)
@@ -538,10 +570,15 @@ def ticketerror(ticket):
     cursor.execute(sql)
     hayerror = cursor.fetchall()
     print('')
-    print(('Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones' % ticket))
+    print((
+        'Error en el proceso del Ticket %s, error almacenado en BBDD para darle prioridad en proximas actualizaciones'
+        % ticket))
     print('')
-    if len(hayerror) > 0 and hayerror[0][0] is None:  # Solo almacenamos error si no habia otro error
-        sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + ((datetime.now()).strftime("%Y-%m-%d %H:%M:%S")) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
+    if len(hayerror) > 0 and hayerror[0][
+            0] is None:  # Solo almacenamos error si no habia otro error
+        sql = "UPDATE `Cobo_nombreticket` SET `fechaError` ='" + (
+            (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
+        ) + "' WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
         cursor.execute(sql)
         db.commit()
     db.close()
@@ -559,7 +596,11 @@ def ticketactualizado(ticket):
     """
     ticket = ticket.upper()
     cursor, db = conexion()
-    sql = "UPDATE `Cobo_nombreticket` SET `fechaActualizacion`='" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + "', `fechaError` = null  WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
+    sql = "UPDATE `Cobo_nombreticket` SET `fechaActualizacion`='" + (
+        datetime.now()
+    ).strftime(
+        "%Y-%m-%d %H:%M:%S"
+    ) + "', `fechaError` = null  WHERE `Cobo_nombreticket`.`nombre`='" + ticket + "' "
     cursor.execute(sql)
     db.commit()
     db.close()
@@ -613,7 +654,8 @@ def ticketcotizaciones(nombreticket, datosurl):
     # datosurl2 = datosurl.rsplit(',', 10)
     # print (datosurl)
     try:
-        datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl.rsplit(',', 10)
+        datonombre, datoticket, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror = datosurl.rsplit(
+            ',', 10)
     except ValueError:
         datosurl = 'No such ticker symbol'
         datoticket = nombreticket
@@ -632,10 +674,12 @@ def ticketcotizaciones(nombreticket, datosurl):
 
     # el ticket ha cambiado, comprobar que no existe ya y en tal caso sustuirlo
     if 'No such ticker symbol' in datosurl or 'Missing Symbols List' in datosurl or 'Missing Format Variable' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
-        ticketborra(nombreticket)  # FIXME: los tickets con sufijo .MC estan contestando asi "GRF.MC","GRF.MC","N/A",N/A,N/A,N/A,N/A,0.00,0,N/A,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=GRF.MC">GRF.MC</a>)"
+        ticketborra(
+            nombreticket
+        )  # FIXME: los tickets con sufijo .MC estan contestando asi "GRF.MC","GRF.MC","N/A",N/A,N/A,N/A,N/A,0.00,0,N/A,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=GRF.MC">GRF.MC</a>)"
 
     elif ('Ticker symbol has changed to: <a href="/q?s=' in datosurl):
-        print (datosurl)
+        print(datosurl)
         ticketinicio = datosurl.find('<a href="/q?s=') + len('<a href="/q?s=')
         ticketfin = datosurl.find('">', ticketinicio)
         ticketnuevo = (datosurl[ticketinicio:ticketfin]).strip('"')
@@ -643,7 +687,7 @@ def ticketcotizaciones(nombreticket, datosurl):
 
     # hay casos en los que nos descargamos la informacion de nombreticket pero en la informacion descargada el ticket ha cambiado
     elif datoticket != nombreticket:
-        print (datosurl)
+        print(datosurl)
         # ticketnuevo = ( datosurl2[-10].strip( '"' ) )
         ticketcambia(nombreticket, datoticket)
 
@@ -657,13 +701,17 @@ def ticketcotizaciones(nombreticket, datosurl):
         #print(('Actualizando %s con datos %s' % (nombreticket, datosurl)))
 
         if numero_resultado == 0:
-            sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (null , " + datosurl + ",'" + str(date.today()) + "')"
+            sql = "INSERT INTO `Cobo_componentes` (`codigo` ,`nombre` ,`tiket` ,`mercado` ,`max52` ,`maxDia` ,`min52` ,`minDia` ,`valorActual` ,`volumenMedio` ,`volumen` ,`error` ,`fechaRegistro`) VALUES (null , " + datosurl + ",'" + str(
+                date.today()) + "')"
             # print(sql)
             cursor.execute(sql)
 
         elif numero_resultado == 1:
             codigo = datosBBDDcomponentes[0][0]
-            sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datomercado, datomax52, datomaxDia, datomin52, datominDia, datoValorActual, datovolumenMedio, datovolumen, datoerror, date.today(), nombreticket)
+            sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (
+                datonombre, datomercado, datomax52, datomaxDia, datomin52,
+                datominDia, datoValorActual, datovolumenMedio, datovolumen,
+                datoerror, date.today(), nombreticket)
             # sql = "UPDATE `Cobo_componentes` SET `nombre`= %s, `mercado`=%s ,`max52`=%s ,`maxDia`=%s ,`min52`=%s ,`minDia`=%s ,`valorActual`=%s ,`volumenMedio`=%s ,`volumen`=%s ,`error`=%s ,`fechaRegistro`='%s'  WHERE `Cobo_componentes`.`tiket` = '%s'" % (datonombre, datosurl2[-9], datosurl2[-8], datosurl2[-7], datosurl2[-6], datosurl2[-5], datosurl2[-4], datosurl2[-3], datosurl2[-2], datosurl2[-1], date.today(), nombreticket)
             # print(sql)
             cursor.execute(sql)
@@ -672,7 +720,8 @@ def ticketcotizaciones(nombreticket, datosurl):
             datosBBDDoperaciones = cursor.fetchall()
             numero_resultado = len(datosBBDDoperaciones)
             if numero_resultado == 1:
-                ident, precio_ini, precio_fin, _fecha_ini, _fecha_fin, _timing, _precio_salida, salida, entrada, _rentab, _codigoBBDD = datosBBDDoperaciones[0]
+                ident, precio_ini, precio_fin, _fecha_ini, _fecha_fin, _timing, _precio_salida, salida, entrada, _rentab, _codigoBBDD = datosBBDDoperaciones[
+                    0]
 
                 if salida is None or salida == '':
                     salida = 0.0
@@ -687,13 +736,26 @@ def ticketcotizaciones(nombreticket, datosurl):
                     entrada = float(entrada.replace(',', '.'))
 
                 if precio_ini <= precio_fin:  # datos de una accion alcista
-                    if (datomax52 != u'null' and float(datomax52) > entrada) or (datomaxDia != u'null' and float(datomaxDia) > entrada) or (datoValorActual != u'null' and float(datoValorActual) > entrada):  # si true, analisis ya cumplido, obsoleto y lo actualizamos
-                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
+                    if (
+                            datomax52 != u'null' and float(datomax52) > entrada
+                    ) or (
+                            datomaxDia != u'null'
+                            and float(datomaxDia) > entrada
+                    ) or (
+                            datoValorActual != u'null'
+                            and float(datoValorActual) > entrada
+                    ):  # si true, analisis ya cumplido, obsoleto y lo actualizamos
+                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (
+                            salida, ident)
                         cursor.execute(sql)
 
                 if precio_ini > precio_fin:  # datos de una accion bajista
-                    if (datomin52 != u'null' and float(datomin52) < entrada) or (datominDia != u'null' and float(datominDia) < entrada) or (datoValorActual != u'null' and float(datoValorActual) < entrada):
-                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (salida, ident)
+                    if (datomin52 != u'null' and float(datomin52) < entrada
+                        ) or (datominDia != u'null' and float(datominDia)
+                              < entrada) or (datoValorActual != u'null' and
+                                             float(datoValorActual) < entrada):
+                        sql = "UPDATE `Cobo_params_operaciones` SET `entrada` = null, `salida` = null, `precio_salida` = %.3f WHERE `Cobo_params_operaciones`.`id` =%s" % (
+                            salida, ident)
                         cursor.execute(sql)
             # en este update, habra que comprobar la table params_operaciones para hacer que borre los analisis obsoletos
 
@@ -729,8 +791,10 @@ def ticketobtencotizacion(nombreticket):
 
     """
     cursor, db = conexion()
-    nombreticket = (nombreticket.upper(),)
-    cursor.execute("SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?", nombreticket)
+    nombreticket = (nombreticket.upper(), )
+    cursor.execute(
+        "SELECT * FROM `Cobo_componentes` WHERE `Cobo_componentes`.`tiket` = ?",
+        nombreticket)
     registro = cursor.fetchall()
     # resultado=(28141L, 'LVL MEDICAL GROUP', '-LVL.NX', 'ENX', 18.4, 14.89, 12.46, 14.56, 14.89, 12396.0, 7371.0, 'N/A', datetime.date(2011, 2, 24)
     # TODO: FIXME: a veces, cuando esta haciendose en modo multiple, registro=[] y IndexError: list index out of range
@@ -753,7 +817,9 @@ def ticketlistacodigo(ticket=None):
     if ticket is None:
         sql = "SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` ORDER BY `Cobo_componentes`.`tiket` ASC"
     else:
-        sql = ("SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '%s') ORDER BY `Cobo_componentes`.`tiket` ASC" % ticket)
+        sql = (
+            "SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE (`Cobo_componentes`.`tiket` = '%s') ORDER BY `Cobo_componentes`.`tiket` ASC"
+            % ticket)
         # sql ="SELECT `Cobo_componentes`.`tiket`, `Cobo_componentes`.`codigo` FROM `Cobo_componentes` WHERE  `Cobo_componentes`.`error` = 'N/A' ORDER BY `Cobo_componentes`.`tiket` ASC"
     tickets = {}
     cursor.execute(sql)
@@ -786,11 +852,11 @@ def datoshistoricosexisten(naccion):
     # que esxiste el archivo
     # que existe la tabla dentro del archivo
     naccion = naccion.upper()
-   # tickets = ticketlistacodigo(naccion)
+    # tickets = ticketlistacodigo(naccion)
     existe = False
-   # if naccion in tickets:
+    # if naccion in tickets:
     nombre = ('%s' % naccion).replace('.', '_')
-       # nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
+    # nombre = (str(naccion) + str(tickets[naccion])).replace('.', '_')
     archivo = os.path.join(os.getcwd(), CARPETAS['Datos'], nombre + ".dat")
 
     if os.path.exists(archivo):
@@ -800,20 +866,23 @@ def datoshistoricosexisten(naccion):
         naccion2 = naccion2.replace('-', '_')
         naccion2 = naccion2.replace('^', 'Indice')
         naccion2 = naccion2.replace('&', 'and')
-        sql = ("SELECT name FROM sqlite_master WHERE type='table' and name = 'Ticket_%s'" % naccion2)
+        sql = (
+            "SELECT name FROM sqlite_master WHERE type='table' and name = 'Ticket_%s'"
+            % naccion2)
         cursor2.execute(sql)
         if len(cursor2.fetchall()) > 0:
             existe = True
         else:
-            print ('No existe informacion historico descargado')
+            print('No existe informacion historico descargado')
         db2.close()
     else:
-        print ('No existe archivo historico descargado')
-   # else:
-   #     print ('No existe informacion de cotizaciones en BBDD')
-   #     # borraTicket (ticket, BBDD=False)
-   #     # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
-   #     ticketerror(naccion)
+        print('No existe archivo historico descargado')
+
+# else:
+#     print ('No existe informacion de cotizaciones en BBDD')
+#     # borraTicket (ticket, BBDD=False)
+#     # No tiene sentido que intente borrar los archivos, no exista tickets en el diccionario y no puedo componer el nombre de los archivos
+#     ticketerror(naccion)
 
     return existe
 
@@ -923,11 +992,15 @@ def datoshistoricosgraba(naccion, historico):
 
     for n in historico:
         fecha, apertura, maximo, minimo, cierre, volumen = n
-        sql = ("INSERT INTO Ticket_%s (`fecha`,`apertura`,`maximo`,`minimo`,`cierre`,`volumen`) VALUES ('%s',%f,%f,%f,%f,%d)" % (tabla, fecha, apertura, maximo, minimo, cierre, volumen))
+        sql = (
+            "INSERT INTO Ticket_%s (`fecha`,`apertura`,`maximo`,`minimo`,`cierre`,`volumen`) VALUES ('%s',%f,%f,%f,%f,%d)"
+            % (tabla, fecha, apertura, maximo, minimo, cierre, volumen))
         try:
             cursor2.execute(sql)
         except Exception as e:
-            logging.debug('Error grabando datos libreria BBDD funcion datoshistoricosgraba, error: %s; Ticket: %s; datos: %s' % (e, naccion, n))
+            logging.debug(
+                'Error grabando datos libreria BBDD funcion datoshistoricosgraba, error: %s; Ticket: %s; datos: %s'
+                % (e, naccion, n))
             # IntegrityError: este error lo suele dar por datos duplicados en la fecha
 
     db2.commit()
@@ -960,7 +1033,9 @@ def datoshistoricosactualizacion(naccion):
     # el problema puede ser que al restarle 2 podemos pillar un fin de semana por enmedio
     historico = datoshistoricoslee(naccion)
 
-    if len(historico) < 3:  # al devolverno true=actualizar pero sin fecha, en la funcion descargaHistoricoAccion entiende que tiene que descargar todo el historico
+    if len(
+            historico
+    ) < 3:  # al devolverno true=actualizar pero sin fecha, en la funcion descargaHistoricoAccion entiende que tiene que descargar todo el historico
         print('Registro insuficiente. Actualizacion completa')
         return (None, True)
 
@@ -968,13 +1043,18 @@ def datoshistoricosactualizacion(naccion):
 
     fechaultimoregistro = list(map(int, ((historico[-1][0]).split('-'))))
 
-    desdeultimaactualizacion = (date(fechahoy[0], fechahoy[1], fechahoy[2]) - date(fechaultimoregistro[0], fechaultimoregistro[1], fechaultimoregistro[2])).days
+    desdeultimaactualizacion = (
+        date(fechahoy[0], fechahoy[1], fechahoy[2]) -
+        date(fechaultimoregistro[0], fechaultimoregistro[1],
+             fechaultimoregistro[2])).days
     # Comparar fecha de hoy con la del archivo he incluirla en el if con un and
     # en esta funcion hay que hacer que cuando el len de datosaccion no es sufieciente, menor de 3 registros, que automaticamente responda para que la funcion de descarga descarge con un timming inferior
     #    desdeultimaactualizacionarchivo=(date(fechahoy[0],fechahoy[1],fechahoy[2])-date(fechaarchivo[0],fechaarchivo[1],fechaarchivo[2])).days
 
-    if (desdeultimaactualizacion > DIFREGACTUALIZAR['historico']):  # and (desdeultimaactualizacionarchivo>difregistros):
-        print(('Registro pendiente de una actualizacion desde %s' % (historico[-2][0])))
+    if (desdeultimaactualizacion > DIFREGACTUALIZAR['historico']
+        ):  # and (desdeultimaactualizacionarchivo>difregistros):
+        print(('Registro pendiente de una actualizacion desde %s' %
+               (historico[-2][0])))
         return (str(historico[-2][0]), True)
     else:
         print('Registro actualizado')
@@ -1041,17 +1121,18 @@ def monedacotizaciones(nombreticket, datosurl):
     datoticket = datosurl2[0].strip('"')
     datoprecio = datosurl2[1]
     if nombreticket == 'EURGBP=X':
-        print ('Caso especial, libra Esterlina convertida en peniques')
+        print('Caso especial, libra Esterlina convertida en peniques')
         datoprecio = str(float(datoprecio) * 100)
     if nombreticket == 'EUREUR=X':
-        print ('Caso especial, euro')
+        print('Caso especial, euro')
         datoprecio = str(1.0)
 
     if '"No such ticker symbol.' in datosurl or 'Missing Symbols List.' in datosurl:  # ".DJA",".DJA",N/A,0,"N/A",N/A,N/A,N/A,N/A,0.00,"No such ticker symbol. <a href="/l">Try Symbol Lookup</a> (Look up: <a href="/l?s=.DJA">.DJA</a>)"
         print(('La Moneda %s no existe' % nombreticket))
 
-    elif ('Ticker symbol has changed to: <a href="/q?s=' in datosurl) or datoticket != nombreticket:
-        print (datosurl)
+    elif ('Ticker symbol has changed to: <a href="/q?s='
+          in datosurl) or datoticket != nombreticket:
+        print(datosurl)
         print(('La Moneda %s ha cambiado a %s' % (nombreticket, datoticket)))
 
     else:
@@ -1061,7 +1142,8 @@ def monedacotizaciones(nombreticket, datosurl):
         datosBBDDcomponentes = cursor.fetchall()
         codigo = datosBBDDcomponentes[0][0]
         # sql = "UPDATE `lomiologes_cobodb`.`Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio , (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") , codigo)
-        sql = "UPDATE `Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (datoprecio, (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"), codigo)
+        sql = "UPDATE `Cobo_monedas` SET `valor` = '%s', `fechaRegistro` = '%s' WHERE `Cobo_monedas`.`codigo` = '%s'" % (
+            datoprecio, (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"), codigo)
         cursor.execute(sql)
         db.commit()
         db.close()
@@ -1148,7 +1230,8 @@ def listacciones(**config):
        --    OR
        --Cobo_componentes.mercado = 'NGM' )
  ORDER BY Cobo_monedas.descripcion DESC,
-        Cobo_params_operaciones.rentabilidad DESC""" % (vol, vol, rentMinima, rentMinima, rentMinima))
+        Cobo_params_operaciones.rentabilidad DESC""" %
+           (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
@@ -1159,7 +1242,8 @@ def listacciones(**config):
             nombre = ''
         # else:
         #     nombre = nombre.encode('UTF-8')
-        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin, ltpricefin)
+        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin,
+                                   ltpricefin)
         if entrada is None:
             entrada = 0.0
         if salida is None:
@@ -1186,7 +1270,10 @@ def listacciones(**config):
            rentabilidad <= -(rentMinima / (1.0 + rentMinima)) or
            rentabilidad == 0.0) and\
            timming in timmings:
-            resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+            resultado2.append((ticket, nombre, mercado, moneda, timming,
+                               round(rentabilidad * 100,
+                                     2), inve, entrada, salida, numaccion,
+                               ltdateini, ltpriceini, ltdatefin, ltpricefin))
     return tuple(resultado2)
 
 
@@ -1276,7 +1363,8 @@ def listaccionesLT(**config):
        --    OR
        --    Cobo_componentes.mercado = 'NGM' )
  ORDER BY Cobo_monedas.descripcion DESC,
-        Cobo_params_operaciones.rentabilidad DESC""" % (vol, vol, rentMinima, rentMinima, rentMinima))
+        Cobo_params_operaciones.rentabilidad DESC""" %
+           (vol, vol, rentMinima, rentMinima, rentMinima))
     cursor.execute(sql)
     resultado = cursor.fetchall()
     db.close()
@@ -1288,8 +1376,14 @@ def listaccionesLT(**config):
             nombre = ''
         else:
             nombre = nombre.encode('UTF-8')
-        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin, ltpricefin)
-        entrada = puntocurvaexponencial(ltdateini, ltpriceini, ltdatefin, ltpricefin, timming, incremperiod=incremperiod)
+        rentabilidad = curvexprent(ltdateini, ltpriceini, ltdatefin,
+                                   ltpricefin)
+        entrada = puntocurvaexponencial(ltdateini,
+                                        ltpriceini,
+                                        ltdatefin,
+                                        ltpricefin,
+                                        timming,
+                                        incremperiod=incremperiod)
         if entrada is None:
             entrada = 0.0
         if salida is None:
@@ -1320,11 +1414,14 @@ def listaccionesLT(**config):
                  (rentabilidad < 0.0 and
                   (maxDia < entrada and minDia < entrada and valorActual < entrada and entrada < salida and entrada < ltpricefin))) and\
                timming in timmings:
-                resultado2.append((ticket, nombre, mercado, moneda, timming, round(rentabilidad * 100, 2), inve, entrada, salida, numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
+                resultado2.append(
+                    (ticket, nombre, mercado, moneda, timming,
+                     round(rentabilidad * 100, 2), inve, entrada, salida,
+                     numaccion, ltdateini, ltpriceini, ltdatefin, ltpricefin))
         except:
-             ticketerror(ticket)
-             #print (ticket)
-          
+            ticketerror(ticket)
+            #print (ticket)
+
     return tuple(resultado2)
 
 

@@ -10,9 +10,9 @@ License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 """
 
 __version__ = '0.06'
-__date__    = '2020-03-09'
-__author__ = ('Antonio Caballero',)
-__mail__ = ('zurbaran79@hotmail.com',)
+__date__ = '2020-03-09'
+__author__ = ('Antonio Caballero', )
+__mail__ = ('zurbaran79@hotmail.com', )
 __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 
 # License
@@ -86,14 +86,11 @@ __license__ = 'http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode'
 #
 #     Creative Commons may be contacted at http://creativecommons.org/.
 
-
 # paginas de interes
 # http://finance.yahoo.com/international
 
-
 #################################################
 # Constantes locales
-
 
 ####################################################
 # modulos estandar importados
@@ -106,16 +103,16 @@ import shutil
 import requests
 import csv
 
-
 ####################################################
 # modulos no estandar o propios
 from settings import CARPETAS, ARCHIVO_LOG
 from yahoofinance import webheaders, pausareconexion
 
-
-logging.basicConfig(filename=ARCHIVO_LOG,
-                    format='%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
-                    level=logging.DEBUG)
+logging.basicConfig(
+    filename=ARCHIVO_LOG,
+    format=
+    '%(asctime)s : %(processName)s : %(levelname)s : %(module)s : %(funcName)s: %(lineno)d :%(message)s',
+    level=logging.DEBUG)
 
 
 def descarga():
@@ -131,12 +128,18 @@ def descarga():
     f = None
     while f is None:
         try:
-            f = requests.get(url, headers=webheaders, stream=True, timeout=pausareconexion)
-        except (requests.HTTPError, requests.ReadTimeout, requests.ConnectionError) as e:
-            print ('Conexion Perdida')
-            print ((e.code))
+            f = requests.get(url,
+                             headers=webheaders,
+                             stream=True,
+                             timeout=pausareconexion)
+        except (requests.HTTPError, requests.ReadTimeout,
+                requests.ConnectionError) as e:
+            print('Conexion Perdida')
+            print((e.code))
             f = None
             sleep(pausareconexion)
+
+
 ##        except (urllib.error.URLError, IOError, urllib.error.httplib.BadStatusLine) as e:
 ##            print ('Conexion Erronea')
 ##            print ((url, e))
@@ -161,11 +164,13 @@ def descarga():
 ##
 ##    open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "wb").write(f.content)
 ##    f.close()
-    with open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"), "wb") as flocal:
+    with open(os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"),
+              "wb") as flocal:
         for ch in f:
             flocal.write(ch)
     f.close()
     flocal.close()
+
 
 def descomprime():
     """."""
@@ -173,19 +178,21 @@ def descomprime():
     # Descomprimimos el archivo master zip
     unziped = ZipFile(master)
     unziped.extractall(os.path.join(os.getcwd(), CARPETAS['Log']))
-##    for file_path in unziped.namelist():
-##        file_content = unziped.read(file_path)
-##        # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
-##        if file_path[-1] == '/' and file_content == '':
-##            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
-##            if not os.path.exists(carpeta):
-##                os.mkdir(carpeta)
-##        # solo descomprimimos los arvhivos que estan en esta carpeta
-##        elif 'jstock-master/appengine/jstock-static/war/stocks_information/' in file_path:
-##            file_unzip = open(os.path.join(os.getcwd(), CARPETAS['Log'], file_path), "w")
-##            file_unzip.write(file_content)
-##            file_unzip.close()
+    ##    for file_path in unziped.namelist():
+    ##        file_content = unziped.read(file_path)
+    ##        # Si el final del archivo termina en '/' y el contenido es '' es porque es un directorio
+    ##        if file_path[-1] == '/' and file_content == '':
+    ##            carpeta = os.path.join(os.getcwd(), CARPETAS['Log'], file_path)
+    ##            if not os.path.exists(carpeta):
+    ##                os.mkdir(carpeta)
+    ##        # solo descomprimimos los arvhivos que estan en esta carpeta
+    ##        elif 'jstock-master/appengine/jstock-static/war/stocks_information/' in file_path:
+    ##            file_unzip = open(os.path.join(os.getcwd(), CARPETAS['Log'], file_path), "w")
+    ##            file_unzip.write(file_content)
+    ##            file_unzip.close()
     unziped.close()
+
+
 #    Borramos el archivo master zip
 #    os.remove(master)
 
@@ -193,7 +200,10 @@ def descomprime():
 def tickets():
     """."""
     ticketsanadidos = []
-    jstockdir = os.path.join(os.path.join(os.getcwd(), CARPETAS['Log'], 'jstock-master/appengine/jstock-static/war/stocks_information/'))
+    jstockdir = os.path.join(
+        os.path.join(
+            os.getcwd(), CARPETAS['Log'],
+            'jstock-master/appengine/jstock-static/war/stocks_information/'))
     # obtenemos una lista de paises
     paises = os.listdir(jstockdir)
     paises.remove('google-code-database-meta.json')
@@ -208,7 +218,7 @@ def tickets():
             #unzipstocks = ZipFile(stocksZip, 'r')
             stocksZip.extractall(os.path.join(jstockdir, pais))
         except IOError:
-            print ('Archivo erro' % stocksZip)
+            print('Archivo erro' % stocksZip)
             ticketsanadidos = []
             break
         # leemos el contenido del archivo stocks.csv que contiene cada archivo stocks.zip
@@ -216,24 +226,25 @@ def tickets():
 
         stockscsvf = os.path.join(jstockdir, pais, 'stocks.csv')
         if os.path.exists(stockscsvf):
-##            stockscsv = open(stockscsvf, 'wb')
-##            stockscsv.write(file_content)
-##            stockscsv.close()
+            ##            stockscsv = open(stockscsvf, 'wb')
+            ##            stockscsv.write(file_content)
+            ##            stockscsv.close()
 
             with open(stockscsvf, newline='', encoding="ISO-8859-1") as f:
                 lineas = csv.reader(f, delimiter=',')
                 #if (input('Anadiendo pais %s, con un total de %d. Quieres anadir el pais (Y/Cualquier Tecla) ' % (pais, len(lineas) - 1))).upper() == 'Y':
                 for linea in lineas:
-                    
+
                     #linea = lineas[i].split(',', 3)
-                    naccion = ((linea[0].upper()).replace('@%5E', '^')).strip("'")
+                    naccion = ((linea[0].upper()).replace('@%5E',
+                                                          '^')).strip("'")
                     punto = naccion.find('.')
-                    if naccion != "Code":# and (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):# and punto != -1:  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
-    #                    naccion = (naccion,)
-    #                    BBDD.ticketalta(naccion)
+                    if naccion != "Code":  # and (naccion[punto:] in str(SUFIJOSEXCLUIDOS)):# and punto != -1:  # encontramos el punto en la accion y utilizamos su posicion para extraer de la accion su sufijo y si no se encuentra en la lista de excluidas, lo incluimos
+                        #                    naccion = (naccion,)
+                        #                    BBDD.ticketalta(naccion)
                         ticketsanadidos.append(naccion)
                     #i += 1
-                print (('Anadido pais, %s' % pais))
+                print(('Anadido pais, %s' % pais))
 
             os.remove(stockscsvf)
 
@@ -242,22 +253,24 @@ def tickets():
 
 def limpieza():
     try:
-        os.remove (os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"))
+        os.remove(
+            os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master.zip"))
     except Exception as e:
-        print (e)
+        print(e)
     folder = os.path.join(os.getcwd(), CARPETAS['Log'], "jstock-master")
     for the_file in os.listdir(folder):
         file_path = os.path.join(folder, the_file)
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
-            elif os.path.isdir(file_path): shutil.rmtree(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
         except Exception as e:
-            print (e)
+            print(e)
     try:
         shutil.rmtree(folder)
     except Exception as e:
-        print (e)
+        print(e)
 
 
 def ticketsJstock():
@@ -267,5 +280,3 @@ def ticketsJstock():
     descomprime()
     listtickets = tickets()
     return listtickets
-
-
