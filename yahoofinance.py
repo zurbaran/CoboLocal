@@ -185,9 +185,6 @@ import csv
 import asyncio
 from playwright.async_api import async_playwright
 
-import asyncio
-from playwright.async_api import async_playwright
-
 ####################################################
 # modulos no estandar o propios
 from yahoofinancials import YahooFinancials
@@ -316,16 +313,10 @@ def ticketsdeMercado(mercado):
 
     return ticketsanadidos
 
-
 async def scrape_tickets_ipo(diasatras=6, is_headless=True):
-    """Función principal para extraer los tickets de IPO en las últimas fechas especificadas."""
     tickets_anadidos = []
     hoy = datetime.today()
-    fechas = []
-
-    # Crear la lista de fechas
-    for n in range(diasatras):
-        fechas.append((hoy - timedelta(days=n)).strftime('%Y-%m-%d'))
+    fechas = [(hoy - timedelta(days=n)).strftime('%Y-%m-%d') for n in range(diasatras)]
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=is_headless)
@@ -334,50 +325,44 @@ async def scrape_tickets_ipo(diasatras=6, is_headless=True):
 
         for fecha in fechas:
             url = f'https://finance.yahoo.com/calendar/ipo?day={fecha}'
-            print(f"Accediendo a la URL: {url}")
-            await page.goto(url)
-            await page.wait_for_load_state(
-                'networkidle')  # Esperar que la página cargue completamente
-
-            # Aceptar consentimiento si es necesario utilizando atributos constantes
+            print(f"\nAccediendo a la URL: {url}")
             try:
-                accept_button = await page.query_selector(
-                    "button[name='agree'][value='agree']")
+                await page.goto(url, timeout=15000)
+            except Exception as e:
+                print(f"Error al cargar la página para {fecha}: {e}")
+                continue
+
+            # Aceptar consentimiento si es necesario
+            try:
+                accept_button = await page.query_selector("button[name='agree'][value='agree']")
                 if accept_button:
                     await accept_button.click()
                     print("Consentimiento aceptado.")
-            except Exception as e:
-                print(
-                    f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}"
-                )
+            except Exception:
+                pass  # ya lo intentamos
 
-            await page.wait_for_timeout(
-                5000
-            )  # Esperar para asegurarse de que la página está completamente cargada
+            # Esperar explícitamente a que aparezcan enlaces en la tabla
+            try:
+                await page.wait_for_selector("table tbody tr td:first-child a", timeout=7000)
+            except Exception:
+                print(f"No se encontraron tickets para la fecha {fecha}.")
+                continue
 
-            # Extraer los tickets de la página
-            rows = await page.query_selector_all("tr.simpTblRow"
-                                                 )  # Filas de la tabla de IPOs
+            # Extraer tickets
+            rows = await page.query_selector_all("table tbody tr")
             for row in rows:
-                ticket = await row.query_selector("a[data-test='quoteLink']")
+                ticket = await row.query_selector("td:first-child a")
                 if ticket:
                     ticket_text = await ticket.inner_text()
                     ticket_clean = ticket_text.strip().upper()
-
-                    # Añadir el ticket si no se ha añadido ya
                     if ticket_clean not in tickets_anadidos and '%20' not in ticket_clean:
                         tickets_anadidos.append(ticket_clean)
 
-            print(
-                f"{len(tickets_anadidos)} Tickets IPO añadidos hasta ahora para la fecha {fecha}"
-            )
-            await page.wait_for_timeout(
-                3000)  # Esperar antes de pasar a la siguiente fecha
+            print(f"{len(tickets_anadidos)} tickets IPO añadidos hasta ahora (fecha {fecha})")
+            await page.wait_for_timeout(1000)
 
         await browser.close()
-
     return tickets_anadidos
-
 
 def ticketsIPO(diasatras=6):
     """Función para llamar al scraping y retornar los tickets extraídos."""
@@ -386,98 +371,67 @@ def ticketsIPO(diasatras=6):
     )  # Headless = True para servidor sin entorno gráfico
 
 
-async def scrape_tickets(is_headless=True):
-    """Función principal para extraer los tickets de criptomonedas"""
-    tickets_anadidos = []
+async def scrape_crypto_symbols(is_headless=True):
+    """Extrae únicamente los symbols (tickets) de la tabla de criptomonedas."""
+    symbols = []
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=is_headless)
         context = await browser.new_context()
         page = await context.new_page()
 
-        # Ir a la página inicial
         await page.goto("https://finance.yahoo.com/markets/crypto/all/")
-        await page.wait_for_load_state(
-            'networkidle'
-        )  # Asegurar que la página se ha cargado completamente
+        await page.wait_for_load_state('networkidle')
 
-        # Aceptar consentimiento si es necesario utilizando atributos constantes
+        # Consentimiento (si aparece)
         try:
-            accept_button = await page.query_selector(
-                "button[name='agree'][value='agree']")
+            accept_button = await page.query_selector("button[name='agree'][value='agree']")
             if accept_button:
                 await accept_button.click()
-                print("Consentimiento aceptado.")
-        except Exception as e:
-            print(
-                f"No se pudo encontrar o hacer clic en el botón de consentimiento: {e}"
-            )
+                await page.wait_for_timeout(2000)
+        except:
+            pass
 
-        await page.wait_for_timeout(
-            5000
-        )  # Espera para asegurar que la página está completamente cargada
-
-        # Paginación y extracción de tickets
+        # Paginación y extracción de símbolos
+        page_count = 1
         while True:
-            rows = await page.query_selector_all(
-                "table tr")  # Filas de la tabla de criptomonedas
+            print(f"Procesando página {page_count}...")
+
+            rows = await page.query_selector_all("table tr")
             for row in rows:
                 columns = await row.query_selector_all("td")
                 if columns:
                     symbol = await columns[0].inner_text()
-                    clean_symbol = symbol.split('\n')[
-                        0]  # Limpiar el texto del ticket
-                    if clean_symbol not in tickets_anadidos:
-                        tickets_anadidos.append(clean_symbol)
+                    symbol = symbol.split('\n')[0].strip()
+                    if symbol and symbol not in symbols:
+                        symbols.append(symbol)
 
-            # Verificar si hay más páginas y navegar
-            try:
-                next_button = await page.query_selector(
-                    "button[data-testid='next-page-button']")
-                if next_button:
-                    is_disabled = await next_button.get_attribute('disabled')
-                    if not is_disabled:
-                        is_visible = await next_button.is_visible()
-                        if is_visible:
-                            print(
-                                "Siguiente página disponible, haciendo clic..."
-                            )
-                            await next_button.click()
-                            await page.wait_for_timeout(
-                                5000
-                            )  # Esperar para asegurar que la página se carga
-                        else:
-                            print(
-                                "El botón 'Siguiente' no está visible. Esperando..."
-                            )
-                            await page.wait_for_timeout(
-                                3000
-                            )  # Esperar un poco más antes de volver a intentar
-                    else:
-                        print(
-                            "Botón 'Siguiente' deshabilitado, no hay más páginas."
-                        )
-                        break
+            print(f"Tickets encontrados hasta ahora: {len(symbols)}")
+            #print (symbols)
+            # Botón siguiente
+            next_button = await page.query_selector("button[data-testid='next-page-button']")
+            if next_button:
+                is_disabled = await next_button.get_attribute('disabled')
+                if not is_disabled:
+                    await next_button.click()
+                    await page.wait_for_timeout(3000)
+                    page_count += 1
                 else:
-                    print(
-                        "No se encontró el botón 'Siguiente'. Finalizando paginación."
-                    )
-                    break  # Salir del bucle si no se encuentra el botón
-            except Exception as e:
-                print(f"Error al manejar el botón 'Siguiente': {e}")
-                break  # Salir del bucle si ocurre un error
+                    print("Fin de paginación.")
+                    break
+            else:
+                print("No se encontró el botón 'Siguiente'.")
+                break
 
         await browser.close()
 
-    return tickets_anadidos
-
+    return symbols
 
 # Función normal que se puede llamar sincrónicamente
 def ticketsCriptoIPO():
     """Función para llamar al scraping y retornar los tickets extraídos."""
     # Ejecutar la función asíncrona scrape_tickets y retornar el resultado
-    return asyncio.run(scrape_tickets(
-        is_headless=True))  # Headless = True para servidor sin entorno gráfico
+    return asyncio.run(scrape_crypto_symbols(is_headless=True))  # Headless = True para servidor sin entorno gráfico
 
 
 def descargaHistoricoAccion(naccion, **config):

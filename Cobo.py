@@ -2965,19 +2965,19 @@ def main():
                        ticketsanadidos))
                 del tickets
 
-            print('Se estan anadiendo acciones de yahoo-ticker-downloader ')
-            if input(
-                    'Quieres leer archivo generado por yahoo-downloader (Y/....) ?'
-            ) == 'Y':
-                ticketsanadidos = 0
-                tickets = ticketsYahooD()
-                for ticket in tickets:
-                    if BBDD.ticketalta(ticket):
-                        ticketsanadidos += 1
-                print((
-                    'Se han anadido un total de : %d acciones de yahoo-ticker-downloader'
-                    % ticketsanadidos))
-                del tickets
+            # print('Se estan anadiendo acciones de yahoo-ticker-downloader ')
+            # if input(
+            #         'Quieres leer archivo generado por yahoo-downloader (Y/....) ?'
+            # ) == 'Y':
+            #     ticketsanadidos = 0
+            #     tickets = ticketsYahooD()
+            #     for ticket in tickets:
+            #         if BBDD.ticketalta(ticket):
+            #             ticketsanadidos += 1
+            #     print((
+            #         'Se han anadido un total de : %d acciones de yahoo-ticker-downloader'
+            #         % ticketsanadidos))
+            #     del tickets
 
 #        'N) Actualizar cotizaciones de todos los Tickets',
         elif opcion == 'n':
