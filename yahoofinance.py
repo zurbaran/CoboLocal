@@ -575,7 +575,7 @@ def descargaHistoricoAccion2(naccion, **config):
         o que la url no es valida 'URL invalida'
     """
 
-    global _cookie, webheaders  #, _crumb
+
 
     naccion = naccion.upper()
     fechaini = config.get('fechaini', None)
